@@ -113,231 +113,6 @@ class curveWindow(QtWidgets.QMainWindow):
 
     
     ################################################
-    ############## b4 actions ######################
-    ################################################
-
-    def b4Init(self):
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-        
-        self.ui.b4_plot.plotItem.clear()
-        self.ui.b4_plot.plotItem.setTitle('Force-indentation curves')
-        self.ui.b4_plot.plotItem.setLabel('left','Force [nN]')
-        self.ui.b4_plot.plotItem.setLabel('bottom','Indentation [nm]')
-
-        xx = []
-        yy = []
-
-        for s in self.b4['exp']:
-            s.phase = 4
-            s.pressure = s.touch/engine.np.pi/s.R/engine.np.abs(s.indentation)           
-            plit = pg.PlotCurveItem(clickable=False)
-            self.ui.b4_plot.plotItem.addItem(plit)
-            xx.append(s.indentation)
-            yy.append(s.touch)
-            plit.setData( s.indentation,s.touch )
-            plit.setPen(self.blackPen)
-            s.plit = plit
-            plit.segment = s
-            #plit.sigClicked.connect(self.b2curveClicked)
-
-        xmed,ymed = engine.getMedCurve(xx,yy)
-        self.ui.b4_plot.plotItem.addItem( pg.PlotCurveItem(xmed,ymed,pen=self.greenPen) )
-        self.b4['avcurve']=[xmed,ymed]
-
-        #segmentX = xmed[::self.segmentLength]
-        #segmentY = ymed[::self.segmentLength]
-        #self.ui.b4_plot.plotItem.addItem( pg.PlotDataItem(segmentX,segmentY,pen=None,symbol='o') )
-        
-        self.b4_stressStrain()
-        
-        #eps,sig = engine.calculateSS(s,xmed,ymed)
-        #elit = pg.PlotCurveItem(100.0*eps[1:],sig[1:]*1e9,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 255,255),width=2))    
-        #self.ui.b4_plotElast.plotItem.addItem(elit)
-
-        QtWidgets.QApplication.restoreOverrideCursor()
-        #self.ui.b4_doep.clicked.connect(self.b4_stressStrain)
-        self.ui.b4_loadManlio.clicked.connect(self.loadManlio)        
-        #self.ui.b4_final.clicked.connect(self.b4_manlioNotturno)
-
-    def loadManlio(self):
-        fname = QtWidgets.QFileDialog.getOpenFileName(self,'Select the file to load Manlio data',self.workingdir,"Tab Separated Values (*.tsv)")
-        if fname[0] =='':
-            return
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))        
-
-        data = engine.np.loadtxt(fname[0],skiprows=1)
-
-        #self.ui.b3_plotscatter.clear()
-        self.b4['Manlio']=[data[:,1],3.0*data[:,0]]
-        mlit1 = pg.PlotDataItem(self.b4['Manlio'][0],self.b4['Manlio'][1],pen=None,symbol='o')
-        self.ui.b4_plotManlio.addItem(mlit1)
-        mlit2 = pg.PlotDataItem(self.b4['Manlio'][0],self.b4['Manlio'][1],pen=None,symbol='o')
-        self.ui.b4_plotFinal.addItem(mlit2)
-
-        QtWidgets.QApplication.restoreOverrideCursor()
-
-    def b4_final(self):
-        self.ui.b4_plotFinal.clear()
-
-        if self.b4['exp'][0].ElastX is None:
-            return
-
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-        progress = QtWidgets.QProgressDialog("Performing elastography ...", "Cancel E-analysis", 0, len(self.b4['exp']))
-        
-        cdown = 10
-
-        grainstep =  float(self.ui.b4_elIncrement.value())
-        scaledistance =  float(self.ui.b4_elDash.value())
-        maxind = float( self.ui.b4_elMaxind.value() )
-        
-
-        pmean = engine.np.linspace(0,10000,100)
-        emean = engine.np.zeros(len(pmean))
-        howmany = engine.np.zeros(len(pmean))
-
-        for s in self.b4['exp']:  
-            #elit = pg.PlotCurveItem(s.pressure[s.IndexDv[1:]]*1e9,s.ElastY*1e9,pen=self.blackPen)    
-            x=s.pressure[s.IndexDv[1:]]*1e9
-            y=s.ElastY*1e9
-            elit = pg.PlotDataItem(x,y,pen=None,symbol='o',symbolPen=None,symbolBrush=pg.mkBrush((0, 0, 0, 5)))            
-            imin = engine.np.max([int(engine.np.min(x)/100)+1,0])
-            imax = engine.np.min([int(engine.np.max(x)/100)-1,len(pmean)-1])            
-            self.ui.b4_plotFinal.plotItem.addItem(elit)            
-            emean[imin:imax]+=engine.np.interp(pmean[imin:imax], x, y)
-            howmany[imin:imax]+=1
-            progress.setValue(progress.value() + 1)
-            cdown-=1
-            if cdown == 0:
-                QtCore.QCoreApplication.processEvents()
-                cdown = 10   
-
-        xx = pmean[howmany>0]
-        yy = emean[howmany>0]
-        hh = howmany[howmany>0]
-        yy/=hh
-
-        elit2 = pg.PlotDataItem(xx,yy,pen=None,symbol='o',symbolPen=pg.mkPen((255, 0, 0, 100)),symbolBrush=pg.mkBrush((0, 255, 0, 255)))    
-        self.ui.b4_plotFinal.plotItem.addItem(elit2)
-        if self.b4['Manlio'] is not None:
-            mlit = pg.PlotDataItem(self.b4['Manlio'][0],self.b4['Manlio'][1],pen=None,symbol='o')
-            self.ui.b4_plotFinal.addItem(mlit)
-
-        QtWidgets.QApplication.restoreOverrideCursor()
-
-    def b4_manlioNotturno(self):
-        self.ui.b4_plotManlio.plotItem.clear()
-        self.ui.b4_plotManlio.plotItem.setTitle('Elastography')
-        self.ui.b4_plotManlio.plotItem.setLabel('left','Young\'s Modulus [Pa]')
-        self.ui.b4_plotManlio.plotItem.setLabel('bottom','Indentation [nm]')
-
-        xx = []
-        yy = []
-
-        for s in self.b4['exp']:  
-            E = 9*s.touch[1:]/16/engine.np.sqrt(s.R)/(s.indentation[1:])**1.5
-            P = s.touch[1:]/engine.np.pi/s.R/s.indentation[1:]
-            xx.append(s.indentation[1:])
-            yy.append(E)
-            #elit = pg.PlotCurveItem(P*1e9,E*1e9,pen=self.blackPen)    
-            elit = pg.PlotCurveItem(s.indentation[1:],E*1e9,pen=self.blackPen)    
-            elit2 = pg.PlotCurveItem(s.indentation[1:],P*1e9,pen=self.redPen)    
-            self.ui.b4_plotManlio.plotItem.addItem(elit)
-            self.ui.b4_plotManlio.plotItem.addItem(elit2)
-
-        xmed,ymed = engine.getMedCurve(xx,yy,loose = False)        
-
-        self.ui.b4_plotManlio.addItem( pg.PlotCurveItem(xmed,ymed*1e9,pen=self.greenPen) )   
-
-
-
-    def b4_stressStrain(self):
-        
-        self.ui.b4_plotElast.plotItem.clear()
-        self.ui.b4_plotElast.plotItem.setTitle('Stress-Strain curves')
-        self.ui.b4_plotElast.plotItem.setLabel('left','Stress [Pa]')
-        self.ui.b4_plotElast.plotItem.setLabel('bottom','Strain [%]')
-        self.ui.b4_plotElast.plotItem.clear()
-
-        xx = []
-        yy = []
-
-        for s in self.b4['exp']:  
-            s.epsilon,s.sigma = engine.calculateSS(s)
-            xx.append(s.epsilon[1:])
-            yy.append(s.sigma[1:])
-            elit = pg.PlotCurveItem(100.0*s.epsilon[1:],s.sigma[1:]*1e9,pen=self.blackPen)    
-            self.ui.b4_plotElast.plotItem.addItem(elit)
-        xmed,ymed = engine.getMedCurve(xx,yy)
-        self.ui.b4_plotElast.addItem( pg.PlotCurveItem(100.0*xmed,ymed*1e9,pen=self.greenPen) )        
-        self.b4['avstress']=[xmed,ymed]
-        self.b4_YoungStrain()
-
-        
-        
-        #self.ui.b4_plotManlio.addItem( pg.PlotCurveItem(engine.np.log(xmed),ymed*1e9,pen=self.greenPen) )
-
-    def b4_YoungStrain(self):
-        self.ui.b4_plotFinal.plotItem.clear()
-        xmed,ymed = self.b4['avstress']
-
-        self.ui.b4_plotFinal.plotItem.setTitle('Young-Strain curve')
-        self.ui.b4_plotFinal.plotItem.setLabel('left','Young [Pa]')
-        self.ui.b4_plotFinal.plotItem.setLabel('bottom','Strain [%]')
-        
-        discr = int( self.ui.b4_elIncrement.value() )
-
-        ex,ey = engine.ElastoStrain(xmed,ymed,discr)
-        self.ui.b4_plotFinal.addItem( pg.PlotCurveItem(ex*100.0,ey*1e9,pen=self.greenPen) )
-        ex,ey = engine.ElastoStrainSmart(xmed,ymed,discr)
-        self.ui.b4_plotFinal.addItem( pg.PlotCurveItem(ex*100.0,ey*1e9,pen= pg.mkPen((255,0,0),width=2) ) )
-
-    def b4_manliography(self):
-
-        #a = engine.np.random.rand(100,250)
-        #img = pg.ImageItem(a)
-        #img.scale(0.2, 0.1)
-        #self.ui.b1_graph.addItem(img)
-
-        for s in self.b4['exp']:            
-            a = engine.np.sqrt(s.R*s.indentation)
-            s.sigma = s.touch/(engine.np.pi*a**2)
-            s.epsilon = 0.2*a*s.indentation 
-            elit = pg.PlotDataItem(s.epsilon[1:],s.sigma[1:],pen=pg.mkPen((0,0,0,10)) )    
-            self.ui.b4_plotManlio.plotItem.addItem(elit)
-            
-    def moodle():
-        self.ui.b4_plotManlio.plotItem.clear()
-        fmin =  float(self.ui.b4_fmin.value())
-        fmax =  float(self.ui.b4_fmax.value())
-        fstep = float(self.ui.b4_fstep.value())
-
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-        progress = QtWidgets.QProgressDialog("Performing manliography ...", "Cancel MG-analysis", 0, len(self.b4['exp']))
-        
-        self.ui.b4_plotManlio.plotItem.clear()
-        cdown = 10
-        for s in self.b4['exp']:            
-            index_fmin = engine.np.argmin( ( s.touch-fmin )**2 )
-            index_fmax = engine.np.argmin( ( s.touch-fmax )**2 )            
-            s.Paxis = s.pressure[index_fmin:index_fmax]*1e9
-            s.Eaxis = engine.calcEdeep(s,index_fmin,index_fmax)
-            elit = pg.PlotDataItem(s.Paxis,s.Eaxis,pen=None,symbol='s',symbolPen=None,symbolBrush=pg.mkBrush((0, 0, 0, 5))        )    
-            self.ui.b4_plotManlio.plotItem.addItem(elit)
-            progress.setValue(progress.value() + 1)
-            cdown-=1
-            if cdown == 0:
-                QtCore.QCoreApplication.processEvents()
-                cdown = 10
-        if self.b4['Manlio'] is not None:
-            mlit = pg.PlotDataItem(self.b4['Manlio'][0],self.b4['Manlio'][1],pen=None,symbol='o')
-            self.ui.b4_plotManlio.addItem(mlit)
-        
-
-        QtWidgets.QApplication.restoreOverrideCursor()
-
-
-    ################################################
     ############## b3 actions ######################
     ################################################
 
@@ -352,8 +127,6 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b3_plotind.plotItem.clear()
         for s in self.b3['exp']:
             s.phase = 3
-            #s.indentation,s.touch = engine.calculateIndentation(s)
-            #s.pressure = s.touch/engine.np.sqrt(s.R*engine.np.abs(s.indentation))
             
             iMa.append(engine.np.max(s.indentation))
             fMa.append(engine.np.max(s.touch))
@@ -395,7 +168,6 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b3_maxIndentation.clicked.connect(self.b3updMax)
         self.ui.b3_maxForce.clicked.connect(self.b3updMax)
         self.ui.b3_save.clicked.connect(self.save_pickle)
-        self.ui.b3_b3tob4.clicked.connect(self.b3tob4)
         self.ui.b3_doExport.clicked.connect(self.b3Export)
         self.ui.b3_doExport2.clicked.connect(self.b3Export2)
         self.ui.b4_doElas.clicked.connect(self.b3_Alistography)
@@ -712,7 +484,12 @@ class curveWindow(QtWidgets.QMainWindow):
         if fname[0] =='':
             return
         self.workingdir = fname
-        self.b1['exp'] = experiment.Chiaro(fname)
+        if self.ui.open_o11new.isChecked() is True:
+            self.b1['exp'] = experiment.Chiaro(fname)
+        elif self.ui.open_o11old.isChecked() is True:
+            self.b1['exp'] = experiment.ChiaroGenova(fname)
+        elif self.ui.open_nanosurf.isChecked() is True:
+            self.b1['exp'] = experiment.NanoSurf(fname)
         self.b1['exp'].browse()
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
         progress = QtWidgets.QProgressDialog("Opening files...", "Cancel opening", 0, len(self.b1['exp'].haystack))
@@ -883,7 +660,7 @@ class curveWindow(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    app.setApplicationName('Chiaro2020')
+    app.setApplicationName('Nano2020')
     chiaro = curveWindow()
     chiaro.show()
     # QtCore.QObject.connect( app, QtCore.SIGNAL( 'lastWindowClosed()' ), app, QtCore.SLOT( 'quit()' ) )

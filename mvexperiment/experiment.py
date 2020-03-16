@@ -1,6 +1,7 @@
 from .mvFilesystem import MvNode
 import numpy as np
 from .curve import Segment
+from .curve import MODE_DIRECTION_BACKWARD,MODE_DIRECTION_FORWARD,MODE_DIRECTIONS_PAUSE
 
 class DataSet(MvNode):
     _leaf_ext = ['.txt']
@@ -56,95 +57,6 @@ class DataSet(MvNode):
 
     def createSegments(self):
         pass
-
-    def doOpen(self):
-        self.doAll(0)
-
-    def doContact(self):
-        self.doAll(1)
-        self.doAll(2)
-
-    def doIndentation(self):
-        self.doAll(3)
-
-    def doSmooth(self):
-        self.doAll(5)
-
-    def doHertz(self,th,tht='indentation'):
-        self.hertz['threshold'] = th
-        self.hertz['thresholdType'] = tht
-        self.doAll(4)
-
-    def doElastography(self,elast):
-        iterator = self.haystack
-        for c in iterator:
-            if c[self.forwardSegment].young is not None:
-                c[self.forwardSegment].elastography = elast(c[self.forwardSegment])
-                if c[self.forwardSegment].elastography.Elastography() is True:
-                    if c[c.forwardSegment].elastography.fitRelativeBilayer() is True:
-                        c[c.forwardSegment].elastography.toAbs()
-
-    def doAll(self,step=None):
-        if step in [0,1,2,3,4,5]:
-            action = ['Opening','Looking for out of contact region','Calculating contact point','Creating indentation','Hertzian fit','Filtering']
-        for c in self.haystack:
-            if step==0:
-                c.open()
-            elif step==1:
-                c[self.forwardSegment].findOutOfContactRegion()
-            elif step == 2:
-                c[self.forwardSegment].findContactPoint()
-            elif step == 3:
-                c[self.forwardSegment].createIndentation()
-            elif step == 4:
-                if self.hertz['threshold'] is None:
-                    c[self.forwardSegment].fitHertz()
-                else:
-                    c[self.forwardSegment].fitHertz(threshold = self.hertz['threshold'], thresholdType=self.hertz['thresholdType'])
-            elif step == 5:
-                c[self.forwardSegment].smooth()
-            else:
-                c.open()
-                c[self.forwardSegment].findOutOfContactRegion()
-                c[self.forwardSegment].findContactPoint()
-                c[self.forwardSegment].createIndentation()
-                c[self.forwardSegment].fitHertz()
-
-    def createMap(self,par = 'young',N=50):
-        X=[]
-        Y=[]
-        Z=[]
-        for c in self.haystack:
-            if c.xpos is not None and c.ypos is not None:
-                seg = c[self.forwardSegment]
-                if par == 'young':
-                    if seg.young is not None:
-                        X.append(c.xpos)
-                        Y.append(c.ypos)
-                        Z.append(seg.young)
-                elif par == 'ec':
-                    if seg.hasBilayer() is True:
-                        X.append(c.xpos)
-                        Y.append(c.ypos)
-                        Z.append(seg.elastography.Ecortex)
-                elif par == 'eb':
-                    if seg.hasBilayer() is True:
-                        X.append(c.xpos)
-                        Y.append(c.ypos)
-                        Z.append(seg.elastography.Ebulk)
-                elif par == 't':
-                    if seg.hasBilayer() is True:
-                        X.append(c.xpos)
-                        Y.append(c.ypos)
-                        Z.append(seg.elastography.Thickness)
-        from scipy import interpolate
-        F = interpolate.interp2d(X, Y, Z)
-        dx = max(X)-min(X)
-        dy = max(Y)-min(Y)
-        dd = min(dx,dy)/N
-        x = np.arange(min(X),max(X),dd)
-        y = np.arange(min(Y),max(Y),dd)
-        return F(x,y)
 
 
 ##################################
@@ -229,21 +141,6 @@ class ChiaroBase(DataSet):
                 for s in c.haystack:
                     s.active = value
 
-    def see_segmentation(self):
-        import matplotlib.pyplot as plt
-        t = self.data['time']
-        z = self.data['z']
-        plt.plot(t,z,color='red')
-        col = True
-        for i in range(len(self.nodi) - 1):
-            z = self.data['z'][self.nodi[i]:self.nodi[i + 1]]
-            t = self.data['time'][self.nodi[i]:self.nodi[i + 1]]
-            if col is True:
-                plt.plot(t,z,color='blue')
-            else:
-                plt.plot(t,z,color='yellow')
-            col = not col
-
 class Chiaro(ChiaroBase):
 
     def createSegments(self, bias = 30):
@@ -315,3 +212,127 @@ class ChiaroGenova(ChiaroBase):
             end = int(2*len(z)/3)
             #for future reference maybe worth adding a fit ?
             self[-1].speed = (z[end]-z[beg])/(t[end]-t[beg])
+
+##################################
+##### Nanosurf ###################
+##################################
+
+
+class NanoSurf(DataSet):
+
+    def check(self):
+        f = open(self.filename)
+        signature = f.readline()
+        f.close()
+        if signature[0:9] == '#Filename':
+            return True
+        return False
+
+    def header(self):
+        f = open(self.filename)
+        targets=['#Cantilever=','#Spring-Constant=','#Deflection-Sensitivity=','#Filename=','#SpecMap','#SpecMode']
+
+        def outNum(text):
+            s = ''
+            for c in text:
+                if c.isdigit() or c in ['.','e','-','+']:
+                    s+=c
+                else:
+                    break
+            return float(s)
+        map_dim = [None,None]
+        map_size = [None,None]
+        isMap = False
+        for line in f:
+            if line[0:len(targets[2])] == targets[2]: #1.4736e-07m/V
+                self.cantilever_lever = outNum(line[len(targets[2]):])*1e9 #NB: internal units are nm/V
+            elif line[0:len(targets[1])] == targets[1]:
+                self.cantilever_k = outNum(line[len(targets[1]):]) #NB: internal units are nm/V
+            elif line[0:len(targets[0])] == targets[0]:
+                self.cantilever_type = line[len(targets[0]):].strip() #guess the radius
+                data = self.cantilever_type.strip().split('-')
+                if len(data)>1:
+                    if 'um' in data[1]:
+                        radius = float(data[1].replace('um',''))*1000.0
+                        self.tip_radius = radius
+                    if len(data)>2:
+                        if 'um/s' in data[2]:
+                            speed = float(data[1].replace('um/s', '')) * 1000.0
+                            self.protocol_speed = speed
+            elif line[0:len(targets[3])] == targets[3]:
+                self.original_filename = line[len(targets[3]):].strip()
+            elif line[0:len(targets[5])] == targets[5]:
+                if line[line.find('=')+1:].strip()=='Map':
+                    isMap = True
+            elif (line[0:len(targets[4])] == targets[4]) and (isMap is True):
+                tp = line[line.find('-')+1:line.find('=')]
+                if tp == 'Dim':
+                    map_dim = line[line.find('=')+1:].split(';')
+                elif tp=='Size':
+                    map_size = line[line.find('=')+1:].split(';')
+                elif tp == 'CurIndex':
+                    curindex = int(line[line.find('=') + 1:])
+                    nx = int(map_size[0])
+                    ny = int(map_size[1])
+                    coordinates = []
+                    dx = (float(map_dim[1]) - float(map_dim[0]))/(nx-1)
+                    dy = (float(map_dim[3]) - float(map_dim[2]))/(ny-1)
+                    for i in range(nx):
+                        for j in range(ny):
+                            coordinates.append((i*dx,j*dy))
+                    self.xpos,self.ypos = coordinates[curindex]
+            elif line[0] != '#':
+                break
+        f.close()
+
+    def load(self):
+        data = []
+        dummy = True
+        collected = 0
+        f = open(self.filename)
+        for line in f:
+            if dummy is True:
+                if line[0:10] == '#Spec-Data':
+                    dummy = False
+                    self.protocol.append(collected)
+                    #Note the header line
+                    #Spec-Data=Z-Axis Sensor [m];Deflection [V];Z-Axis-Out [m]
+                    #Spec-Data=Z-Axis Sensor [m];Deflection [N];Z-Axis-Out [m]
+                    #Units for Deflection can be either V or N !
+                    self.data_channels = line[11:].strip().split(';')
+                elif line[0:11] == '#Spec-Phase':
+                    self.append(Segment(self))
+                elif line[0:10] == '#Spec-Name':
+                    if line[16:].strip() == 'forward':
+                        self[-1].direction = MODE_DIRECTION_FORWARD
+                    elif line[16:].strip() == 'backward':
+                        self[-1].direction = MODE_DIRECTION_BACKWARD
+                    else:
+                        self[-1].direction = MODE_DIRECTIONS_PAUSE
+                elif line[0:10] == '#Spec-Data':
+                    self[-1].header = line[11:].strip()
+            elif dummy is False:
+                if line.strip() == '':
+                    dummy = True
+                else:
+                    data.append([i for i in map(float,line.strip().split(';'))])
+                    collected += 1
+        self.protocol.append(len(data))
+        f.close()
+        data = np.array(data)
+        # Now get as much information as possible out of the curves
+        # Spec-Data=Z-Axis Sensor [m];Deflection [N];Z-Axis-Out [m]
+        #mmmm, try to guess it
+
+        check = np.abs(np.mean(data[:100, 1])*1e9)
+        if check<1000:
+            self.data['force'] = data[:,1]*1e9
+        else :
+            self.data['force'] = data[:, 1] * self.cantilever_lever
+        self.data['z'] = data[:, 0]*1e9
+
+    def createSegments(self):
+        for i in range(len(self.protocol)-1):
+            z = self.data['z'][self.protocol[i]:self.protocol[i+1]]
+            f = self.data['force'][self.protocol[i]:self.protocol[i+1]]
+            self[i].setData(z,f,reorder=True)
