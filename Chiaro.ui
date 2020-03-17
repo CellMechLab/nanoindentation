@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1262</width>
+    <width>1446</width>
     <height>870</height>
    </rect>
   </property>
@@ -22,7 +22,7 @@
     <item>
      <widget class="QStackedWidget" name="switcher">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="stackedWidgetPage1">
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
@@ -689,6 +689,13 @@
              <widget class="QPushButton" name="b2_doOffset">
               <property name="text">
                <string>Offset Y</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushInes">
+              <property name="text">
+               <string>INES</string>
               </property>
              </widget>
             </item>

@@ -266,6 +266,9 @@ def calculateOffsetYnew(s,ncMin,ncMax):
     iMax = np.argmin((s.z-ncMax)**2)
     return np.average(s.ffil[iMin:iMax])
 
+def doInes(seg):
+    return 0,0
+
 def calculateOffsetY(s,bound=20,noise=0.1,resolution=0.1):
     match=[]
     forces = np.arange(-bound,bound,resolution)

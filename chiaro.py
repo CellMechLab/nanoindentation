@@ -386,10 +386,15 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b2_vFiltered.clicked.connect(self.b2_view)
         self.ui.b2_vOriginal.clicked.connect(self.b2_view)
         self.ui.b2_doOffset.clicked.connect(self.b2OffsetY)
+        self.ui.pushInes.clicked.connect(self.ines_one)
+
         self.ui.b2_doOffsetX.clicked.connect(self.b2OffsetX)
         self.ui.b2_delete.clicked.connect(self.b2Delete)
         self.ui.b2_b2tob3.clicked.connect(self.b2tob3)
         self.ui.b2_save.clicked.connect(self.save_pickle)
+
+    def ines_one(self):
+        pass
 
     def b2tob3(self):
         self.b3['exp']=self.b2['exp']

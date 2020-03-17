@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1262, 870)
+        MainWindow.resize(1446, 870)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("ico.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -361,6 +361,9 @@ class Ui_MainWindow(object):
         self.b2_doOffset = QtWidgets.QPushButton(self.stackedWidgetPage2)
         self.b2_doOffset.setObjectName("b2_doOffset")
         self.verticalLayout_4.addWidget(self.b2_doOffset)
+        self.pushInes = QtWidgets.QPushButton(self.stackedWidgetPage2)
+        self.pushInes.setObjectName("pushInes")
+        self.verticalLayout_4.addWidget(self.pushInes)
         self.b2_doOffsetX = QtWidgets.QPushButton(self.stackedWidgetPage2)
         self.b2_doOffsetX.setObjectName("b2_doOffsetX")
         self.verticalLayout_4.addWidget(self.b2_doOffsetX)
@@ -648,7 +651,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.switcher.setCurrentIndex(0)
+        self.switcher.setCurrentIndex(1)
         self.el_two.toggled['bool'].connect(self.groupBox_19.setEnabled)
         self.el_two.toggled['bool'].connect(self.el_emin.setEnabled)
         self.el_two.toggled['bool'].connect(self.el_h.setEnabled)
@@ -702,6 +705,7 @@ class Ui_MainWindow(object):
         self.label_2.setText(_translate("MainWindow", "Band cut"))
         self.b2_doFilter.setText(_translate("MainWindow", "Filter"))
         self.b2_doOffset.setText(_translate("MainWindow", "Offset Y"))
+        self.pushInes.setText(_translate("MainWindow", "INES"))
         self.b2_doOffsetX.setText(_translate("MainWindow", "Offset X"))
         self.b2_delete.setText(_translate("MainWindow", "Delete"))
         self.groupBox_3.setTitle(_translate("MainWindow", "Out of contact"))
