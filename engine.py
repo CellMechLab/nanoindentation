@@ -138,7 +138,7 @@ def ElastoPressure(s,grainstep = 30,scaledistance = 500,maxindentation=9999):
     s.IndexDv = IndexDv
     return s.indentation[IndexDv[1:]],np.array(E)
 
-def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999):
+def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
     #select one index every grainstep in nm along indentation; works with uneven step as well
     IndexDv = []
     nextPoint = 0
@@ -160,8 +160,11 @@ def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999):
         Areetta = np.trapz(self.touch[IndexDv[j]:IndexDv[j + 1]+1],self.indentation[IndexDv[j]:IndexDv[j + 1]+1])        
         if Areetta >= 0:
             Area.append(Areetta)
-            delta.append((j+1)**(5/2)-j**(5/2))
-            Ex.append((self.indentation[IndexDv[j+1]]+self.indentation[IndexDv[j]])/2.0)
+            delta.append((j+1)**(5/2)-(j)**(5/2))
+            x1 = self.indentation[IndexDv[j]]
+            x2 = self.indentation[IndexDv[j+1]]            
+            alpha= 0.75
+            Ex.append(x1+alpha*grainstep)
 
     Area = np.array(Area)
     delta = np.array(delta)
@@ -261,35 +264,26 @@ def calculateNoise(segments,win=101):
         err.append(np.max(remainders[d:-d]))
     return np.max(err)
 
-def calculateOffsetYnew(s,ncMin,ncMax):
-    iMin = np.argmin((s.z-ncMin)**2)
-    iMax = np.argmin((s.z-ncMax)**2)
-    return np.average(s.ffil[iMin:iMax])
-
 def doInes(seg):
     return 0,0
 
-def calculateOffsetY(s,bound=20,noise=0.1,resolution=0.1):
-    match=[]
-    forces = np.arange(-bound,bound,resolution)
-    for f in forces:
-        match.append(np.sum(np.abs(s.ffil-f)<noise))
-    return forces[np.argmax(match)]
-
-def calculateOffsetX(s,offset=0,win1 = 19, win2 = 99):
-    yy = s.ffil-s.offsetY
+def chiaroOffset(s,ncMin=500,ncMax=2500,offset=0,win1 = 19, win2 = 99):
+    iMin = np.argmin((s.z-ncMin)**2)
+    iMax = np.argmin((s.z-ncMax)**2)
+    offsetY = np.average(s.ffil[iMin:iMax])
+    yy = s.ffil-offsetY
     if np.max(yy)<offset or np.min(yy)>offset:
-        return 0
+        return 0,0
     for i in range(len(yy)-win2,0,-1):
         if yy[i]>offset and yy[i-1]<offset:
             if i <= win1:
-                return (s.z[i]+s.z[i-1])/2.0
+                return (s.z[i]+s.z[i-1])/2.0,offsetY
             else:
                 polx = s.z[i-win1:i+win2]
                 poly = yy[i-win1:i+win2]
                 pol = np.poly1d(np.polyfit(polx, poly, 4))
                 if offset == 0:
-                    return polx[np.argmin((pol(polx))**2)]
+                    return polx[np.argmin((pol(polx))**2)],offsetY
                 else:
                     for toR in range(win2,len(s.z),win2):
                         newx = s.z[i:i+toR]
@@ -303,8 +297,8 @@ def calculateOffsetX(s,offset=0,win1 = 19, win2 = 99):
                             break
                     newx = s.z[i-toL:i+toR]
                     newy = pol(newx)
-                    return newx[np.argmin( newy**2 )]
-    return 0
+                    return newx[np.argmin( newy**2 )],offsetY
+    return 0,0
 
 def getHertz(E,R,threshold,indentation=True):
     poisson = 0.5

@@ -5,6 +5,7 @@ import mvexperiment.experiment as experiment
 import Ui_Chiaro as view
 import engine
 import pickle
+import panels
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
@@ -41,24 +42,29 @@ class curveWindow(QtWidgets.QMainWindow):
     ################################################
 
     def generateFake(self):
+        a = panels.Fakedata()
+        if a.exec() == 0:
+            return
+
         mysegs = []
-        noise = float(self.ui.b1_noise.value())/1000.0
-        E1 = float(self.ui.el_emax.value())/1.0e9
+        noise = float(a.noiselevel.value())/1000.0
+        E1 = float(a.E1.value())/1.0e9
         R = 3200.0
-        xbase = engine.np.linspace(0,4000,4000)
+        N = int(a.length.value())
+        xbase = engine.np.linspace(0,N,N)
         for i in range(50):
             mysegs.append(engine.bsegment())
+            mysegs[-1].R = R
             mysegs[-1].indentation = xbase
-            if self.ui.el_one.isChecked() is True:
+            if a.el_one.isChecked() is True:
                 mysegs[-1].touch = engine.noisify(engine.standardHertz(xbase,E1,R),noise)
             else:                
-                E2 = float(self.ui.el_emin.value())/1.0e9
-                h  = float(self.ui.el_h.value())
-                if self.ui.el_std.isChecked() is True:
+                E2 = float(a.E2.value())/1.0e9
+                h  = float(a.d0.value())
+                if a.modAli.isChecked() is True:
                     mysegs[-1].touch = engine.noisify(engine.LayerStd(xbase,E1,E2,h,R),noise)
                 else:
                     mysegs[-1].touch = engine.noisify(engine.LayerRoss(xbase,E1,E2,h,R),noise)
-            mysegs[-1].R = R
 
         self.b3['exp']=mysegs
         self.ui.switcher.setCurrentIndex(2)
@@ -172,11 +178,11 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b3_doExport2.clicked.connect(self.b3Export2)
         self.ui.b4_doElas.clicked.connect(self.b3_Alistography)
 
-    def b3_Alistography(self):
+    def b3_Alistography(self,fit=False):
         self.ui.b3_long.plotItem.clear()
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-        progress = QtWidgets.QProgressDialog("Performing elastography ...", "Cancel E-analysis", 0, len(self.b4['exp']))
         
+        progress = QtWidgets.QProgressDialog("Performing elastography ...", "Cancel E-analysis", 0, len(self.b4['exp']))
         grainstep = int( self.ui.b4_elIncrement.value() )
         scaledistance = float( self.ui.b4_elDash.value() )
         maxind = float( self.ui.b4_elMaxind.value() )
@@ -218,6 +224,9 @@ class curveWindow(QtWidgets.QMainWindow):
         if pars is not None:
             yfit = engine.ExpDecay(xmed,*pars,s.R)
             self.ui.b3_long.addItem( pg.PlotCurveItem(xmed,yfit*1e9,pen=self.greenPen) )  
+            self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars[0]*1e8)/100.0))
+            self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars[1]*1e8)/100.0))
+            self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars[2])))        
 
         points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
         self.ui.b3_long.addItem( points )  
@@ -226,28 +235,34 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b3_plothist_Eb.clear()
         self.ui.b3_plothist_d0.clear()
 
-        y,x = engine.np.histogram(E0h, bins='auto',range=(max(0,min(E0h)),min([1000000,max(E0h)])))
+        self.ui.b3_plothist_E0.addItem(pg.PlotDataItem(E0h, pen=None, symbol='o'))
+        #y,x = engine.np.histogram(E0h, bins='auto',range=(max(0,min(E0h)),min([1000000,max(E0h)])))
         #self.ui.b3_plothist_E0.addItem(pg.PlotDataItem(x, y, stepMode=True,pen=pg.mkPen('r')))
-        self.ui.b3_plothist_E0.addItem(pg.PlotCurveItem(x, y, stepMode=True,pen=pg.mkPen('r')))
-        val = engine.np.average(E0h)
-        err = engine.np.std(E0h)
-        self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}&plusmn;{}</span> kPa</p></body></html>'.format(int(val/10)/100.0,int(err/10)/100.0))
+        #self.ui.b3_plothist_E0.addItem(pg.PlotCurveItem(x, y, stepMode=True,pen=pg.mkPen('r')))
+        #val = engine.np.average(E0h)
+        #err = engine.np.std(E0h)
+        #self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}&plusmn;{}</span> kPa</p></body></html>'.format(int(val/10)/100.0,int(err/10)/100.0))
 
-        y,x = engine.np.histogram(Ebh, bins='auto',range=(max(0,min(Ebh)),min([100000,max(Ebh)])))
-        self.ui.b3_plothist_Eb.addItem(pg.PlotCurveItem(x, y, stepMode=True,pen=pg.mkPen('r')))
-        val = engine.np.average(Ebh)
-        err = engine.np.std(Ebh)
-        self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}&plusmn;{}</span> kPa</p></body></html>'.format(int(val/10)/100.0,int(err/10)/100.0))
+        self.ui.b3_plothist_Eb.addItem(pg.PlotDataItem(Ebh, pen=None, symbol='o'))
+        #y,x = engine.np.histogram(Ebh, bins='auto',range=(max(0,min(Ebh)),min([100000,max(Ebh)])))
+        #self.ui.b3_plothist_Eb.addItem(pg.PlotCurveItem(x, y, stepMode=True,pen=pg.mkPen('r')))
+        #val = engine.np.average(Ebh)
+        #err = engine.np.std(Ebh)
+        #self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}&plusmn;{}</span> kPa</p></body></html>'.format(int(val/10)/100.0,int(err/10)/100.0))
 
-        y,x = engine.np.histogram(d0h, bins='auto',range=(max(0,min(d0h)),min([10000,max(d0h)])))
-        self.ui.b3_plothist_d0.addItem(pg.PlotCurveItem(x, y, stepMode=True,pen=pg.mkPen('r')))
-        val = engine.np.average(d0h)
-        err = engine.np.std(d0h)
-        self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}&plusmn;{}</span> nm</p></body></html>'.format(int(val),int(err)))        
+        self.ui.b3_plothist_d0.addItem(pg.PlotDataItem(d0h, pen=None, symbol='o'))
+        #y,x = engine.np.histogram(d0h, bins='auto',range=(max(0,min(d0h)),min([10000,max(d0h)])))
+        #self.ui.b3_plothist_d0.addItem(pg.PlotCurveItem(x, y, stepMode=True,pen=pg.mkPen('r')))
+        #val = engine.np.average(d0h)
+        #err = engine.np.std(d0h)
+        #self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}&plusmn;{}</span> nm</p></body></html>'.format(int(val),int(err)))        
 
         QtWidgets.QApplication.restoreOverrideCursor()
 
-        return E0h,Ebh,d0h
+        if fit is True:
+            return xmed,ymed*1e9
+        else:
+            return E0h,Ebh,d0h
 
     def b3Export(self):
         Earray = self.b3Fit()
@@ -259,15 +274,22 @@ class curveWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def b3Export2(self):
-        E0,Eb,d0 = self.b3_Alistography()
+        fit = True
+        data = self.b3_Alistography(fit)
         fname = QtWidgets.QFileDialog.getSaveFileName(self,'Select the file to export your E data',self.workingdir,"Tab Separated Values (*.tsv)")
         if fname[0] =='':
             return
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))        
         with open(fname[0],'w') as f:
-            f.write('E0\tEb\td0\n')
-            for i in range(len(E0)):
-                f.write('{}\t{}\t{}\n'.format(E0[i],Eb[i],d0[i]))
+            if fit is True:
+                f.write('Ex\tEy\n')
+            else:
+                f.write('E0\tEb\td0\n')
+            for i in range(len(data[0])):
+                if fit is True:
+                    f.write('{}\t{}\n'.format(data[0][i],data[1][i]))
+                else:
+                    f.write('{}\t{}\t{}\n'.format(data[0][i],data[1][i],data[2][i]))
             f.close()
         QtWidgets.QApplication.restoreOverrideCursor()
 
@@ -385,15 +407,20 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b2_doFilter.clicked.connect(self.b2Filter)
         self.ui.b2_vFiltered.clicked.connect(self.b2_view)
         self.ui.b2_vOriginal.clicked.connect(self.b2_view)
-        self.ui.b2_doOffset.clicked.connect(self.b2OffsetY)
-        self.ui.pushInes.clicked.connect(self.ines_one)
 
-        self.ui.b2_doOffsetX.clicked.connect(self.b2OffsetX)
+        self.ui.b2_doContactPoint.clicked.connect(self.b2_contactPoint)
+        
         self.ui.b2_delete.clicked.connect(self.b2Delete)
         self.ui.b2_b2tob3.clicked.connect(self.b2tob3)
         self.ui.b2_save.clicked.connect(self.save_pickle)
 
     def ines_one(self):
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        for s in self.b2['exp']:
+            s.offsetX,s.offsetY = engine.doInes(s)
+        QtWidgets.QApplication.restoreOverrideCursor()
+        self.b2Update()
+        self.b2_view()
         pass
 
     def b2tob3(self):
@@ -431,28 +458,38 @@ class curveWindow(QtWidgets.QMainWindow):
             i+=1
 
     def b2Filter(self):
+
+        a = panels.FilterData()
+        if(a.exec()==0):
+            return
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-        pro = float(self.ui.b2_pro.value() )
-        winperc = float(self.ui.b2_winperc.value())/10.0
-        thresh = int(self.ui.b2_minfreq.value())
+        pro = float(a.prominency.value() )
+        winperc = float(a.band.value())/10.0
+        thresh = int(a.minfreq.value())
         for s in self.b2['exp']:
             s.ffil = engine.filterOsc(s.f,pro=pro,winperc=winperc,threshold=thresh)
         QtWidgets.QApplication.restoreOverrideCursor()
         self.b2Update()
         self.b2_view()
 
-    def b2OffsetY(self):
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-        for s in self.b2['exp']:
-            s.offsetY = engine.calculateOffsetYnew(s,ncMin = float(self.ui.b2_ncMin.value()),ncMax = float(self.ui.b2_ncMax.value()))
-        QtWidgets.QApplication.restoreOverrideCursor()
-        self.b2Update()
-        self.b2_view()
+    def b2_contactPoint(self):
 
-    def b2OffsetX(self):
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-        for s in self.b2['exp']:
-            s.offsetX = engine.calculateOffsetX(s,offset=float(self.ui.b2_xOffset.value()),win1=int(self.ui.b2_win1.value()),win2=int(self.ui.b2_win2.value()))
+
+        p = None
+        f = None
+
+        if self.ui.comboContact.currentText()=='Chiaro':
+            a = panels.chiaroPoint()
+            if a.exec()==0:
+                return
+            p = a.getParams()
+            f = a.getCall()
+
+        if f is not None:
+            for s in self.b2['exp']:
+                s.offsetX, s.offsetY = f(s,*p)
+        
         QtWidgets.QApplication.restoreOverrideCursor()
         self.b2Update()
         self.b2_view()
