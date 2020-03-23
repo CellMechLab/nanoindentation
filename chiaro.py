@@ -387,6 +387,7 @@ class curveWindow(QtWidgets.QMainWindow):
             plit.segment = s
             plit.sigClicked.connect(self.b2curveClicked)
             s.bol = None
+            s.invalid = False
         self.b2_view()        
         self.ui.b2_Alpha.setValue(self.ui.b1_Alpha.value())
         
