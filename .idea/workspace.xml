@@ -50,14 +50,14 @@
     </favorites_list>
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5">
+    <splitter split-orientation="horizontal" split-proportion="0.506435">
       <split-first>
         <leaf>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/chiaro.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="305">
-                  <caret line="392" column="29" lean-forward="true" selection-start-line="392" selection-start-column="29" selection-end-line="392" selection-end-column="29" />
+                <state relative-caret-position="203">
+                  <caret line="453" column="33" selection-start-line="453" selection-start-column="33" selection-end-line="453" selection-end-column="33" />
                   <folding>
                     <element signature="e#0#42#0" expanded="true" />
                   </folding>
@@ -65,11 +65,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/panels.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="313">
-                  <caret line="89" column="42" lean-forward="true" selection-start-line="89" selection-start-column="42" selection-end-line="89" selection-end-column="42" />
+                <state relative-caret-position="153">
+                  <caret line="112" selection-start-line="112" selection-end-line="112" />
                   <folding>
                     <element signature="e#0#27#0" expanded="true" />
                   </folding>
@@ -96,8 +96,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/Ui_Chiaro.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-5132">
-                  <caret line="246" column="24" selection-start-line="246" selection-start-column="13" selection-end-line="246" selection-end-column="24" />
+                <state relative-caret-position="232">
+                  <caret line="266" column="8" selection-start-line="266" selection-start-column="8" selection-end-line="266" selection-end-column="32" />
                 </state>
               </provider>
             </entry>
@@ -105,8 +105,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/../../curve.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="391">
-                  <caret line="362" column="22" selection-start-line="362" selection-start-column="22" selection-end-line="362" selection-end-column="22" />
+                <state relative-caret-position="833">
+                  <caret line="286" column="4" selection-start-line="286" selection-start-column="4" selection-end-line="286" selection-end-column="4" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -117,8 +117,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/engine.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="466">
-                  <caret line="356" column="15" selection-start-line="356" selection-start-column="15" selection-end-line="356" selection-end-column="15" />
+                <state relative-caret-position="347">
+                  <caret line="365" column="15" selection-start-line="365" selection-start-column="15" selection-end-line="365" selection-end-column="15" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -130,11 +130,11 @@
       </split-first>
       <split-second>
         <leaf>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/chiaro.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="126">
-                  <caret line="499" column="1" selection-start-line="499" selection-start-column="1" selection-end-line="499" selection-end-column="1" />
+                <state relative-caret-position="322">
+                  <caret line="445" column="33" selection-start-line="445" selection-start-column="33" selection-end-line="445" selection-end-column="33" />
                   <folding>
                     <element signature="e#0#42#0" expanded="true" />
                   </folding>
@@ -142,14 +142,23 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/engine.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-163">
-                  <caret line="316" column="4" selection-start-line="316" selection-start-column="4" selection-end-line="316" selection-end-column="26" />
+                <state relative-caret-position="340">
+                  <caret line="396" column="15" lean-forward="true" selection-start-line="396" selection-start-column="15" selection-end-line="396" selection-end-column="15" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/test.ipynb">
+              <provider selected="true" editor-type-id="ipnb-editor">
+                <state>
+                  <selected id="0" />
                 </state>
               </provider>
             </entry>
@@ -162,6 +171,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Python Script" />
+        <option value="Jupyter Notebook" />
       </list>
     </option>
   </component>
@@ -176,7 +186,12 @@
       <find>b2_delete</find>
       <find>comboContact</find>
       <find>b1_selectFolder</find>
+      <find>b2Update</find>
+      <find>offset</find>
       <find>b2_plot_all</find>
+      <find>dele</find>
+      <find>print</find>
+      <find>b2_index_invalid</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -187,17 +202,18 @@
       <list>
         <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/Ui_Chiaro.py" />
+        <option value="$PROJECT_DIR$/test.ipynb" />
         <option value="$PROJECT_DIR$/panels.py" />
-        <option value="$PROJECT_DIR$/engine.py" />
         <option value="$PROJECT_DIR$/chiaro.py" />
+        <option value="$PROJECT_DIR$/engine.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-1011" />
-    <option name="y" value="328" />
-    <option name="width" value="244" />
-    <option name="height" value="259" />
+    <option name="x" value="-1337" />
+    <option name="y" value="322" />
+    <option name="width" value="156" />
+    <option name="height" value="148" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -222,6 +238,11 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../../analysis.py" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisScriptMassimo\GitHub_Nanoindentation\nanoindentation" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -309,7 +330,7 @@
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.499653" weight="0.32827735" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50034696" side_tool="true" weight="0.32882884" />
-      <window_info active="true" anchor="bottom" id="Python Console" order="10" visible="true" weight="0.25568798" />
+      <window_info active="true" anchor="bottom" x="-2118" y="1374" width="1085" height="135" id="Python Console" order="10" visible="true" weight="0.25568798" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -346,8 +367,12 @@
     <entry file="file://$PROJECT_DIR$/[FILENAME].py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../analysis.py">
-      <provider selected="true" editor-type-id="text-editor" />
+    <entry file="file://$PROJECT_DIR$/Ui_Chiaro.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="232">
+          <caret line="266" column="8" selection-start-line="266" selection-start-column="8" selection-end-line="266" selection-end-column="32" />
+        </state>
+      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../experiment.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -358,49 +383,52 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/../../analysis.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/../../curve.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="391">
-          <caret line="362" column="22" selection-start-line="362" selection-start-column="22" selection-end-line="362" selection-end-column="22" />
+        <state relative-caret-position="833">
+          <caret line="286" column="4" selection-start-line="286" selection-start-column="4" selection-end-line="286" selection-end-column="4" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Ui_Chiaro.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-5132">
-          <caret line="246" column="24" selection-start-line="246" selection-start-column="13" selection-end-line="246" selection-end-column="24" />
+    <entry file="file://$PROJECT_DIR$/test.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="0" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/panels.py">
+    <entry file="file://$PROJECT_DIR$/chiaro.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="313">
-          <caret line="89" column="42" lean-forward="true" selection-start-line="89" selection-start-column="42" selection-end-line="89" selection-end-column="42" />
+        <state relative-caret-position="203">
+          <caret line="453" column="33" selection-start-line="453" selection-start-column="33" selection-end-line="453" selection-end-column="33" />
           <folding>
-            <element signature="e#0#27#0" expanded="true" />
+            <element signature="e#0#42#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/engine.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="466">
-          <caret line="356" column="15" selection-start-line="356" selection-start-column="15" selection-end-line="356" selection-end-column="15" />
+        <state relative-caret-position="347">
+          <caret line="365" column="15" selection-start-line="365" selection-start-column="15" selection-end-line="365" selection-end-column="15" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/chiaro.py">
+    <entry file="file://$PROJECT_DIR$/panels.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="305">
-          <caret line="392" column="29" lean-forward="true" selection-start-line="392" selection-start-column="29" selection-end-line="392" selection-end-column="29" />
+        <state relative-caret-position="153">
+          <caret line="112" selection-start-line="112" selection-end-line="112" />
           <folding>
-            <element signature="e#0#42#0" expanded="true" />
+            <element signature="e#0#27#0" expanded="true" />
           </folding>
         </state>
       </provider>

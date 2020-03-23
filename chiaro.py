@@ -32,6 +32,7 @@ class curveWindow(QtWidgets.QMainWindow):
         self.b3 = {'phase':3,'exp':[],'plit1':None,'plit2a':None,'plit2b':None}
         self.b4 = {'phase':4,'exp':[],'Manlio':None,'avcurve':None,'avstress':None}
         self.segmentLength = 100
+        self.b2_index_invalid = []
 
         self.ui.switcher.setCurrentIndex(0)
         self.ui.sl_load.clicked.connect(self.load_pickle)
@@ -385,21 +386,33 @@ class curveWindow(QtWidgets.QMainWindow):
             s.plit = plit
             plit.segment = s
             plit.sigClicked.connect(self.b2curveClicked)
+            s.bol = None
         self.b2_view()        
         self.ui.b2_Alpha.setValue(self.ui.b1_Alpha.value())
         
         self.ui.b2_plot_one.plotItem.clear()
         self.ui.b2_plot_two.plotItem.clear()
         s = self.b2['exp'][0]
+
         self.b2['plit1a'] = pg.PlotCurveItem(clickable=True)
         self.b2['plit1a'].setData(s.z,s.f,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 0,255),width=1))
         self.b2['plit1b'] = pg.PlotCurveItem(clickable=True)
         self.b2['plit1b'].setData(s.z,s.f,pen=pg.mkPen( pg.QtGui.QColor(255, 0, 0,255),width=1))
+        self.b2['plit1c'] = pg.PlotCurveItem(clickable=True)
+        self.b2['plit1c'].setData([0,0],[min(s.f),max(s.f)], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
         self.b2['plit2'] = pg.PlotCurveItem(clickable=True)
         self.b2['plit2'].setData(s.z,s.f, pen=pg.mkPen( pg.QtGui.QColor(0, 0, 0,255),width=1))
+        self.b2['plit2a'] = pg.PlotCurveItem(clickable=True)
+        self.b2['plit2a'].setData([0,0],[0,1], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
+        self.b2['plit2b'] = pg.PlotCurveItem(clickable=True)
+        self.b2['plit2b'].setData([0, 0], [0, 1], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
         self.ui.b2_plot_one.plotItem.addItem(self.b2['plit1a'])
         self.ui.b2_plot_one.plotItem.addItem(self.b2['plit1b'])
+        self.ui.b2_plot_one.plotItem.addItem(self.b2['plit1c'])
         self.ui.b2_plot_two.plotItem.addItem(self.b2['plit2'])
+        self.ui.b2_plot_two.plotItem.addItem(self.b2['plit2a'])
+        self.ui.b2_plot_two.plotItem.addItem(self.b2['plit2b'])
+
 
         QtWidgets.QApplication.restoreOverrideCursor()
         self.ui.b2_Alpha.valueChanged.connect(self.b2Color)
@@ -411,17 +424,9 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b2_doContactPoint.clicked.connect(self.b2_contactPoint)
         
         self.ui.b2_delete.clicked.connect(self.b2Delete)
+        self.ui.b2_deleteAllInvalid.clicked.connect(self.b2DeleteAllInvalid)
         self.ui.b2_b2tob3.clicked.connect(self.b2tob3)
         self.ui.b2_save.clicked.connect(self.save_pickle)
-
-    def ines_one(self):
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-        for s in self.b2['exp']:
-            s.offsetX,s.offsetY = engine.doInes(s)
-        QtWidgets.QApplication.restoreOverrideCursor()
-        self.b2Update()
-        self.b2_view()
-        pass
 
     def b2tob3(self):
         self.b3['exp']=self.b2['exp']
@@ -438,6 +443,16 @@ class curveWindow(QtWidgets.QMainWindow):
         #self.ui.b2_segment.setValue(0)
         self.ui.b2_segment.setValue(index - 1)
 
+    def b2DeleteAllInvalid(self):
+        for i in reversed(sorted(self.b2_index_invalid)):
+            self.b2['exp'][i].plit.clear()
+            del (self.b2['exp'][i])
+        self.ui.b2_segment.setMaximum(len(self.b2['exp']))
+        self.ui.b2_segment.setValue(0)
+        self.b2_index_invalid=[]
+        self.b2_view()
+        print("Deleted all invalid curves!")
+
     def b2curveClicked(self,cv):
         for i in range(len(self.b2['exp'])):
             if cv.segment == self.b2['exp'][i]:
@@ -445,18 +460,21 @@ class curveWindow(QtWidgets.QMainWindow):
                 break
 
     def b2_view(self):
-        i = 0
         index = int(self.ui.b2_segment.value())
-        for s in self.b2['exp']:
+        for i, s in enumerate(self.b2['exp']):
             if self.ui.b2_vFiltered.isChecked() is True:
-                s.plit.setData(s.z-s.offsetX,s.ffil-s.offsetY)
+                if s.bol==True:
+                    s.plit.setData(s.z-s.offsetX,s.ffil-s.offsetY, pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=1))
+                else:
+                    s.plit.setData(s.z - s.offsetX, s.ffil - s.offsetY, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=1))
             else:
                 s.plit.setData(s.z,s.f)
             if i==index:
                 s.plit.setPen(self.greenPen)
             else:
                 s.plit.setPen(self.blackPen)
-            i+=1
+                if i in self.b2_index_invalid:
+                    s.plit.setPen(self.redPen)
 
     def b2Filter(self):
 
@@ -487,6 +505,15 @@ class curveWindow(QtWidgets.QMainWindow):
             p = a.getParams()
             f = a.getCall()
 
+            if f is not None:
+                for i, s in enumerate(self.b2['exp']):
+                    s.offsetX, s.offsetY = f(s, *p)
+
+            self.b2_index_invalid = []
+            s.bol=True
+            s.x_CPderiv=[0]
+            s.y_CPderiv=[0]
+
         if self.ui.comboContact.currentText()=='Nanosurf':
             a = panels.NanosurfPoint()
             if a.exec()==0:
@@ -494,12 +521,18 @@ class curveWindow(QtWidgets.QMainWindow):
             p = a.getParams()
             f = a.getCall()
 
-        if f is not None:
-            for s in self.b2['exp']:
-                s.bol, s.offsetX, s.offsetY = f(s,*p)
-#                if s.bol==False:
-#                    s.offsetX, s.offsetY = 0,0
-        
+            self.b2_index_invalid=[]
+            if f is not None:
+                for i, s in enumerate(self.b2['exp']):
+                    s.bol, s.offsetX, s.offsetY, s.x_CPderiv, s.y_CPderiv = f(s,*p)
+                    if s.bol==True:
+                        s.bol2=engine.Nanosurf_FindInvalidCurves(s, p[-1])
+                    else:
+                        s.bol2=None
+                    if s.bol==False or s.bol2==False:
+                        self.b2_index_invalid.append(i)
+            print("number + index invalid curves:", len(self.b2_index_invalid), self.b2_index_invalid)
+
         QtWidgets.QApplication.restoreOverrideCursor()
         self.b2Update()
         self.b2_view()
@@ -508,12 +541,29 @@ class curveWindow(QtWidgets.QMainWindow):
         index = int(self.ui.b2_segment.value())
         s = self.b2['exp'][index]
         self.b2['plit1a'].setData(s.z,s.f)
-        if s.ffil is None:
-            self.b2['plit1b'].setData(s.z,s.f)
-        else:
-            self.b2['plit1b'].setData(s.z,s.ffil)
+        if s.bol==None or s.bol==False:
+            if s.ffil is None:
+                self.b2['plit1b'].setData(s.z,s.f)
+                self.b2['plit1c'].setData([0, 0], [min(s.f), max(s.f)],pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=2))
+            else:
+                self.b2['plit1b'].setData(s.z,s.ffil)
+                self.b2['plit1c'].setData([0, 0], [min(s.f), max(s.f)],pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=2))
 
-        self.b2['plit2'].setData(s.z-s.offsetX,s.f-s.offsetY)
+        if s.bol==True:
+            if s.ffil is None:
+                self.b2['plit1a'].setData(s.z-s.offsetX,s.f-s.offsetY)
+                self.b2['plit1b'].setData(s.z-s.offsetX,s.f-s.offsetY)
+                self.b2['plit1c'].setData([0, 0], [min(s.f), max(s.f)],pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
+            else:
+                self.b2['plit1a'].setData(s.z - s.offsetX, s.f - s.offsetY)
+                self.b2['plit1b'].setData(s.z-s.offsetX,s.ffil-s.offsetY)
+                self.b2['plit1c'].setData([0, 0], [min(s.f), max(s.f)], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
+
+        if s.bol is not None:
+            self.b2['plit2'].setData(s.x_CPderiv - s.offsetX, s.y_CPderiv,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 0,255),width=1))
+            self.b2['plit2b'].setData([min(s.x_CPderiv - s.offsetX), max(s.x_CPderiv - s.offsetX)],[s.threshold_exp, s.threshold_exp], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
+        else:
+            self.b2['plit2'].setData(s.z - s.offsetX, s.f - s.offsetY)
         self.b2_view()
 
     def b2Color(self):
