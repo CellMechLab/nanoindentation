@@ -300,6 +300,65 @@ def chiaroOffset(s,ncMin=500,ncMax=2500,offset=0,win1 = 19, win2 = 99):
                     return newx[np.argmin( newy**2 )],offsetY
     return 0,0
 
+def NanosurfOffset(s, step=50, length=500, threshold_exp = 0.1, threshold_len_straight = 0):
+    z = s.z
+    f = s.ffil
+
+    min_f = min(f)
+    f_nonzero = [i - min_f + 1 for i in f]
+    min_z = min(z)
+    z_nonzero = [i - min_z + 1 for i in z]
+    log_z = np.log(z_nonzero)
+    log_f = np.log(f_nonzero)
+
+    step = 50
+    length = 500
+    threshold_exp = 0.1
+    threshold_len_straight = 0
+    exponents = []
+    exps_norm = []
+    over_threshold = []
+    len_straight = 0
+
+    for i in range(len(f) - length, 0, -step):
+        part = log_f[i:i + length]
+        z_part = log_z[i:i + length]
+        exponent = np.polyfit(z_part, part, 1)[0]
+        if i == len(f) - length:
+            exp_max = exponent
+        if exponent > exp_max:
+            exp_max = exponent
+        exp_norm = exponent / exp_max
+        for j in range(0, step):
+            exponents.append(exponent)
+            exps_norm.append(exp_norm)
+        if exp_norm > threshold_exp:
+            over_threshold.append(i)
+        if abs(exp_norm) < threshold_exp:
+            len_straight = len_straight + 1
+
+    exponents.reverse()
+    exps_norm.reverse()
+    over_threshold.reverse()
+    z_exps = z[:len(exponents)]
+
+    imax_exp = 0
+    if len(over_threshold) >= 1:
+        imax_exp = over_threshold[0]
+
+    z_maxexp = z[imax_exp]
+    bol = True
+    if len_straight < threshold_len_straight:
+        z_maxexp = 0
+    if imax_exp == 0:
+        z_maxexp = 0
+        bol = False
+
+    offsetX=s.z[imax_exp]
+    offsetY=s.ffil[imax_exp]
+    return bol,offsetX,offsetY
+
+
 def getHertz(E,R,threshold,indentation=True):
     poisson = 0.5
     if indentation is True:

@@ -435,7 +435,8 @@ class curveWindow(QtWidgets.QMainWindow):
         self.b2['exp'][index].plit.clear()
         del(self.b2['exp'][index])
         self.ui.b2_segment.setMaximum(len(self.b2['exp']))
-        self.ui.b2_segment.setValue(0)
+        #self.ui.b2_segment.setValue(0)
+        self.ui.b2_segment.setValue(index - 1)
 
     def b2curveClicked(self,cv):
         for i in range(len(self.b2['exp'])):
@@ -486,9 +487,18 @@ class curveWindow(QtWidgets.QMainWindow):
             p = a.getParams()
             f = a.getCall()
 
+        if self.ui.comboContact.currentText()=='Nanosurf':
+            a = panels.NanosurfPoint()
+            if a.exec()==0:
+                return
+            p = a.getParams()
+            f = a.getCall()
+
         if f is not None:
             for s in self.b2['exp']:
-                s.offsetX, s.offsetY = f(s,*p)
+                s.bol, s.offsetX, s.offsetY = f(s,*p)
+#                if s.bol==False:
+#                    s.offsetX, s.offsetY = 0,0
         
         QtWidgets.QApplication.restoreOverrideCursor()
         self.b2Update()

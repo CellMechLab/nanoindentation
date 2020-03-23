@@ -68,6 +68,41 @@ class chiaroPoint(contactPoint):
     def getCall(self):
         return engine.chiaroOffset
 
+
+class NanosurfPoint(contactPoint):
+    def setUi(self):
+        self.setWindowTitle("Nanosurf contact point")
+
+        self.step = QtWidgets.QSpinBox()
+        self.step.setMinimum(0)
+        self.step.setMaximum(1000)
+        self.step.setValue(50)
+
+        self.length = QtWidgets.QSpinBox()
+        self.length.setMinimum(0)
+        self.length.setMaximum(10000)
+        self.length.setValue(500)
+
+        self.threshold_exp = QtWidgets.QDoubleSpinBox()
+        self.threshold_exp.setMinimum(-99.0)
+        self.threshold_exp.setMaximum(99.0)
+        self.threshold_exp.setDecimals(3)
+        self.threshold_exp.setValue(0.100)
+
+        self.threshold_len_straight = QtWidgets.QSpinBox()
+        self.threshold_len_straight.setMinimum(0)
+        self.threshold_len_straight.setMaximum(10000)
+        self.threshold_len_straight.setValue(100)
+
+        return[ ['Step Size',self.step],['Section Length',self.length],['CP Threshold of Derivative',self.threshold_exp],['Min Straight before CP',self.threshold_len_straight]]
+
+    def getParams(self):
+        return[ float(self.step.value()),float(self.length.value()),float(self.threshold_exp.value()),float(self.threshold_len_straight.value())]
+
+    def getCall(self):
+        return engine.NanosurfOffset
+
+
 class FilterData(uiPanel):
     def setUi(self):
         self.setWindowTitle("Filter parameters")

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1446</width>
-    <height>870</height>
+    <width>1444</width>
+    <height>866</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,11 +39,17 @@
             <layout class="QGridLayout" name="gridLayout_2">
              <item row="0" column="1">
               <widget class="QSpinBox" name="b1_start">
+               <property name="minimum">
+                <number>-100000</number>
+               </property>
                <property name="maximum">
-                <number>9999</number>
+                <number>100000</number>
                </property>
                <property name="singleStep">
                 <number>10</number>
+               </property>
+               <property name="value">
+                <number>-15000</number>
                </property>
               </widget>
              </item>
@@ -63,14 +69,17 @@
              </item>
              <item row="1" column="1">
               <widget class="QSpinBox" name="b1_end">
+               <property name="minimum">
+                <number>-100000</number>
+               </property>
                <property name="maximum">
-                <number>19999</number>
+                <number>100000</number>
                </property>
                <property name="singleStep">
                 <number>10</number>
                </property>
                <property name="value">
-                <number>19999</number>
+                <number>15000</number>
                </property>
               </widget>
              </item>
@@ -111,11 +120,20 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="focusPolicy">
+                <enum>Qt::StrongFocus</enum>
+               </property>
+               <property name="minimum">
+                <number>0</number>
+               </property>
                <property name="maximum">
                 <number>1</number>
                </property>
                <property name="value">
-                <number>1</number>
+                <number>0</number>
+               </property>
+               <property name="tracking">
+                <bool>false</bool>
                </property>
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
@@ -202,7 +220,7 @@
                 <string>Optics11 - NEW</string>
                </property>
                <property name="checked">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -217,6 +235,9 @@
               <widget class="QRadioButton" name="open_nanosurf">
                <property name="text">
                 <string>Nanosurf export</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -374,6 +395,15 @@
           </item>
           <item>
            <widget class="QSlider" name="b2_segment">
+            <property name="maximum">
+             <number>500</number>
+            </property>
+            <property name="pageStep">
+             <number>1</number>
+            </property>
+            <property name="tracking">
+             <bool>false</bool>
+            </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -476,12 +506,12 @@
               <widget class="QComboBox" name="comboContact">
                <item>
                 <property name="text">
-                 <string>Chiaro</string>
+                 <string>Nanosurf</string>
                 </property>
                </item>
                <item>
                 <property name="text">
-                 <string>Nanosurf</string>
+                 <string>Chiaro</string>
                 </property>
                </item>
               </widget>

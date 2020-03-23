@@ -2,16 +2,18 @@
 
 # Form implementation generated from reading ui file 'Chiaro.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1446, 870)
+        MainWindow.resize(1444, 866)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("ico.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -33,8 +35,10 @@ class Ui_MainWindow(object):
         self.gridLayout_2 = QtWidgets.QGridLayout(self.groupBox_6)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.b1_start = QtWidgets.QSpinBox(self.groupBox_6)
-        self.b1_start.setMaximum(9999)
+        self.b1_start.setMinimum(-100000)
+        self.b1_start.setMaximum(100000)
         self.b1_start.setSingleStep(10)
+        self.b1_start.setProperty("value", -15000)
         self.b1_start.setObjectName("b1_start")
         self.gridLayout_2.addWidget(self.b1_start, 0, 1, 1, 1)
         self.label_10 = QtWidgets.QLabel(self.groupBox_6)
@@ -44,9 +48,10 @@ class Ui_MainWindow(object):
         self.label_9.setObjectName("label_9")
         self.gridLayout_2.addWidget(self.label_9, 0, 0, 1, 1)
         self.b1_end = QtWidgets.QSpinBox(self.groupBox_6)
-        self.b1_end.setMaximum(19999)
+        self.b1_end.setMinimum(-100000)
+        self.b1_end.setMaximum(100000)
         self.b1_end.setSingleStep(10)
-        self.b1_end.setProperty("value", 19999)
+        self.b1_end.setProperty("value", 15000)
         self.b1_end.setObjectName("b1_end")
         self.gridLayout_2.addWidget(self.b1_end, 1, 1, 1, 1)
         self.horizontalLayout_3.addWidget(self.groupBox_6)
@@ -69,8 +74,11 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.b1_forwardSegment.sizePolicy().hasHeightForWidth())
         self.b1_forwardSegment.setSizePolicy(sizePolicy)
+        self.b1_forwardSegment.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.b1_forwardSegment.setMinimum(0)
         self.b1_forwardSegment.setMaximum(1)
-        self.b1_forwardSegment.setProperty("value", 1)
+        self.b1_forwardSegment.setProperty("value", 0)
+        self.b1_forwardSegment.setTracking(False)
         self.b1_forwardSegment.setOrientation(QtCore.Qt.Horizontal)
         self.b1_forwardSegment.setTickPosition(QtWidgets.QSlider.TicksAbove)
         self.b1_forwardSegment.setTickInterval(1)
@@ -110,13 +118,14 @@ class Ui_MainWindow(object):
         self.verticalLayout_7 = QtWidgets.QVBoxLayout(self.groupBox_12)
         self.verticalLayout_7.setObjectName("verticalLayout_7")
         self.open_o11new = QtWidgets.QRadioButton(self.groupBox_12)
-        self.open_o11new.setChecked(True)
+        self.open_o11new.setChecked(False)
         self.open_o11new.setObjectName("open_o11new")
         self.verticalLayout_7.addWidget(self.open_o11new)
         self.open_o11old = QtWidgets.QRadioButton(self.groupBox_12)
         self.open_o11old.setObjectName("open_o11old")
         self.verticalLayout_7.addWidget(self.open_o11old)
         self.open_nanosurf = QtWidgets.QRadioButton(self.groupBox_12)
+        self.open_nanosurf.setChecked(True)
         self.open_nanosurf.setObjectName("open_nanosurf")
         self.verticalLayout_7.addWidget(self.open_nanosurf)
         self.horizontalLayout_3.addWidget(self.groupBox_12)
@@ -199,6 +208,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4.addWidget(self.b2_vFiltered)
         self.horizontalLayout_7.addWidget(self.groupBox_2)
         self.b2_segment = QtWidgets.QSlider(self.stackedWidgetPage2)
+        self.b2_segment.setMaximum(500)
+        self.b2_segment.setPageStep(1)
+        self.b2_segment.setTracking(False)
         self.b2_segment.setOrientation(QtCore.Qt.Horizontal)
         self.b2_segment.setObjectName("b2_segment")
         self.horizontalLayout_7.addWidget(self.b2_segment)
@@ -531,8 +543,8 @@ class Ui_MainWindow(object):
         self.b2_delete.setText(_translate("MainWindow", "Delete"))
         self.b2_doFilter.setText(_translate("MainWindow", "Filter"))
         self.groupBox_4.setTitle(_translate("MainWindow", "Contact point"))
-        self.comboContact.setItemText(0, _translate("MainWindow", "Chiaro"))
-        self.comboContact.setItemText(1, _translate("MainWindow", "Nanosurf"))
+        self.comboContact.setItemText(0, _translate("MainWindow", "Nanosurf"))
+        self.comboContact.setItemText(1, _translate("MainWindow", "Chiaro"))
         self.b2_doContactPoint.setText(_translate("MainWindow", "Execute"))
         self.groupBox_15.setTitle(_translate("MainWindow", "Elastography"))
         self.label_20.setText(_translate("MainWindow", "Increment"))
@@ -562,5 +574,4 @@ class Ui_MainWindow(object):
         self.b3_doExport.setText(_translate("MainWindow", "Export Single"))
         self.b3_save.setText(_translate("MainWindow", "Save"))
         self.b3_doExport2.setText(_translate("MainWindow", "Export Bilayer"))
-
 from pyqtgraph import PlotWidget
