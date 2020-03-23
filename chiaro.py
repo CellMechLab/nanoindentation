@@ -429,7 +429,9 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b2_save.clicked.connect(self.save_pickle)
 
     def b2tob3(self):
-        self.b3['exp']=self.b2['exp']
+        for s in self.b2['exp']:
+            if s.invalid is False:
+                self.b3['exp'].append(s)
         for s in self.b3['exp']:
             s.indentation,s.touch = engine.calculateIndentation(s)
         self.ui.switcher.setCurrentIndex(2)
@@ -464,16 +466,16 @@ class curveWindow(QtWidgets.QMainWindow):
         for i, s in enumerate(self.b2['exp']):
             if self.ui.b2_vFiltered.isChecked() is True:
                 if s.bol==True:
-                    s.plit.setData(s.z-s.offsetX,s.ffil-s.offsetY, pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=1))
+                    s.plit.setData(s.z-s.offsetX,s.ffil-s.offsetY)#, pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=1))
                 else:
-                    s.plit.setData(s.z - s.offsetX, s.ffil - s.offsetY, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=1))
+                    s.plit.setData(s.z - s.offsetX, s.ffil - s.offsetY)#, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=1))
             else:
                 s.plit.setData(s.z,s.f)
             if i==index:
                 s.plit.setPen(self.greenPen)
             else:
                 s.plit.setPen(self.blackPen)
-                if i in self.b2_index_invalid:
+                if s.invalid is True:
                     s.plit.setPen(self.redPen)
 
     def b2Filter(self):
@@ -492,9 +494,6 @@ class curveWindow(QtWidgets.QMainWindow):
         self.b2_view()
 
     def b2_contactPoint(self):
-
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-
         p = None
         f = None
 
@@ -504,7 +503,7 @@ class curveWindow(QtWidgets.QMainWindow):
                 return
             p = a.getParams()
             f = a.getCall()
-
+            QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
             if f is not None:
                 for i, s in enumerate(self.b2['exp']):
                     s.offsetX, s.offsetY = f(s, *p)
@@ -520,18 +519,20 @@ class curveWindow(QtWidgets.QMainWindow):
                 return
             p = a.getParams()
             f = a.getCall()
-
+            QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
             self.b2_index_invalid=[]
             if f is not None:
-                for i, s in enumerate(self.b2['exp']):
+                for s in self.b2['exp']:
+                    s.invalid = False
                     s.bol, s.offsetX, s.offsetY, s.x_CPderiv, s.y_CPderiv = f(s,*p)
-                    if s.bol==True:
+                    if s.bol is True:
                         s.bol2=engine.Nanosurf_FindInvalidCurves(s, p[-1])
                     else:
                         s.bol2=None
-                    if s.bol==False or s.bol2==False:
-                        self.b2_index_invalid.append(i)
-            print("number + index invalid curves:", len(self.b2_index_invalid), self.b2_index_invalid)
+                    if s.bol is False or s.bol2 is False:
+                        s.invalid = True
+                        #self.b2_index_invalid.append(i)
+            #print("number + index invalid curves:", len(self.b2_index_invalid), self.b2_index_invalid)
 
         QtWidgets.QApplication.restoreOverrideCursor()
         self.b2Update()
@@ -569,11 +570,15 @@ class curveWindow(QtWidgets.QMainWindow):
     def b2Color(self):
         alpha = int(self.ui.b2_Alpha.value())
         self.blackPen = pg.mkPen( pg.QtGui.QColor(0, 0, 0,alpha),width=1)
+        self.redPen = pg.mkPen( pg.QtGui.QColor(255, 0, 0,alpha),width=1)
         self.b2Update()
 
     def b2Update(self):
         for s in self.b2['exp']:
-            s.plit.setPen(self.blackPen)
+            if s.invalid is True:
+                s.plit.setPen(self.redPen)
+            else:
+                s.plit.setPen(self.blackPen)
         self.b2chSegment()
 
 
