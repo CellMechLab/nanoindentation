@@ -264,9 +264,6 @@ def calculateNoise(segments,win=101):
         err.append(np.max(remainders[d:-d]))
     return np.max(err)
 
-def doInes(seg):
-    return 0,0
-
 def chiaroOffset(s,ncMin=500,ncMax=2500,offset=0,win1 = 19, win2 = 99):
     iMin = np.argmin((s.z-ncMin)**2)
     iMax = np.argmin((s.z-ncMax)**2)
@@ -300,9 +297,10 @@ def chiaroOffset(s,ncMin=500,ncMax=2500,offset=0,win1 = 19, win2 = 99):
                     return newx[np.argmin( newy**2 )],offsetY
     return 0,0
 
-def NanosurfOffset(s, step=50, length=500, threshold_exp = 0.1, threshold_len_straight = 0):
+def NanosurfOffset(s, step=50, length=500, threshold_exp = 0.1, threshold_len_straight = 0, thresholdfactor_mean_exp_before_CP=0.5, threshold_invalid=10):
     z = s.z
     f = s.ffil
+    s.threshold_exp=threshold_exp
 
     min_f = min(f)
     f_nonzero = [i - min_f + 1 for i in f]
@@ -311,14 +309,12 @@ def NanosurfOffset(s, step=50, length=500, threshold_exp = 0.1, threshold_len_st
     log_z = np.log(z_nonzero)
     log_f = np.log(f_nonzero)
 
-    step = 50
-    length = 500
-    threshold_exp = 0.1
-    threshold_len_straight = 0
     exponents = []
     exps_norm = []
     over_threshold = []
+    first_over_threshold=[]
     len_straight = 0
+    m=0
 
     for i in range(len(f) - length, 0, -step):
         part = log_f[i:i + length]
@@ -334,30 +330,52 @@ def NanosurfOffset(s, step=50, length=500, threshold_exp = 0.1, threshold_len_st
             exps_norm.append(exp_norm)
         if exp_norm > threshold_exp:
             over_threshold.append(i)
+            m=m+1
+            if m>1:
+                if over_threshold[-2]-over_threshold[-1]>step:
+                    first_over_threshold.append(over_threshold[-2])
         if abs(exp_norm) < threshold_exp:
             len_straight = len_straight + 1
-
+    first_over_threshold.append(over_threshold[-1])
     exponents.reverse()
     exps_norm.reverse()
     over_threshold.reverse()
     z_exps = z[:len(exponents)]
 
     imax_exp = 0
-    if len(over_threshold) >= 1:
-        imax_exp = over_threshold[0]
+    if len(first_over_threshold) >= 1:
+        imax_exp = first_over_threshold[0]
+    s.imax_exp=imax_exp
 
-    z_maxexp = z[imax_exp]
     bol = True
-    if len_straight < threshold_len_straight:
-        z_maxexp = 0
+    mean_before_CP= np.mean(exps_norm[:imax_exp])
+    if mean_before_CP >thresholdfactor_mean_exp_before_CP*threshold_exp:
+        # print("mean before CP",mean_before_CP)
+        bol = False
+    if len_straight*step < threshold_len_straight:
+        # print("len_straight=",len_straight*step)
+        bol = False
     if imax_exp == 0:
-        z_maxexp = 0
         bol = False
 
     offsetX=s.z[imax_exp]
     offsetY=s.ffil[imax_exp]
-    return bol,offsetX,offsetY
+    return bol,offsetX,offsetY, z_exps, exps_norm
 
+def Nanosurf_FindInvalidCurves(s, threshold_invalid=10):
+    s.bol2=None
+    if s.imax_exp!=None and s.imax_exp!=0:
+        f_lin = s.ffil[:s.imax_exp]
+        f_abs = [abs(x)for x in f_lin]
+        val=max(f_abs)
+        f_end=s.ffil[-1000:]
+        f_abs2 = [abs(x)for x in f_end]
+        val2=max(f_abs2)
+        if val>threshold_invalid or val2<2*threshold_invalid:
+            s.bol2=False
+        else:
+            s.bol2=True
+    return s.bol2
 
 def getHertz(E,R,threshold,indentation=True):
     poisson = 0.5

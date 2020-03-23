@@ -92,12 +92,24 @@ class NanosurfPoint(contactPoint):
         self.threshold_len_straight = QtWidgets.QSpinBox()
         self.threshold_len_straight.setMinimum(0)
         self.threshold_len_straight.setMaximum(10000)
-        self.threshold_len_straight.setValue(100)
+        self.threshold_len_straight.setValue(1000)
 
-        return[ ['Step Size',self.step],['Section Length',self.length],['CP Threshold of Derivative',self.threshold_exp],['Min Straight before CP',self.threshold_len_straight]]
+        self.thresholdfactor_mean_exp_before_CP = QtWidgets.QDoubleSpinBox()
+        self.thresholdfactor_mean_exp_before_CP.setMinimum(0)
+        self.thresholdfactor_mean_exp_before_CP.setMaximum(1)
+        self.thresholdfactor_mean_exp_before_CP.setDecimals(3)
+        self.thresholdfactor_mean_exp_before_CP.setValue(0.500)
+
+        self.threshold_invalid = QtWidgets.QDoubleSpinBox()
+        self.threshold_invalid.setMinimum(0)
+        self.threshold_invalid.setMaximum(10000)
+        self.threshold_invalid.setDecimals(2)
+        self.threshold_invalid.setValue(5.00)
+
+        return[ ['Step Size',self.step],['Section Length',self.length],['CP Threshold of Derivative',self.threshold_exp],['Min Straight before CP',self.threshold_len_straight],['Threshold Factor for Mean Exp before CP', self.thresholdfactor_mean_exp_before_CP], ['Threshold for invalidity in linear region [nN]', self.threshold_invalid]]
 
     def getParams(self):
-        return[ float(self.step.value()),float(self.length.value()),float(self.threshold_exp.value()),float(self.threshold_len_straight.value())]
+        return[ int(self.step.value()),int(self.length.value()),float(self.threshold_exp.value()),int(self.threshold_len_straight.value()), float(self.thresholdfactor_mean_exp_before_CP.value()), float(self.threshold_invalid.value())]
 
     def getCall(self):
         return engine.NanosurfOffset
