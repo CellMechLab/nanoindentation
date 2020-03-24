@@ -237,6 +237,7 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b3_plothist_d0.clear()
 
         self.ui.b3_plothist_E0.addItem(pg.PlotDataItem(E0h, pen=None, symbol='o'))
+        #self.ui.b3_plothist.setYRange(0,100000)
         #y,x = engine.np.histogram(E0h, bins='auto',range=(max(0,min(E0h)),min([1000000,max(E0h)])))
         #self.ui.b3_plothist_E0.addItem(pg.PlotDataItem(x, y, stepMode=True,pen=pg.mkPen('r')))
         #self.ui.b3_plothist_E0.addItem(pg.PlotCurveItem(x, y, stepMode=True,pen=pg.mkPen('r')))
@@ -275,7 +276,7 @@ class curveWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def b3Export2(self):
-        fit = True
+        fit = False
         data = self.b3_Alistography(fit)
         fname = QtWidgets.QFileDialog.getSaveFileName(self,'Select the file to export your E data',self.workingdir,"Tab Separated Values (*.tsv)")
         if fname[0] =='':
@@ -506,8 +507,11 @@ class curveWindow(QtWidgets.QMainWindow):
             f = a.getCall()
             QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
             if f is not None:
-                for i, s in enumerate(self.b2['exp']):
+                for s in self.b2['exp']:
+                    s.invalid = False
                     s.offsetX, s.offsetY = f(s, *p)
+                    if (s.offsetX, s.offsetY) == (0,0):
+                        s.invalid = True
 
             self.b2_index_invalid = []
             s.bol=True
