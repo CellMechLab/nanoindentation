@@ -140,7 +140,7 @@ def ElastoPressure(s,grainstep = 30,scaledistance = 500,maxindentation=9999):
 
 def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
     #select one index every grainstep in nm along indentation; works with uneven step as well
-    IndexDv = []
+    IndexDv = []  #This will contain the indexes of the slides
     nextPoint = 0
     while(nextPoint<np.min([np.max(self.indentation),maxindentation])):
         IndexDv.append( np.argmin( np.abs(self.indentation-nextPoint) ) )
@@ -150,24 +150,23 @@ def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mod
     if len(IndexDv) < 2:
         return None,None
     
-    Ex = []
-
-
     #calculate the sliced integrals
-    Area = []
-    delta = []
+    Ex = []
+    Area = []   #integrals of slices
+    theta = []  #geometric coefficients
+
     for j in range(len(IndexDv) - 1):
         Areetta = np.trapz(self.touch[IndexDv[j]:IndexDv[j + 1]+1],self.indentation[IndexDv[j]:IndexDv[j + 1]+1])        
-        if Areetta >= 0:
-            Area.append(Areetta)
-            delta.append((j+1)**(5/2)-(j)**(5/2))
-            x1 = self.indentation[IndexDv[j]]
-            x2 = self.indentation[IndexDv[j+1]]            
-            alpha= 0.75
-            Ex.append(x1+alpha*grainstep)
+        #if Areetta >= 0:  No more need to filter out negatives 
+        Area.append(Areetta)
+        theta.append((j+1)**(5/2)-(j)**(5/2))
+        x1 = self.indentation[IndexDv[j]]
+        x2 = self.indentation[IndexDv[j+1]]            
+        alpha= 0.5
+        Ex.append(x1+alpha*(x2-x1))
 
     Area = np.array(Area)
-    delta = np.array(delta)
+    theta = np.array(theta)
 
     #Define step0 and calculate Adash and Edash for rescaling E
     step0 = np.argmin(np.abs(self.indentation[IndexDv] - scaledistance))
@@ -176,7 +175,7 @@ def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mod
     if Edash is None:
         return None,None
     Omega = Edash*(step0)**(5/2)/Adash
-    Ey = Omega*Area/delta #NB: Ey is in internal units
+    Ey = Omega*Area/theta #NB: Ey is in internal units
 
     return Ex,Ey
 
