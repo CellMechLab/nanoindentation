@@ -267,6 +267,9 @@ class Ui_MainWindow(object):
         self.b2_deleteAllInvalid = QtWidgets.QPushButton(self.stackedWidgetPage2)
         self.b2_deleteAllInvalid.setObjectName("b2_deleteAllInvalid")
         self.horizontalLayout_9.addWidget(self.b2_deleteAllInvalid)
+        self.b2_CropCurves = QtWidgets.QPushButton(self.stackedWidgetPage2)
+        self.b2_CropCurves.setObjectName("b2_CropCurves")
+        self.horizontalLayout_9.addWidget(self.b2_CropCurves)
         self.b2_doFilter = QtWidgets.QPushButton(self.stackedWidgetPage2)
         self.b2_doFilter.setObjectName("b2_doFilter")
         self.horizontalLayout_9.addWidget(self.b2_doFilter)
@@ -525,7 +528,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.switcher.setCurrentIndex(2)
+        self.switcher.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -565,8 +568,9 @@ class Ui_MainWindow(object):
         self.b2_b2tob3.setShortcut(_translate("MainWindow", "Ctrl+G"))
         self.b2_delete.setText(_translate("MainWindow", "Delete"))
         self.b2_delete.setShortcut(_translate("MainWindow", "Del"))
-        self.b2_deleteAllInvalid.setText(_translate("MainWindow", "Delete All Invalid"))
+        self.b2_deleteAllInvalid.setText(_translate("MainWindow", "Remove All Invalid"))
         self.b2_deleteAllInvalid.setShortcut(_translate("MainWindow", "Ctrl+Del"))
+        self.b2_CropCurves.setText(_translate("MainWindow", "Crop Curves"))
         self.b2_doFilter.setText(_translate("MainWindow", "Filter"))
         self.b2_doFilter.setShortcut(_translate("MainWindow", "Ctrl+F"))
         self.groupBox_4.setTitle(_translate("MainWindow", "Contact point"))

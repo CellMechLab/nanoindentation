@@ -22,7 +22,7 @@
     <item>
      <widget class="QStackedWidget" name="switcher">
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="stackedWidgetPage1">
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
@@ -508,10 +508,17 @@
             <item>
              <widget class="QPushButton" name="b2_deleteAllInvalid">
               <property name="text">
-               <string>Delete All Invalid</string>
+               <string>Remove All Invalid</string>
               </property>
               <property name="shortcut">
                <string>Ctrl+Del</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="b2_CropCurves">
+              <property name="text">
+               <string>Crop Curves</string>
               </property>
              </widget>
             </item>

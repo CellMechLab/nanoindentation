@@ -156,7 +156,7 @@ def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mod
     theta = []  #geometric coefficients
 
     for j in range(len(IndexDv) - 1):
-        Areetta = np.trapz(self.touch[IndexDv[j]:IndexDv[j + 1]+1],self.indentation[IndexDv[j]:IndexDv[j + 1]+1])        
+        Areetta = np.trapz(self.touch[IndexDv[j]:IndexDv[j + 1]+1],self.indentation[IndexDv[j]:IndexDv[j + 1]+1]+1)
         #if Areetta >= 0:  No more need to filter out negatives 
         Area.append(Areetta)
         theta.append((j+1)**(5/2)-(j)**(5/2))
@@ -170,11 +170,11 @@ def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mod
 
     #Define step0 and calculate Adash and Edash for rescaling E
     step0 = np.argmin(np.abs(self.indentation[IndexDv] - scaledistance))
-    Adash = np.trapz(self.touch[IndexDv[0]:IndexDv[step0]+1],self.indentation[IndexDv[0]:IndexDv[step0]+1])
-    Edash = fitHertz(self,x=self.indentation[IndexDv[0]:IndexDv[step0]+1],y=self.touch[IndexDv[0]:IndexDv[step0]+1])
+    Adash = np.trapz(self.touch[IndexDv[0]:IndexDv[step0+1]],self.indentation[IndexDv[0]:IndexDv[step0+1]])
+    Edash = fitHertz(self,x=self.indentation[IndexDv[0]:IndexDv[step0+1]],y=self.touch[IndexDv[0]:IndexDv[step0+1]])
     if Edash is None:
         return None,None
-    Omega = Edash*(step0)**(5/2)/Adash
+    Omega = Edash*(step0+1)**(5/2)/Adash
     Ey = Omega*Area/theta #NB: Ey is in internal units
 
     return Ex,Ey
@@ -217,11 +217,12 @@ def calcEdeep(s,index_indmin,index_indmax):
 
 def calculateIndentation(s):
     z = s.z-s.offsetX
-    f = s.f-s.offsetY
-
+    f = s.ffil-s.offsetY
     iContact = np.argmin( (z**2) )
 
     Yf=f[iContact:]
+    if min(Yf)<0:
+        Yf=Yf-min(Yf)
     Xf=z[iContact:]
     indentation=Xf-Yf/s.k
     touch=Yf
@@ -364,10 +365,10 @@ def NanosurfOffset(s, step=50, length=500, threshold_exp = 0.1, threshold_len_st
 def Nanosurf_FindInvalidCurves(s, threshold_invalid=10):
     s.bol2=None
     if s.imax_exp!=None and s.imax_exp!=0:
-        f_lin = s.ffil[:s.imax_exp]
+        f_lin = s.ffil[200:s.imax_exp]
         f_abs = [abs(x)for x in f_lin]
         val=max(f_abs)
-        f_end=s.ffil[-1000:]
+        f_end=s.ffil[-1000:-100]
         f_abs2 = [abs(x)for x in f_end]
         val2=max(f_abs2)
         if val>threshold_invalid or val2<2*threshold_invalid:
@@ -445,4 +446,5 @@ def fitExpDecay(x,y,R):
         popt, pcov = curve_fit(TheExp, x,y , p0=seeds, maxfev=10000)
         return popt
     except (RuntimeError,ValueError):
+
         return None

@@ -314,9 +314,11 @@ class curveWindow(QtWidgets.QMainWindow):
         for s in self.b3['exp']:
             s.indentation = s.indentation_original
             s.touch=s.touch_original
-            s.indentation=np.subtract(s.indentation[shift:], s.indentation[shift])
-            s.touch=np.subtract(s.touch[shift:], s.touch[shift])
-            #s.indentation_shifted= np.subtract(s.indentation, shift)
+            s.indentation=s.indentation[shift:] - s.indentation[shift]
+            s.touch= s.touch[shift:] - s.touch[shift]
+
+            if min(s.touch)<0:
+                s.touch= s.touch- min(s.touch)
         self.b3Init()
         self.b3Fit()
 
@@ -385,17 +387,15 @@ class curveWindow(QtWidgets.QMainWindow):
     ################################################
 
     def b2Init(self):
-
         self.ui.b2_segment.setMaximum(len(self.b2['exp'])-1)
-        
-        
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-
         self.ui.b2_plot_all.plotItem.clear()
         for s in self.b2['exp']:
             s.phase = 2
             plit = pg.PlotCurveItem(clickable=True)
             self.ui.b2_plot_all.plotItem.addItem(plit)
+            s.z_original=s.z
+            s.f_original=s.f
             plit.setData( s.z,s.f )
             plit.setPen(self.blackPen)
             s.plit = plit
@@ -436,9 +436,8 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b2_doFilter.clicked.connect(self.b2Filter)
         self.ui.b2_vFiltered.clicked.connect(self.b2_view)
         self.ui.b2_vOriginal.clicked.connect(self.b2_view)
-
+        self.ui.b2_CropCurves.clicked.connect(self.b2_crop)
         self.ui.b2_doContactPoint.clicked.connect(self.b2_contactPoint)
-        
         self.ui.b2_delete.clicked.connect(self.b2Delete)
         self.ui.b2_deleteAllInvalid.clicked.connect(self.b2DeleteAllInvalid)
         self.ui.b2_b2tob3.clicked.connect(self.b2tob3)
@@ -497,7 +496,6 @@ class curveWindow(QtWidgets.QMainWindow):
                         s.plit.setPen(self.nonePen)
 
     def b2Filter(self):
-
         a = panels.FilterData()
         if(a.exec()==0):
             return
@@ -507,7 +505,26 @@ class curveWindow(QtWidgets.QMainWindow):
         thresh = int(a.minfreq.value())
         for s in self.b2['exp']:
             s.ffil = engine.filterOsc(s.f,pro=pro,winperc=winperc,threshold=thresh)
+            s.ffil_original=s.ffil
         QtWidgets.QApplication.restoreOverrideCursor()
+        self.b2Update()
+        self.b2_view()
+
+
+    def b2_crop(self):
+        a = panels.CropCurves()
+        if(a.exec()==0):
+            return
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        front = int(a.CropStart.value())
+        back = int(a.CropEnd.value())
+        for s in self.b2['exp']:
+            s.z=s.z_original
+            s.ffil =s.ffil_original
+            s.f=s.f_original
+            s.z=s.z[front:-(back+1)]
+            s.ffil=s.ffil[front:-(back+1)]
+            s.f=s.f[front:-(back+1)]
         self.b2Update()
         self.b2_view()
 

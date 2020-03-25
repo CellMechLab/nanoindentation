@@ -137,6 +137,22 @@ class FilterData(uiPanel):
 
         return [ ['Prominency', self.prominency],['MIN cut', self.minfreq],['Model', self.band]]
 
+class CropCurves(uiPanel):
+    def setUi(self):
+        self.setWindowTitle("Crop start & end of all curves (nm)")
+
+        self.CropStart = QtWidgets.QSpinBox()
+        self.CropStart.setMinimum(0)
+        self.CropStart.setMaximum(99999)
+        self.CropStart.setValue(200)
+
+        self.CropEnd = QtWidgets.QSpinBox()
+        self.CropEnd.setMinimum(0)
+        self.CropEnd.setMaximum(99999)
+        self.CropEnd.setValue(100)
+
+        return [ ['Crop Length Front', self.CropStart],['Crop Length End', self.CropEnd]]
+
 class Fakedata(uiPanel):
     def setUi(self):
         self.setWindowTitle("Fake data generator")
