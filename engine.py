@@ -162,7 +162,7 @@ def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mod
         theta.append((j+1)**(5/2)-(j)**(5/2))
         x1 = self.indentation[IndexDv[j]]
         x2 = self.indentation[IndexDv[j+1]]            
-        alpha= 0.5
+        alpha= 0.75     #This coefficient sets whether to use the first (0), last (1) or any intermediate point for the x of the slice
         Ex.append(x1+alpha*(x2-x1))
 
     Area = np.array(Area)
