@@ -22,7 +22,7 @@
     <item>
      <widget class="QStackedWidget" name="switcher">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="stackedWidgetPage1">
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
@@ -733,26 +733,23 @@
              <string>Hertzian Fit</string>
             </property>
             <layout class="QGridLayout" name="gridLayout">
-             <item row="1" column="3">
-              <widget class="QLabel" name="label_11">
-               <property name="text">
-                <string>Std E</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="4">
-              <widget class="QLabel" name="b3_Estd">
+             <item row="1" column="1">
+              <widget class="QRadioButton" name="b3_maxForce">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
                <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;N/A&lt;/span&gt; Pa&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>Force</string>
                </property>
-               <property name="textFormat">
-                <enum>Qt::RichText</enum>
+              </widget>
+             </item>
+             <item row="1" column="3">
+              <widget class="QLabel" name="label_11">
+               <property name="text">
+                <string>Std E</string>
                </property>
               </widget>
              </item>
@@ -772,29 +769,26 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="1">
-              <widget class="QRadioButton" name="b3_maxIndentation">
+             <item row="0" column="3">
+              <widget class="QLabel" name="AverageE">
+               <property name="text">
+                <string>Average E</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="4">
+              <widget class="QLabel" name="b3_Estd">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
                <property name="text">
-                <string>Indentation</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;N/A&lt;/span&gt; Pa&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
-              <widget class="QPushButton" name="b3_doCutFit">
-               <property name="text">
-                <string>Fit</string>
-               </property>
-               <property name="shortcut">
-                <string>Ctrl+F</string>
+               <property name="textFormat">
+                <enum>Qt::RichText</enum>
                </property>
               </widget>
              </item>
@@ -811,30 +805,10 @@
                </property>
               </widget>
              </item>
-             <item row="1" column="1">
-              <widget class="QRadioButton" name="b3_maxForce">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Force</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="3">
-              <widget class="QLabel" name="AverageE">
-               <property name="text">
-                <string>Average E</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="3">
-              <widget class="QLabel" name="label_14">
-               <property name="text">
-                <string>E</string>
+             <item row="2" column="2">
+              <widget class="QSpinBox" name="b3_bins">
+               <property name="maximum">
+                <number>999</number>
                </property>
               </widget>
              </item>
@@ -851,10 +825,36 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="2">
-              <widget class="QSpinBox" name="b3_bins">
-               <property name="maximum">
-                <number>999</number>
+             <item row="1" column="2">
+              <widget class="QPushButton" name="b3_doCutFit">
+               <property name="text">
+                <string>Fit</string>
+               </property>
+               <property name="shortcut">
+                <string>Ctrl+F</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="3">
+              <widget class="QLabel" name="label_14">
+               <property name="text">
+                <string>E</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QRadioButton" name="b3_maxIndentation">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Indentation</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -871,6 +871,40 @@
                </property>
                <property name="textFormat">
                 <enum>Qt::RichText</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="2">
+              <widget class="QSpinBox" name="b3_ShiftValue">
+               <property name="minimum">
+                <number>0</number>
+               </property>
+               <property name="maximum">
+                <number>100000</number>
+               </property>
+               <property name="singleStep">
+                <number>50</number>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="4">
+              <widget class="QPushButton" name="b3_ShiftCurves">
+               <property name="text">
+                <string>Shift</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Shift all curves</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="3">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>nm</string>
                </property>
               </widget>
              </item>

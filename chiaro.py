@@ -6,6 +6,7 @@ import Ui_Chiaro as view
 import engine
 import pickle
 import panels
+import numpy as np
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
@@ -33,6 +34,7 @@ class curveWindow(QtWidgets.QMainWindow):
         self.b4 = {'phase':4,'exp':[],'Manlio':None,'avcurve':None,'avstress':None}
         self.segmentLength = 100
         self.b2_index_invalid = []
+        self.MakeInvalidInvisible = False
 
         self.ui.switcher.setCurrentIndex(0)
         self.ui.sl_load.clicked.connect(self.load_pickle)
@@ -171,6 +173,7 @@ class curveWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.restoreOverrideCursor()
 
         self.ui.b3_Alpha.valueChanged.connect(self.b3Color)
+        self.ui.b3_ShiftCurves.clicked.connect(self.b3_ShiftAllCurves)
         self.ui.b3_doCutFit.clicked.connect(self.b3Fit)
         self.ui.b3_maxIndentation.clicked.connect(self.b3updMax)
         self.ui.b3_maxForce.clicked.connect(self.b3updMax)
@@ -306,6 +309,17 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.switcher.setCurrentIndex(3)
         self.b4Init()
 
+    def b3_ShiftAllCurves(self):
+        shift=int(self.ui.b3_ShiftValue.value())
+        for s in self.b3['exp']:
+            s.indentation = s.indentation_original
+            s.touch=s.touch_original
+            s.indentation=np.subtract(s.indentation[shift:], s.indentation[shift])
+            s.touch=np.subtract(s.touch[shift:], s.touch[shift])
+            #s.indentation_shifted= np.subtract(s.indentation, shift)
+        self.b3Init()
+        self.b3Fit()
+
     def b3Fit(self):
         if self.ui.b3_maxIndentation.isChecked():
             for s in self.b3['exp']:
@@ -436,6 +450,8 @@ class curveWindow(QtWidgets.QMainWindow):
                 self.b3['exp'].append(s)
         for s in self.b3['exp']:
             s.indentation,s.touch = engine.calculateIndentation(s)
+            s.indentation_original=s.indentation
+            s.touch_original=s.touch
         self.ui.switcher.setCurrentIndex(2)
         self.b3Init()
 
@@ -448,14 +464,15 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b2_segment.setValue(index - 1)
 
     def b2DeleteAllInvalid(self):
-        for i in reversed(sorted(self.b2_index_invalid)):
-            self.b2['exp'][i].plit.clear()
-            del (self.b2['exp'][i])
-        self.ui.b2_segment.setMaximum(len(self.b2['exp']))
-        self.ui.b2_segment.setValue(0)
-        self.b2_index_invalid=[]
+        self.MakeInvalidInvisible=True
+        # for i, s in enumerate(self.b2['exp']):
+        #     if s.invalid is True:
+        #         self.b2['exp'][i].plit.clear()
+        # self.ui.b2_segment.setMaximum(len(self.b2['exp']))
+        # self.ui.b2_segment.setValue(0)
+        # self.b2_index_invalid=[]
         self.b2_view()
-        print("Deleted all invalid curves!")
+        print("Removed all invalid curves!")
 
     def b2curveClicked(self,cv):
         for i in range(len(self.b2['exp'])):
@@ -467,10 +484,7 @@ class curveWindow(QtWidgets.QMainWindow):
         index = int(self.ui.b2_segment.value())
         for i, s in enumerate(self.b2['exp']):
             if self.ui.b2_vFiltered.isChecked() is True:
-                if s.bol==True:
-                    s.plit.setData(s.z-s.offsetX,s.ffil-s.offsetY)#, pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=1))
-                else:
-                    s.plit.setData(s.z - s.offsetX, s.ffil - s.offsetY)#, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=1))
+                s.plit.setData(s.z-s.offsetX,s.ffil-s.offsetY)
             else:
                 s.plit.setData(s.z,s.f)
             if i==index:
@@ -479,6 +493,8 @@ class curveWindow(QtWidgets.QMainWindow):
                 s.plit.setPen(self.blackPen)
                 if s.invalid is True:
                     s.plit.setPen(self.redPen)
+                    if self.MakeInvalidInvisible==True:
+                        s.plit.setPen(self.nonePen)
 
     def b2Filter(self):
 
