@@ -139,12 +139,18 @@ def ElastoPressure(s,grainstep = 30,scaledistance = 500,maxindentation=9999):
     return s.indentation[IndexDv[1:]],np.array(E)
 
 def Elastography2(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
+    x = s.indentation
+    y = s.touch
+    yi = interp1d(x,y)
+    xx = np.linspace(np.min(x),np.max(x),len(x))
+    yy = yi(xx)
+
     coeff = 3/8/np.sqrt(s.R)
     win = grainstep
     if win%2 == 0:
         win+=1
-    deriv = savgol_filter(s.touch,win,1,delta=s.indentation[1]-s.indentation[0],deriv=1)
-    Ey = coeff*deriv/np.sqrt(s.indentation)
+    deriv = savgol_filter(yy,win,1,delta=xx[1]-xx[0],deriv=1,mode='nearest')
+    Ey = coeff*deriv/np.sqrt(xx)
     Ex = s.indentation
     return Ex[1:],Ey[1:]
 
