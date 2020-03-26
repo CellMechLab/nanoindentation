@@ -152,7 +152,8 @@ def Elastography2(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=
     deriv = savgol_filter(yy,win,1,delta=xx[1]-xx[0],deriv=1,mode='nearest')
     Ey = coeff*deriv/np.sqrt(xx)
     Ex = s.indentation
-    return Ex[1:],Ey[1:]
+    dwin = int((win-1)/2)
+    return Ex[dwin:-dwin],Ey[dwin:-dwin]
 
 def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
     #select one index every grainstep in nm along indentation; works with uneven step as well
