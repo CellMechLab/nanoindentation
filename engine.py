@@ -138,6 +138,16 @@ def ElastoPressure(s,grainstep = 30,scaledistance = 500,maxindentation=9999):
     s.IndexDv = IndexDv
     return s.indentation[IndexDv[1:]],np.array(E)
 
+def Elastography2(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
+    coeff = 3/8/np.sqrt(s.R)
+    win = grainstep
+    if win%2 == 0:
+        win+=1
+    deriv = savgol_filter(s.touch,win,1,delta=s.indentation[1]-s.indentation[0],deriv=1)
+    Ey = coeff*deriv/np.sqrt(s.indentation)
+    Ex = s.indentation
+    return Ex[1:],Ey[1:]
+
 def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
     #select one index every grainstep in nm along indentation; works with uneven step as well
     IndexDv = []  #This will contain the indexes of the slides

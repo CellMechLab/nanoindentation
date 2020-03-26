@@ -200,7 +200,7 @@ class curveWindow(QtWidgets.QMainWindow):
         d0h=[]
 
         for s in self.b3['exp']:  
-            Ex,Ey = engine.Elastography( s,grainstep,scaledistance,maxind)          
+            Ex,Ey = engine.Elastography2( s,grainstep,scaledistance,maxind)          
             if Ex is None:
                 continue
             s.ElastX = Ex
@@ -232,7 +232,9 @@ class curveWindow(QtWidgets.QMainWindow):
             self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars[1]*1e8)/100.0))
             self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars[2])))        
 
-        points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
+        #points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
+        points = pg.PlotDataItem(xmed,ymed*1e9,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 255),width=2))
+
         self.ui.b3_long.addItem( points )  
 
         self.ui.b3_plothist_E0.clear()
