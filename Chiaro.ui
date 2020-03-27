@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1444</width>
+    <width>1607</width>
     <height>866</height>
    </rect>
   </property>
@@ -22,7 +22,7 @@
     <item>
      <widget class="QStackedWidget" name="switcher">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="stackedWidgetPage1">
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
@@ -881,16 +881,10 @@
                </property>
               </widget>
              </item>
-             <item row="3" column="2">
-              <widget class="QSpinBox" name="b3_ShiftValue">
-               <property name="minimum">
-                <number>0</number>
-               </property>
-               <property name="maximum">
-                <number>100000</number>
-               </property>
-               <property name="singleStep">
-                <number>50</number>
+             <item row="3" column="3">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>nm</string>
                </property>
               </widget>
              </item>
@@ -901,6 +895,19 @@
                </property>
               </widget>
              </item>
+             <item row="3" column="2">
+              <widget class="QSpinBox" name="b3_ShiftValue">
+               <property name="minimum">
+                <number>-99999</number>
+               </property>
+               <property name="maximum">
+                <number>99999</number>
+               </property>
+               <property name="singleStep">
+                <number>50</number>
+               </property>
+              </widget>
+             </item>
              <item row="3" column="1">
               <widget class="QLabel" name="label">
                <property name="text">
@@ -908,14 +915,113 @@
                </property>
               </widget>
              </item>
-             <item row="3" column="3">
-              <widget class="QLabel" name="label_2">
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="ShiftArray">
+            <property name="title">
+             <string>Shift Array (normalized individually, data starting from dash depth)</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_3">
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_5">
                <property name="text">
-                <string>nm</string>
+                <string>Max Shift</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="2">
+              <widget class="QLineEdit" name="b3_ShiftArrayFile">
+               <property name="text">
+                <string>test</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>file name</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QSpinBox" name="b3_ShiftArrayMax">
+               <property name="minimum">
+                <number>-99999</number>
+               </property>
+               <property name="maximum">
+                <number>99999</number>
+               </property>
+               <property name="singleStep">
+                <number>10</number>
+               </property>
+               <property name="value">
+                <number>500</number>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="3">
+              <widget class="QPushButton" name="b3_CreateCpShiftArray">
+               <property name="text">
+                <string>Create CP shift array</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>Min Shift</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_6">
+               <property name="text">
+                <string>Step Size</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="QSpinBox" name="b3_ShiftArrayMin">
+               <property name="minimum">
+                <number>-99999</number>
+               </property>
+               <property name="maximum">
+                <number>99999</number>
+               </property>
+               <property name="singleStep">
+                <number>10</number>
+               </property>
+               <property name="value">
+                <number>-500</number>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="2">
+              <widget class="QSpinBox" name="b3_ShiftArrayStep">
+               <property name="maximum">
+                <number>99999</number>
+               </property>
+               <property name="singleStep">
+                <number>10</number>
+               </property>
+               <property name="value">
+                <number>100</number>
                </property>
               </widget>
              </item>
             </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="b3_ShiftArrayImage">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="pixmap">
+             <pixmap>out.png</pixmap>
+            </property>
            </widget>
           </item>
           <item>

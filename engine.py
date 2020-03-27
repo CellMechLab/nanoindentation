@@ -170,11 +170,11 @@ def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mod
 
     #Define step0 and calculate Adash and Edash for rescaling E
     step0 = np.argmin(np.abs(self.indentation[IndexDv] - scaledistance))
-    Adash = np.trapz(self.touch[IndexDv[0]:IndexDv[step0+1]],self.indentation[IndexDv[0]:IndexDv[step0+1]])
-    Edash = fitHertz(self,x=self.indentation[IndexDv[0]:IndexDv[step0+1]],y=self.touch[IndexDv[0]:IndexDv[step0+1]])
+    Adash = np.trapz(self.touch[IndexDv[0]:IndexDv[step0]],self.indentation[IndexDv[0]:IndexDv[step0]])
+    Edash = fitHertz(self,x=self.indentation[IndexDv[0]:IndexDv[step0]],y=self.touch[IndexDv[0]:IndexDv[step0]])
     if Edash is None:
         return None,None
-    Omega = Edash*(step0+1)**(5/2)/Adash
+    Omega = Edash*(step0)**(5/2)/Adash
     Ey = Omega*Area/theta #NB: Ey is in internal units
 
     return Ex,Ey
@@ -221,8 +221,12 @@ def calculateIndentation(s):
     iContact = np.argmin( (z**2) )
 
     Yf=f[iContact:]
-    if min(Yf)<0:
-        Yf=Yf-min(Yf)
+    # if min(Yf)<0:
+    #     #Yf=Yf-min(Yf)
+    #     for i, x in enumerate(Yf):
+    #         if x < 0:
+    #             print(x)
+    #             Yf[i] = 0
     Xf=z[iContact:]
     indentation=Xf-Yf/s.k
     touch=Yf

@@ -153,6 +153,29 @@ class CropCurves(uiPanel):
 
         return [ ['Crop Length Front', self.CropStart],['Crop Length End', self.CropEnd]]
 
+# class ShiftArray(uiPanel):
+#     def setUi(self):
+#         self.setWindowTitle("Create elastography array for shifted CPs")
+#
+#         self.MinShift = QtWidgets.QSpinBox()
+#         self.MinShift.setMinimum(-99999)
+#         self.MinShiftt.setMaximum(99999)
+#         self.MinShift.setValue(-500)
+#
+#         self.MaxShift = QtWidgets.QSpinBox()
+#         self.MaxShift.setMinimum(-99999)
+#         self.MaxShift.setMaximum(99999)
+#         self.MaxShift.setValue(1500)
+#
+#         self.StepSize = QtWidgets.QSpinBox()
+#         self.StepSize.setMinimum(-99999)
+#         self.StepSize.setMaximum(99999)
+#         self.StepSize.setValue(50)
+
+
+
+        return [ ['Crop Length Front', self.CropStart],['Crop Length End', self.CropEnd]]
+
 class Fakedata(uiPanel):
     def setUi(self):
         self.setWindowTitle("Fake data generator")
