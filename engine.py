@@ -138,6 +138,23 @@ def ElastoPressure(s,grainstep = 30,scaledistance = 500,maxindentation=9999):
     s.IndexDv = IndexDv
     return s.indentation[IndexDv[1:]],np.array(E)
 
+def Elastography2(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
+    x = s.indentation
+    y = s.touch
+    yi = interp1d(x,y)
+    xx = np.linspace(np.min(x),np.max(x),len(x))
+    yy = yi(xx)
+
+    coeff = 3/8/np.sqrt(s.R)
+    win = grainstep
+    if win%2 == 0:
+        win+=1
+    deriv = savgol_filter(yy,win,1,delta=xx[1]-xx[0],deriv=1,mode='nearest')
+    Ey = coeff*deriv/np.sqrt(xx)
+    Ex = s.indentation
+    dwin = int((win-1)/2)
+    return Ex[dwin:-dwin],Ey[dwin:-dwin]
+
 def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
     #select one index every grainstep in nm along indentation; works with uneven step as well
     IndexDv = []  #This will contain the indexes of the slides
@@ -162,7 +179,7 @@ def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mod
         theta.append((j+1)**(5/2)-(j)**(5/2))
         x1 = self.indentation[IndexDv[j]]
         x2 = self.indentation[IndexDv[j+1]]            
-        alpha= 0.5
+        alpha= 0.75     #This coefficient sets whether to use the first (0), last (1) or any intermediate point for the x of the slice
         Ex.append(x1+alpha*(x2-x1))
 
     Area = np.array(Area)
