@@ -142,7 +142,7 @@ def Elastography2(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=
     x = s.indentation
     y = s.touch
     yi = interp1d(x,y)
-    xx = np.linspace(np.min(x),np.max(x),len(x))
+    xx = np.linspace(np.min(x)+1,np.max(x),len(x))
     yy = yi(xx)
 
     coeff = 3/8/np.sqrt(s.R)
@@ -151,7 +151,7 @@ def Elastography2(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=
         win+=1
     deriv = savgol_filter(yy,win,1,delta=xx[1]-xx[0],deriv=1,mode='nearest')
     Ey = coeff*deriv/np.sqrt(xx)
-    Ex = s.indentation
+    Ex = list(s.indentation)
     dwin = int((win-1)/2)
     return Ex[dwin:-dwin],Ey[dwin:-dwin]
 

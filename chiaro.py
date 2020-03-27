@@ -203,7 +203,8 @@ class curveWindow(QtWidgets.QMainWindow):
         d0h=[]
 
         for s in self.b3['exp']:  
-            Ex,Ey = engine.Elastography2( s,grainstep,scaledistance,maxind)          
+            Ex,Ey = engine.Elastography2( s,grainstep,scaledistance,maxind)
+            #print(type(Ex), type(Ey), len(Ex), len(Ey), type(Ex[0]), type(Ey[0]))
             if Ex is None:
                 continue
             s.ElastX = Ex
@@ -354,7 +355,7 @@ class curveWindow(QtWidgets.QMainWindow):
         Exs=[]
         Eys=[]
         Eys_norm=[]
-        #start_norm=int(self.scaledistance/self.grainstep)-1
+        len_Ey_norm=[]
         folder=str(os.path.dirname(os.path.abspath(__file__)))
         fname =folder + '\ArrayData' + '\ArrayData_' + file + '.csv'
         header=['shift', 'E0', 'Eb', 'd0', 'Ex','Ey']
@@ -363,25 +364,30 @@ class curveWindow(QtWidgets.QMainWindow):
             wr.writerow(header)
             for shift in shifts:
                 self.b3_ShiftAllCurves(shift)
-                Earrays.append(self.Earray)
-                E0s.append(self.E0h)
-                Ebs.append(self.Ebh)
-                d0s.append(self.d0h)
-                Exs.append(self.xmed)
-                Eys.append(self.ymed)
+                print(any(engine.np.isnan(self.ymed)))
+                tosave_i=[shift, self.E0h, self.Ebh, self.d0h, list(self.xmed), list(self.ymed)]
+                wr.writerow(tosave_i)
                 start_norm = int(float(self.ui.b4_elDash.value()) / int(self.ui.b4_elIncrement.value())) - 1
                 ymed_min=min(self.ymed[start_norm:])
                 ymed_max=max(self.ymed[start_norm:])
                 ymed_norm=[]
+                ymed_norm_means=[]
                 for y in self.ymed[start_norm:]:
-                    ymed_norm_i=(y-ymed_min)/(ymed_max-ymed_min)
+                    ymed_norm_i=float((y-ymed_min)/(ymed_max-ymed_min))
                     for i in range(10):
                         ymed_norm.append(ymed_norm_i)
+                if len(ymed_norm) > 1000:
+                    for i in range(0, len(ymed_norm)-1, 200):
+                        ymed_norm_i=engine.np.mean(ymed_norm[i:i+1])
+                        ymed_norm_means.append(ymed_norm_i)
+                    ymed_norm=ymed_norm_means
                 #ymed_norm=[(y-ymed_min)/(ymed_max-ymed_min) for y in self.ymed]
                 for i in range(10):
-                    Eys_norm.append(engine.np.asarray(ymed_norm))
-                tosave_i=[shift, self.E0h, self.Ebh, self.d0h, list(self.xmed), list(self.ymed)]
-                wr.writerow(tosave_i)
+                    Eys_norm.append(ymed_norm)#engine.np.asarray(ymed_norm))
+                    len_Ey_norm.append(len(ymed_norm))
+        min_len=min(len_Ey_norm)
+        for i,x in enumerate(Eys_norm):
+            Eys_norm[i]=Eys_norm[i][:min_len]
         imname = folder + '\ArrayData' + '\ArrayData_' + file + '.png'
         plt.imsave(imname, engine.np.asarray(Eys_norm), cmap=cm.jet)
         self.ui.b3_ShiftArrayImage.setPixmap(QtGui.QPixmap(imname))
