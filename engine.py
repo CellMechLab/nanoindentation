@@ -41,7 +41,7 @@ class bsegment(object):
         self.IndexDv = None   #aux indices
         self.E = None
 
-def getMedCurve(xar,yar,loose = True,threshold=10):
+def getMedCurve(xar,yar,loose = True,threshold=5):
     if loose is False:
         xmin = -np.inf
         xmax = np.inf
@@ -285,6 +285,26 @@ def calculateNoise(segments,win=101):
         remainders = s.ffil-savgol_filter(s.ffil, window_length=win, polyorder=1, deriv=0)
         err.append(np.max(remainders[d:-d]))
     return np.max(err)
+
+def getEEE(s,win,threshold):
+    if win%2==0:
+        win+=1
+    try:
+        pdot = savgol_filter(s.f,polyorder=1,deriv=1,window_length=win)
+    except:
+        return 0,0
+    return pdot/(1-pdot/s.k)
+    
+def eeffOffset(s,win,threshold):
+    quot = getEEE(s,win,threshold)
+    jj=len(quot)
+    for j in range(len(quot)-1,1,-1):
+        if quot[j]>threshold and quot[j-1]<threshold:
+            jj=j
+            break
+    oX = s.z[jj]
+    oY = s.f[jj]    #it might be extended to use a little average of F around point jj
+    return oX,oY
 
 def chiaroOffset(s,ncMin=500,ncMax=2500,offset=0,win1 = 19, win2 = 99):
     iMin = np.argmin((s.z-ncMin)**2)

@@ -227,6 +227,10 @@ class curveWindow(QtWidgets.QMainWindow):
                 cdown = 10        
         
         xmed,ymed = engine.getMedCurve(xx,yy,loose = True)
+        #points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
+        points = pg.PlotCurveItem(xmed,ymed*1e9,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 255,200),width=2))
+        self.ui.b3_long.plotItem.addItem( points )  
+
         if any(engine.np.isnan(xmed))== False and any(engine.np.isnan(ymed))==False:
             self.xmed=xmed
             self.ymed=ymed
@@ -245,10 +249,7 @@ class curveWindow(QtWidgets.QMainWindow):
             self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars[1]*1e8)/100.0))
             self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars[2])))        
 
-        #points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
-        points = pg.PlotDataItem(xmed,ymed*1e9,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 255),width=2))
-
-        self.ui.b3_long.addItem( points )  
+        
 
         self.ui.b3_plothist_E0.clear()
         self.ui.b3_plothist_Eb.clear()
@@ -494,9 +495,12 @@ class curveWindow(QtWidgets.QMainWindow):
             s.plit = plit
             plit.segment = s
             plit.sigClicked.connect(self.b2curveClicked)
-            s.bol = None
             s.bol_deriv = None
             s.invalid = False
+            s.bol=True
+            s.x_CPderiv=[0]
+            s.y_CPderiv=[0]
+            s.threshold_exp = 0
         self.b2_view()        
         self.ui.b2_Alpha.setValue(self.ui.b1_Alpha.value())
         
@@ -547,6 +551,7 @@ class curveWindow(QtWidgets.QMainWindow):
                 self.b3['exp'].append(s)
         for s in self.b3['exp']:
             s.indentation,s.touch = engine.calculateIndentation(s)
+            s.offsetX_original=s.offsetX
             # s.indentation_original=s.indentation
             # s.touch_original=s.touch
         self.ui.switcher.setCurrentIndex(2)
@@ -643,13 +648,21 @@ class curveWindow(QtWidgets.QMainWindow):
                     s.offsetX, s.offsetY = f(s, *p)
                     if (s.offsetX, s.offsetY) == (0,0):
                         s.invalid = True
-
-            self.b2_index_invalid = []
-            s.bol=True
-            s.x_CPderiv=[0]
-            s.y_CPderiv=[0]
-
-        if self.ui.comboContact.currentText()=='Nanosurf':
+        elif self.ui.comboContact.currentText()=='eeff':
+            a = panels.eeffPoint()
+            a.setSegment(self.b2['exp'][0])
+            if a.exec()==0:
+                return
+            p = a.getParams()
+            f = a.getCall()
+            QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+            if f is not None:
+                for s in self.b2['exp']:
+                    s.invalid = False
+                    s.offsetX, s.offsetY = f(s, *p)
+                    if (s.offsetX, s.offsetY) == (0,0):
+                        s.invalid = True
+        elif self.ui.comboContact.currentText()=='Nanosurf':
             a = panels.NanosurfPoint()
             if a.exec()==0:
                 return
@@ -668,8 +681,7 @@ class curveWindow(QtWidgets.QMainWindow):
                         s.bol2=None
                     if s.bol is False or s.bol2 is False:
                         s.invalid = True
-
-        if self.ui.comboContact.currentText()=='Nanosurf Deriv':
+        elif self.ui.comboContact.currentText()=='Nanosurf Deriv':
             a = panels.NanosurfPointDeriv()
             if a.exec()==0:
                 return

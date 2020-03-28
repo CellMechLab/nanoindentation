@@ -1,4 +1,5 @@
 from PyQt5 import QtWidgets
+import pyqtgraph as pg
 import engine
 
 class uiPanel(QtWidgets.QDialog):
@@ -29,6 +30,45 @@ class contactPoint(uiPanel):
         return []
     def getCall(self):
         return max
+
+class eeffPoint(contactPoint):
+    def setSegment(self,s):
+        self.s = s
+        self.curve = pg.PlotCurveItem( s.z,s.z,pen=pg.mkPen(pg.QtGui.QColor(0, 0, 255, 255), width=2))
+        self.plot.addItem( self.curve )
+        self.updatePlot()
+
+    def updatePlot(self):
+        self.curve.setData(self.s.z,1000.0*engine.getEEE(self.s,int(self.minY.value()),float(self.offset.value())/1000.0))
+
+    def setUi(self):
+        self.setWindowTitle("Eeff contact point")
+
+        self.minY = QtWidgets.QSpinBox()
+        self.minY.setMinimum(0)
+        self.minY.setMaximum(9999)
+        self.minY.setValue(500)
+        self.minY.setSingleStep(100)
+
+        self.offset = QtWidgets.QDoubleSpinBox()
+        self.offset.setMinimum(-10)
+        self.offset.setMaximum(10)
+        self.offset.setDecimals(2)
+        self.offset.setValue(0.40)
+        self.offset.setSingleStep(0.1)
+
+        self.plot = pg.PlotWidget()
+
+        self.minY.valueChanged.connect(self.updatePlot)
+        self.offset.valueChanged.connect(self.updatePlot)
+
+        return[ ['Window length',self.minY],['Threshold',self.offset],['Preview',self.plot]]
+
+    def getParams(self):
+        return[ int(self.minY.value()),float(self.offset.value())/1000.0]
+
+    def getCall(self):
+        return engine.eeffOffset
 
 class chiaroPoint(contactPoint):
     def setUi(self):

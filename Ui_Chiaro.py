@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'Chiaro.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.1
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -281,6 +279,7 @@ class Ui_MainWindow(object):
         self.comboContact = QtWidgets.QComboBox(self.groupBox_4)
         self.comboContact.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         self.comboContact.setObjectName("comboContact")
+        self.comboContact.addItem("")
         self.comboContact.addItem("")
         self.comboContact.addItem("")
         self.comboContact.addItem("")
@@ -626,7 +625,8 @@ class Ui_MainWindow(object):
         self.groupBox_4.setTitle(_translate("MainWindow", "Contact point"))
         self.comboContact.setItemText(0, _translate("MainWindow", "Nanosurf Deriv"))
         self.comboContact.setItemText(1, _translate("MainWindow", "Nanosurf"))
-        self.comboContact.setItemText(2, _translate("MainWindow", "Chiaro"))
+        self.comboContact.setItemText(2, _translate("MainWindow", "eeff"))
+        self.comboContact.setItemText(3, _translate("MainWindow", "Chiaro"))
         self.b2_doContactPoint.setText(_translate("MainWindow", "Execute"))
         self.b2_doContactPoint.setShortcut(_translate("MainWindow", "Ctrl+C"))
         self.groupBox_15.setTitle(_translate("MainWindow", "Elastography"))
@@ -672,4 +672,5 @@ class Ui_MainWindow(object):
         self.b3_save.setShortcut(_translate("MainWindow", "Ctrl+S"))
         self.b3_doExport2.setText(_translate("MainWindow", "Export Bilayer"))
         self.b3_doExport2.setShortcut(_translate("MainWindow", "Ctrl+E, Ctrl+B"))
+
 from pyqtgraph import PlotWidget

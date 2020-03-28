@@ -557,6 +557,11 @@
                </item>
                <item>
                 <property name="text">
+                 <string>eeff</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
                  <string>Chiaro</string>
                 </property>
                </item>
