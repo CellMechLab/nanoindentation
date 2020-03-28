@@ -348,12 +348,6 @@ class curveWindow(QtWidgets.QMainWindow):
         step_shift = int(self.ui.b3_ShiftArrayStep.value())
         file=str(self.ui.b3_ShiftArrayFile.text())
         shifts=range(min_shift,max_shift+step_shift,step_shift)
-        Earrays=[]
-        E0s=[]
-        Ebs=[]
-        d0s=[]
-        Exs=[]
-        Eys=[]
         Eys_norm=[]
         len_Ey_norm=[]
         folder=str(os.path.dirname(os.path.abspath(__file__)))
@@ -501,6 +495,7 @@ class curveWindow(QtWidgets.QMainWindow):
             plit.segment = s
             plit.sigClicked.connect(self.b2curveClicked)
             s.bol = None
+            s.bol_deriv = None
             s.invalid = False
         self.b2_view()        
         self.ui.b2_Alpha.setValue(self.ui.b1_Alpha.value())
@@ -521,12 +516,16 @@ class curveWindow(QtWidgets.QMainWindow):
         self.b2['plit2a'].setData([0,0],[0,1], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
         self.b2['plit2b'] = pg.PlotCurveItem(clickable=True)
         self.b2['plit2b'].setData([0, 0], [0, 1], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
+        self.b2['plit2c'] = pg.PlotCurveItem(clickable=True)
+        self.b2['plit2c'].setData([0, 0], [0, 1], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
         self.ui.b2_plot_one.plotItem.addItem(self.b2['plit1a'])
         self.ui.b2_plot_one.plotItem.addItem(self.b2['plit1b'])
         self.ui.b2_plot_one.plotItem.addItem(self.b2['plit1c'])
         self.ui.b2_plot_two.plotItem.addItem(self.b2['plit2'])
         self.ui.b2_plot_two.plotItem.addItem(self.b2['plit2a'])
         self.ui.b2_plot_two.plotItem.addItem(self.b2['plit2b'])
+        self.ui.b2_plot_two.plotItem.addItem(self.b2['plit2c'])
+
 
 
         QtWidgets.QApplication.restoreOverrideCursor()
@@ -657,7 +656,6 @@ class curveWindow(QtWidgets.QMainWindow):
             p = a.getParams()
             f = a.getCall()
             QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-            self.b2_index_invalid=[]
             if f is not None:
                 for s in self.b2['exp']:
                     s.invalid = False
@@ -669,6 +667,26 @@ class curveWindow(QtWidgets.QMainWindow):
                     else:
                         s.bol2=None
                     if s.bol is False or s.bol2 is False:
+                        s.invalid = True
+
+        if self.ui.comboContact.currentText()=='Nanosurf Deriv':
+            a = panels.NanosurfPointDeriv()
+            if a.exec()==0:
+                return
+            p = a.getParams()
+            f = a.getCall()
+            QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+            if f is not None:
+                for s in self.b2['exp']:
+                    s.invalid = False
+                    s.bol_deriv, s.offsetX, s.offsetY, s.z0s, s.ymax, s.x_slopes, s.slopes = f(s,*p)
+                    s.offsetX_original=s.offsetX
+                    s.offsetY_original=s.offsetY
+                    # if s.bol_deriv is True:
+                    #     s.bol2=engine.Nanosurf_FindInvalidCurves(s, p[-1])
+                    # else:
+                    #     s.bol2=None
+                    if s.bol_deriv is False:# or s.bol2 is False:
                         s.invalid = True
 
         QtWidgets.QApplication.restoreOverrideCursor()
@@ -700,6 +718,12 @@ class curveWindow(QtWidgets.QMainWindow):
         if s.bol is not None:
             self.b2['plit2'].setData(s.x_CPderiv - s.offsetX, s.y_CPderiv,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 0,255),width=1))
             self.b2['plit2b'].setData([min(s.x_CPderiv - s.offsetX), max(s.x_CPderiv - s.offsetX)],[s.threshold_exp, s.threshold_exp], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
+        if s.bol_deriv is not None:
+            self.b2['plit2'].setData(s.z0s - s.offsetX, s.ymax,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 0,255),width=1))
+            self.b2['plit2a'].setData([0, 0], [min(s.ymax), max(s.ymax)], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
+            self.b2['plit2b'].setData([min(s.z0s - s.offsetX), max(s.z0s - s.offsetX)],[s.threshold_slopes, s.threshold_slopes], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
+            slopes=engine.np.asarray(s.slopes)*10000
+            self.b2['plit2c'].setData(s.x_slopes - s.offsetX, slopes, pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=1))
         else:
             self.b2['plit2'].setData(s.z - s.offsetX, s.f - s.offsetY)
         self.b2_view()

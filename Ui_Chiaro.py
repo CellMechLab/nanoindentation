@@ -279,7 +279,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_10 = QtWidgets.QVBoxLayout(self.groupBox_4)
         self.verticalLayout_10.setObjectName("verticalLayout_10")
         self.comboContact = QtWidgets.QComboBox(self.groupBox_4)
+        self.comboContact.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         self.comboContact.setObjectName("comboContact")
+        self.comboContact.addItem("")
         self.comboContact.addItem("")
         self.comboContact.addItem("")
         self.verticalLayout_10.addWidget(self.comboContact)
@@ -576,7 +578,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.switcher.setCurrentIndex(2)
+        self.switcher.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -622,8 +624,9 @@ class Ui_MainWindow(object):
         self.b2_doFilter.setText(_translate("MainWindow", "Filter"))
         self.b2_doFilter.setShortcut(_translate("MainWindow", "Ctrl+F"))
         self.groupBox_4.setTitle(_translate("MainWindow", "Contact point"))
-        self.comboContact.setItemText(0, _translate("MainWindow", "Nanosurf"))
-        self.comboContact.setItemText(1, _translate("MainWindow", "Chiaro"))
+        self.comboContact.setItemText(0, _translate("MainWindow", "Nanosurf Deriv"))
+        self.comboContact.setItemText(1, _translate("MainWindow", "Nanosurf"))
+        self.comboContact.setItemText(2, _translate("MainWindow", "Chiaro"))
         self.b2_doContactPoint.setText(_translate("MainWindow", "Execute"))
         self.b2_doContactPoint.setShortcut(_translate("MainWindow", "Ctrl+C"))
         self.groupBox_15.setTitle(_translate("MainWindow", "Elastography"))

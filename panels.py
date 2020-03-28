@@ -115,6 +115,51 @@ class NanosurfPoint(contactPoint):
         return engine.NanosurfOffset
 
 
+class NanosurfPointDeriv(contactPoint):
+    def setUi(self):
+        self.setWindowTitle("Nanosurf contact point")
+
+        self.win = QtWidgets.QSpinBox()
+        self.win.setMinimum(0)
+        self.win.setMaximum(99999)
+        self.win.setValue(100)
+
+        self.step_z = QtWidgets.QSpinBox()
+        self.step_z.setMinimum(0)
+        self.step_z.setMaximum(99999)
+        self.step_z.setValue(50)
+
+        self.factor = QtWidgets.QSpinBox()
+        self.factor.setMinimum(0)
+        self.factor.setMaximum(999)
+        self.factor.setValue(2)
+
+        self.threshold_slopes = QtWidgets.QDoubleSpinBox()
+        self.threshold_slopes.setMinimum(0)
+        self.threshold_slopes.setMaximum(1)
+        self.threshold_slopes.setDecimals(3)
+        self.threshold_slopes.setValue(0.200)
+
+        self.threshold_len_straight = QtWidgets.QSpinBox()
+        self.threshold_len_straight.setMinimum(0)
+        self.threshold_len_straight.setMaximum(10000)
+        self.threshold_len_straight.setValue(1000)
+
+        self.threshold_invalid = QtWidgets.QDoubleSpinBox()
+        self.threshold_invalid.setMinimum(0)
+        self.threshold_invalid.setMaximum(10000)
+        self.threshold_invalid.setDecimals(2)
+        self.threshold_invalid.setValue(5.00)
+
+        return[ ['Derivative Window',self.win],['Step Size',self.step_z],['Multiply step for slope',self.factor],['CP Threshold of Slope',self.threshold_slopes],['Min Straight before CP',self.threshold_len_straight], ['Threshold for invalidity in linear region [nN]', self.threshold_invalid]]
+
+    def getParams(self):
+        return[ int(self.win.value()),int(self.step_z.value()),int(self.factor.value()),float(self.threshold_slopes.value()), float(self.threshold_len_straight.value()), float(self.threshold_invalid.value())]
+
+    def getCall(self):
+        return engine.NanosurfOffsetDeriv
+
+
 class FilterData(uiPanel):
     def setUi(self):
         self.setWindowTitle("Filter parameters")

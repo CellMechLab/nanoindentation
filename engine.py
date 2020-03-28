@@ -4,6 +4,7 @@ from scipy.signal import find_peaks
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
 from scipy.signal import savgol_filter
+from matplotlib import pyplot as plt
 
 class bsegment(object):
     def __init__(self,s=None,x=None,y=None):
@@ -382,6 +383,92 @@ def NanosurfOffset(s, step=50, length=500, threshold_exp = 0.1, threshold_len_st
     offsetX=s.z[imax_exp]
     offsetY=s.ffil[imax_exp]
     return bol,offsetX,offsetY, z_exps, exps_norm
+
+
+def NanosurfOffsetDeriv(s, win=1000, step_z=50, factor=5, threshold_slopes=0.2, threshold_len_straight=1000, threshold_invalid=10):
+    ymax=[]
+    xz0=[]
+    z=s.z-min(s.z)
+    P = s.f - min(s.f) + 10
+    coeff = 3 / 8 / np.sqrt(s.R)
+    if win % 2 == 0:
+        win += 1
+    pdot = savgol_filter(P, win, 1, delta=z[1] - z[0], deriv=1, mode="interp")
+    blob = pdot / (1 - pdot / s.k)
+
+    z0s=np.linspace(int(min(z)), int(max(z)-step_z), int((max(z)-min(z))/step_z))
+    for z0_i in z0s:
+        down = np.sqrt(abs(z - z0_i - P / s.k))
+        E= coeff * blob / down
+        ind, i0 = IndentationForDerivative(s, z0_i)
+        y= E[i0:] * 1e9
+        if len(y)<10:
+            bol=False
+            pass
+        else:
+            xz0.append(z0_i)
+            ymax.append(np.median(y[5:25]))
+
+    x_slopes=[]
+    slopes=[]
+    for i,x in enumerate(z0s[:-(factor+1)]):
+        x=int(x)
+        x_part=z0s[i:(i+factor)]
+        y_part=ymax[i:(i+factor)]
+        slope=np.polyfit(x_part, y_part, 1)[0]
+        slopes.append(slope)
+        x_slopes.append(x)
+
+    min_slopes=min(slopes)
+    max_slopes=max(slopes)
+    slopes_norm=[(x-min_slopes)/(max_slopes-min_slopes) for x in slopes]
+    s.threshold_slopes=threshold_slopes
+    above_threshold=[]
+    firsts=[]
+    m=0
+    for i,x in enumerate(reversed(slopes_norm)):
+        if x > threshold_slopes:
+            above_threshold.append(i)
+            m=m+1
+            if m>2:
+                if i-above_threshold[-2]>1:
+                    firsts.append(above_threshold[-2])
+    if len(firsts)<1:
+        bol=False
+        ind_z0s=0
+    else:
+        ind_z0s=firsts[0]
+    z0_CP=x_slopes[ind_z0s]
+    ind_CP=np.argmin(np.abs(s.z-z0_CP))
+
+    bol = True
+    if ind_CP < threshold_len_straight:
+        bol = False
+    if ind_CP == 0:
+        bol = False
+
+    offsetX=s.z[ind_CP]
+    print(offsetX)
+    offsetY=s.f[ind_CP]
+
+    return bol, offsetX, offsetY, xz0, ymax, x_slopes, slopes_norm
+
+def P_derivative(s, z0=0, win=20, savgol_mode='interp'):
+    z = s.z-min(s.z)
+    P = s.f-min(s.f)+10
+    coeff = 3 / 8 / np.sqrt(s.R)
+    down = np.sqrt(abs(z - z0 - P / s.k))
+    if win % 2 == 0:
+        win += 1
+    pdot = savgol_filter(P, win, 1, delta=z[1] - z[0], deriv=1, mode=savgol_mode)
+    blob = pdot / (1 - pdot / s.k)
+    return coeff * blob / down
+
+def IndentationForDerivative(s, z0=0):
+    z=s.z-min(s.z)
+    i0 = np.argmin((z - z0) ** 2)
+    ind = z[i0:] - z0 - s.f[i0:] / s.k
+    return ind, i0
 
 def Nanosurf_FindInvalidCurves(s, threshold_invalid=10):
     s.bol2=None

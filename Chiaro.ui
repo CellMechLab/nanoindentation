@@ -22,7 +22,7 @@
     <item>
      <widget class="QStackedWidget" name="switcher">
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="stackedWidgetPage1">
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
@@ -542,6 +542,14 @@
             <layout class="QVBoxLayout" name="verticalLayout_10">
              <item>
               <widget class="QComboBox" name="comboContact">
+               <property name="sizeAdjustPolicy">
+                <enum>QComboBox::AdjustToContents</enum>
+               </property>
+               <item>
+                <property name="text">
+                 <string>Nanosurf Deriv</string>
+                </property>
+               </item>
                <item>
                 <property name="text">
                  <string>Nanosurf</string>
