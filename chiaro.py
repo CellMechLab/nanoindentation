@@ -328,13 +328,13 @@ class curveWindow(QtWidgets.QMainWindow):
         self.b4Init()
 
     def b3_ShiftAllCurves(self, shift=None):
-        if shift==False:
+        if shift is None:
             shift=int(self.ui.b3_ShiftValue.value())
-        print('shift: ', shift)
         self.shift=shift
+        #changed the way this works!!!
         for s in self.b3['exp']:
-            s.offsetX=s.offsetX_original
-            s.offsetY=s.offsetY_original
+            #s.offsetX=s.offsetX_original
+            #s.offsetY=s.offsetY_original
             s.offsetX=s.offsetX+shift
             ind=engine.np.argmin(engine.np.abs(s.z - s.offsetX))
             s.offsetY=s.ffil[ind]

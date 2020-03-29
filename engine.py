@@ -290,20 +290,23 @@ def getEEE(s,win,threshold):
     if win%2==0:
         win+=1
     try:
-        pdot = savgol_filter(s.f,polyorder=1,deriv=1,window_length=win)
+        pdot = savgol_filter(s.ffil,polyorder=1,deriv=1,window_length=win)
     except:
         return 0,0
     return pdot/(1-pdot/s.k)
     
 def eeffOffset(s,win,threshold):
     quot = getEEE(s,win,threshold)
-    jj=len(quot)
+    jj=0
     for j in range(len(quot)-1,1,-1):
         if quot[j]>threshold and quot[j-1]<threshold:
             jj=j
             break
     oX = s.z[jj]
-    oY = s.f[jj]    #it might be extended to use a little average of F around point jj
+    oY = s.ffil[jj]
+    if jj>4 and jj<len(s.z)-4:
+        oX = np.average(s.z[jj-4:jj+4])
+        oY = np.average(s.ffil[jj-4:jj+4])    #it might be extended to use a little average of F around point jj
     return oX,oY
 
 def chiaroOffset(s,ncMin=500,ncMax=2500,offset=0,win1 = 19, win2 = 99):

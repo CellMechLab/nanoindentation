@@ -51,8 +51,8 @@ class eeffPoint(contactPoint):
         self.minY.setSingleStep(100)
 
         self.offset = QtWidgets.QDoubleSpinBox()
-        self.offset.setMinimum(-10)
-        self.offset.setMaximum(10)
+        self.offset.setMinimum(-100)
+        self.offset.setMaximum(100)
         self.offset.setDecimals(2)
         self.offset.setValue(0.40)
         self.offset.setSingleStep(0.1)
