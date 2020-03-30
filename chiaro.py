@@ -522,7 +522,9 @@ class curveWindow(QtWidgets.QMainWindow):
         self.b2['plit2c'] = pg.PlotCurveItem(clickable=True)
         self.b2['plit2c'].setData([0, 0], [0, 1], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
         self.b2['plit3'] = pg.PlotCurveItem(clickable=True)
-        self.b2['plit3'].setData(s.z, s.f, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=1))
+        self.b2['plit3'].setData(s.z, s.f, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=2))
+        self.b2['plit3b'] = pg.PlotCurveItem()
+        self.b2['plit3b'].setData(s.z, s.f, pen=pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=1))
 
         self.ui.b2_plot_one.plotItem.addItem(self.b2['plit1a'])
         self.ui.b2_plot_one.plotItem.addItem(self.b2['plit1b'])
@@ -533,6 +535,7 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b2_plot_two.plotItem.addItem(self.b2['plit2c'])
         self.ui.b2_plot_two.plotItem.addItem(self.b2['plit2c'])
         self.ui.b2_plot_three.plotItem.addItem(self.b2['plit3'])
+        self.ui.b2_plot_three.plotItem.addItem(self.b2['plit3b'])
 
 
         QtWidgets.QApplication.restoreOverrideCursor()
@@ -563,13 +566,14 @@ class curveWindow(QtWidgets.QMainWindow):
 
     def b2_Alistography(self, fit=False):
         self.ui.b2_plot_elasto.plotItem.clear()
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-
-        progress = QtWidgets.QProgressDialog("Performing elastography ...", "Cancel E-analysis", 0, len(self.b4['exp']))
+        
         a = panels.b2_Elasto()
         if a.exec() == 0:
             return
         grainstep, scaledistance, maxind  = a.getParams()
+        
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        #progress = QtWidgets.QProgressDialog("Performing elastography ...", "Cancel E-analysis", 0, len(self.b4['exp']))
 
         cdown = 10
         xx = []
@@ -605,7 +609,7 @@ class curveWindow(QtWidgets.QMainWindow):
                 elit.sigClicked.connect(self.b2curveClicked)
                 elit.segment = s
                 s.elit=elit
-                progress.setValue(progress.value() + 1)
+                #progress.setValue(progress.value() + 1)
                 cdown -= 1
                 if cdown == 0:
                     QtCore.QCoreApplication.processEvents()
@@ -833,12 +837,15 @@ class curveWindow(QtWidgets.QMainWindow):
                 self.b2['plit2'].setData(s.z - s.offsetX, s.quot, pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=1))
         if s.ElastX != None:
             if s.E0>s.Eb:
-                self.b2['plit3'].setData(s.ElastX, s.ElastY*1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=1))
+                self.b2['plit3'].setData(s.ElastX, s.ElastY*1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=1))                
             else:
                 self.b2['plit3'].setData(s.ElastX, s.ElastY * 1e9, pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=1))
+            filEla = engine.savgol_filter(s.ElastY*1e9,301,1,0)
+            self.b2['plit3b'].setData(s.ElastX, filEla)
         else:
             #self.b2['plit2'].setData(s.z - s.offsetX, s.f - s.offsetY,pen=pg.mkPen( pg.QtGui.QColor(255, 0, 0,255),width=1))
             self.b2['plit3'].setData([0,0], [0,0])
+            self.b2['plit3b'].setData([0,0], [0,0])
 
         self.b2_view()
 
