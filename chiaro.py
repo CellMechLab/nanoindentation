@@ -589,6 +589,10 @@ class curveWindow(QtWidgets.QMainWindow):
                 s.ElastY = Ey
 
                 pars = engine.fitExpDecay(Ex, Ey, s.R)
+
+                s.E0=pars[0] * 1e9
+                s.Eb=pars[1] * 1e9
+                s.do=pars[2]
                 if pars is not None:
                     E0h.append(pars[0] * 1e9)
                     Ebh.append(pars[1] * 1e9)
@@ -828,7 +832,10 @@ class curveWindow(QtWidgets.QMainWindow):
             if s.invalid==True:
                 self.b2['plit2'].setData(s.z - s.offsetX, s.quot, pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=1))
         if s.ElastX != None:
-            self.b2['plit3'].setData(s.ElastX, s.ElastY)
+            if s.E0>s.Eb:
+                self.b2['plit3'].setData(s.ElastX, s.ElastY*1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=1))
+            else:
+                self.b2['plit3'].setData(s.ElastX, s.ElastY * 1e9, pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=1))
         else:
             #self.b2['plit2'].setData(s.z - s.offsetX, s.f - s.offsetY,pen=pg.mkPen( pg.QtGui.QColor(255, 0, 0,255),width=1))
             self.b2['plit3'].setData([0,0], [0,0])
