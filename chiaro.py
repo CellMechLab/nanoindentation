@@ -175,7 +175,7 @@ class curveWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.restoreOverrideCursor()
 
         self.ui.b3_Alpha.valueChanged.connect(self.b3Color)
-        self.ui.b3_ShiftCurves.clicked.connect(self.b3_ShiftAllCurves(shift=None))
+        self.ui.b3_ShiftCurves.clicked.connect(self.b3_ShiftAllCurves)
         self.ui.b3_doCutFit.clicked.connect(self.b3Fit)
         self.ui.b3_maxIndentation.clicked.connect(self.b3updMax)
         self.ui.b3_maxForce.clicked.connect(self.b3updMax)
@@ -204,7 +204,6 @@ class curveWindow(QtWidgets.QMainWindow):
 
         for s in self.b3['exp']:  
             Ex,Ey = engine.Elastography2withMax( s,grainstep,scaledistance,maxind)
-            #print(type(Ex), type(Ey), len(Ex), len(Ey), type(Ex[0]), type(Ey[0]))
             if Ex is None:
                 continue
             s.ElastX = Ex
@@ -328,8 +327,7 @@ class curveWindow(QtWidgets.QMainWindow):
         self.b4Init()
 
     def b3_ShiftAllCurves(self, shift=None):
-        if shift is None:
-            print('yay')
+        if shift == False:
             shift=int(self.ui.b3_ShiftValue.value())
         self.shift=shift
         #changed the way this works!!!
@@ -340,7 +338,6 @@ class curveWindow(QtWidgets.QMainWindow):
             ind=engine.np.argmin(engine.np.abs(s.z - s.offsetX))
             s.offsetY=s.ffil[ind]
             s.indentation, s.touch = engine.calculateIndentation(s)
-            print(s.offsetX, s.offsetY)
         self.b3Update()
         self.b3Fit()
         self.b3_Alistography()
@@ -361,7 +358,6 @@ class curveWindow(QtWidgets.QMainWindow):
             wr.writerow(header)
             for shift in shifts:
                 self.b3_ShiftAllCurves(shift)
-                print(any(engine.np.isnan(self.ymed)))
                 tosave_i=[shift, self.E0h, self.Ebh, self.d0h, list(self.xmed), list(self.ymed)]
                 wr.writerow(tosave_i)
                 start_norm = int(float(self.ui.b4_elDash.value()) / int(self.ui.b4_elIncrement.value())) - 1
@@ -600,8 +596,11 @@ class curveWindow(QtWidgets.QMainWindow):
 
                 xx.append(Ex)
                 yy.append(Ey)
-                elit = pg.PlotCurveItem(Ex, Ey * 1e9, pen=self.blackPen)
+                elit = pg.PlotCurveItem(Ex, Ey * 1e9, pen=self.blackPen, clickable=True)
                 self.ui.b2_plot_elasto.plotItem.addItem(elit)
+                elit.sigClicked.connect(self.b2curveClicked)
+                elit.segment = s
+                s.elit=elit
                 progress.setValue(progress.value() + 1)
                 cdown -= 1
                 if cdown == 0:
@@ -665,8 +664,16 @@ class curveWindow(QtWidgets.QMainWindow):
                 s.plit.setData(s.z,s.f)
             if i==index:
                 s.plit.setPen(self.greenPen)
+                try:
+                    s.elit.setPen(self.greenPen)
+                except:
+                    pass
             else:
                 s.plit.setPen(self.blackPen)
+                try:
+                    s.elit.setPen(self.blackPen)
+                except:
+                    pass
                 if s.invalid is True:
                     s.plit.setPen(self.redPen)
                     if self.MakeInvalidInvisible==True:

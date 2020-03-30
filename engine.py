@@ -159,19 +159,23 @@ def Elastography2(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=
 def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
     x = s.indentation
     y = s.touch
-    yi = interp1d(x,y)
-    max_x=np.min([np.max(s.indentation), maxindentation])
-    xx = np.linspace(np.min(x)+1,max_x,int(max_x))
-    yy = yi(xx)
+    if len(x)>1:
+        yi = interp1d(x,y)
+        max_x=np.min([np.max(s.indentation), maxindentation])
+        xx = np.linspace(np.min(x)+1,max_x,int(max_x))
+        yy = yi(xx)
 
-    coeff = 3/8/np.sqrt(s.R)
-    win = grainstep
-    if win%2 == 0:
-        win+=1
-    deriv = savgol_filter(yy,win,1,delta=xx[1]-xx[0],deriv=1,mode='nearest')
-    Ey = coeff*deriv/np.sqrt(xx)
-    Ex = list(xx)
-    dwin = int((win-1)/2)
+        coeff = 3/8/np.sqrt(s.R)
+        win = grainstep
+        if win%2 == 0:
+            win+=1
+        deriv = savgol_filter(yy,win,1,delta=xx[1]-xx[0],deriv=1,mode='nearest')
+        Ey = coeff*deriv/np.sqrt(xx)
+        Ex = list(xx)
+        dwin = int((win-1)/2)
+    else:
+        Ex=None
+        Ey=None
     return Ex[dwin:-dwin],Ey[dwin:-dwin]
 
 def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
@@ -413,10 +417,8 @@ def NanosurfOffset(s, step=50, length=500, threshold_exp = 0.1, threshold_len_st
     bol = True
     mean_before_CP= np.mean(exps_norm[:imax_exp])
     if mean_before_CP >thresholdfactor_mean_exp_before_CP*threshold_exp:
-        # print("mean before CP",mean_before_CP)
         bol = False
     if len_straight*step < threshold_len_straight:
-        # print("len_straight=",len_straight*step)
         bol = False
     if imax_exp == 0:
         bol = False
@@ -489,7 +491,6 @@ def NanosurfOffsetDeriv(s, win=1000, step_z=50, factor=5, threshold_slopes=0.2, 
         bol = False
 
     offsetX=s.z[ind_CP]
-    print(offsetX)
     offsetY=s.f[ind_CP]
 
     return bol, offsetX, offsetY, xz0, ymax, x_slopes, slopes_norm
