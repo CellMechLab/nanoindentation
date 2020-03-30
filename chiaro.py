@@ -203,7 +203,7 @@ class curveWindow(QtWidgets.QMainWindow):
         d0h=[]
 
         for s in self.b3['exp']:  
-            Ex,Ey = engine.Elastography2( s,grainstep,scaledistance,maxind)
+            Ex,Ey = engine.Elastography2withMax( s,grainstep,scaledistance,maxind)
             #print(type(Ex), type(Ey), len(Ex), len(Ey), type(Ex[0]), type(Ey[0]))
             if Ex is None:
                 continue
@@ -659,9 +659,11 @@ class curveWindow(QtWidgets.QMainWindow):
             if f is not None:
                 for s in self.b2['exp']:
                     s.invalid = False
-                    s.offsetX, s.offsetY = f(s, *p)
-                    if (s.offsetX, s.offsetY) == (0,0):
+                    s.offsetX, s.offsetY = f(s, *p[:-1])
+                    s.bol2 = engine.Nanosurf_FindInvalidCurves(s, p[-1])
+                    if (s.offsetX, s.offsetY) == (0,0) or s.bol2==False:
                         s.invalid = True
+
         elif self.ui.comboContact.currentText()=='Nanosurf':
             a = panels.NanosurfPoint()
             if a.exec()==0:

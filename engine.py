@@ -156,6 +156,24 @@ def Elastography2(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=
     dwin = int((win-1)/2)
     return Ex[dwin:-dwin],Ey[dwin:-dwin]
 
+def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
+    x = s.indentation
+    y = s.touch
+    yi = interp1d(x,y)
+    max_x=np.min([np.max(s.indentation), maxindentation])
+    xx = np.linspace(np.min(x)+1,max_x,int(max_x))
+    yy = yi(xx)
+
+    coeff = 3/8/np.sqrt(s.R)
+    win = grainstep
+    if win%2 == 0:
+        win+=1
+    deriv = savgol_filter(yy,win,1,delta=xx[1]-xx[0],deriv=1,mode='nearest')
+    Ey = coeff*deriv/np.sqrt(xx)
+    Ex = list(xx)
+    dwin = int((win-1)/2)
+    return Ex[dwin:-dwin],Ey[dwin:-dwin]
+
 def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
     #select one index every grainstep in nm along indentation; works with uneven step as well
     IndexDv = []  #This will contain the indexes of the slides
@@ -495,12 +513,13 @@ def IndentationForDerivative(s, z0=0):
 
 def Nanosurf_FindInvalidCurves(s, threshold_invalid=10):
     s.bol2=None
-    if s.imax_exp!=None and s.imax_exp!=0:
-        f_lin = s.ffil[200:s.imax_exp]
-        f_abs = [abs(x)for x in f_lin]
+    ind=np.argmin(abs(s.z-s.offsetX))
+    if ind<199:
+        s.bol2 = False
+    else:
+        f_abs = np.absolute(s.ffil[200:ind])
         val=max(f_abs)
-        f_end=s.ffil[-1000:-100]
-        f_abs2 = [abs(x)for x in f_end]
+        f_abs2=np.absolute(s.ffil[-1000:-100])
         val2=max(f_abs2)
         if val>threshold_invalid or val2<2*threshold_invalid:
             s.bol2=False

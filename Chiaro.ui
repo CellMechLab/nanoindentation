@@ -547,17 +547,17 @@
                </property>
                <item>
                 <property name="text">
+                 <string>eeff</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
                  <string>Nanosurf Deriv</string>
                 </property>
                </item>
                <item>
                 <property name="text">
                  <string>Nanosurf</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>eeff</string>
                 </property>
                </item>
                <item>

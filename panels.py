@@ -54,18 +54,25 @@ class eeffPoint(contactPoint):
         self.offset.setMinimum(-100)
         self.offset.setMaximum(100)
         self.offset.setDecimals(2)
-        self.offset.setValue(0.40)
+        self.offset.setValue(1.00)
         self.offset.setSingleStep(0.1)
+
+        self.threshold_invalid = QtWidgets.QDoubleSpinBox()
+        self.threshold_invalid.setMinimum(0)
+        self.threshold_invalid.setMaximum(999)
+        self.threshold_invalid.setDecimals(2)
+        self.threshold_invalid.setValue(10.00)
+        self.threshold_invalid.setSingleStep(0.5)
 
         self.plot = pg.PlotWidget()
 
         self.minY.valueChanged.connect(self.updatePlot)
         self.offset.valueChanged.connect(self.updatePlot)
 
-        return[ ['Window length',self.minY],['Threshold',self.offset],['Preview',self.plot]]
+        return[ ['Window length',self.minY],['Threshold CP',self.offset],['Preview',self.plot],['Threshold Invalid', self.threshold_invalid]]
 
     def getParams(self):
-        return[ int(self.minY.value()),float(self.offset.value())/1000.0]
+        return[ int(self.minY.value()),float(self.offset.value())/1000.0, float(self.threshold_invalid.value())]
 
     def getCall(self):
         return engine.eeffOffset
