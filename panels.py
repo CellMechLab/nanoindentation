@@ -206,6 +206,30 @@ class NanosurfPointDeriv(contactPoint):
     def getCall(self):
         return engine.NanosurfOffsetDeriv
 
+class b2_Elasto(uiPanel):
+    def setUi(self):
+        self.setWindowTitle("Elastography parameters")
+
+        self.grainstep = QtWidgets.QSpinBox()
+        self.grainstep.setMinimum(0)
+        self.grainstep.setMaximum(999)
+        self.grainstep.setValue(30)
+
+        self.scaledistance = QtWidgets.QSpinBox()
+        self.scaledistance.setMinimum(1)
+        self.scaledistance.setMaximum(99999)
+        self.scaledistance.setValue(500)
+
+        self.maxind = QtWidgets.QSpinBox()
+        self.maxind.setMinimum(1)
+        self.maxind.setMaximum(99999)
+        self.maxind.setValue(2000)
+
+        return [ ['Increment', self.grainstep],['Dash Depth', self.scaledistance],['Max Indent', self.maxind]]
+
+    def getParams(self):
+        return[ int(self.grainstep.value()),float(self.scaledistance.value()),float(self.maxind.value())]
+
 
 class FilterData(uiPanel):
     def setUi(self):

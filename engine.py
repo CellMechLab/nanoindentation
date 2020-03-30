@@ -220,7 +220,7 @@ def gauss(x,y):
         return A*np.exp( -((x-x0)/w)**2 )
     if len(x)==len(y)+1:
         x = (x[1:]+x[:-1])/2.0
-    popt, pcov = curve_fit(gaussDist, x,y , p0=[x[np.argmax(y)],(np.max(x)-np.min(x))/10.0,np.max(y)], maxfev=10000)
+    popt, pcov = curve_fit(gaussDist, x,y , p0=[x[np.argmax(y)],(np.max(x)-np.min(x))/10.0,np.max(y)], maxfev=100000)
     nx = np.linspace(np.min(x),np.max(x),100)
     return popt[0],popt[1],popt[2],nx,gaussDist(nx,*popt)
 
@@ -325,7 +325,7 @@ def eeffOffset(s,win,threshold):
     if jj>4 and jj<len(s.z)-4:
         oX = np.average(s.z[jj-4:jj+4])
         oY = np.average(s.ffil[jj-4:jj+4])    #it might be extended to use a little average of F around point jj
-    return oX,oY
+    return oX,oY,quot
 
 def chiaroOffset(s,ncMin=500,ncMax=2500,offset=0,win1 = 19, win2 = 99):
     iMin = np.argmin((s.z-ncMin)**2)
@@ -521,7 +521,7 @@ def Nanosurf_FindInvalidCurves(s, threshold_invalid=10):
         val=max(f_abs)
         f_abs2=np.absolute(s.ffil[-1000:-100])
         val2=max(f_abs2)
-        if val>threshold_invalid or val2<2*threshold_invalid:
+        if val>threshold_invalid or val2<0.5*threshold_invalid:
             s.bol2=False
         else:
             s.bol2=True

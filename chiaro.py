@@ -175,7 +175,7 @@ class curveWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.restoreOverrideCursor()
 
         self.ui.b3_Alpha.valueChanged.connect(self.b3Color)
-        self.ui.b3_ShiftCurves.clicked.connect(self.b3_ShiftAllCurves)
+        self.ui.b3_ShiftCurves.clicked.connect(self.b3_ShiftAllCurves(shift=None))
         self.ui.b3_doCutFit.clicked.connect(self.b3Fit)
         self.ui.b3_maxIndentation.clicked.connect(self.b3updMax)
         self.ui.b3_maxForce.clicked.connect(self.b3updMax)
@@ -329,6 +329,7 @@ class curveWindow(QtWidgets.QMainWindow):
 
     def b3_ShiftAllCurves(self, shift=None):
         if shift is None:
+            print('yay')
             shift=int(self.ui.b3_ShiftValue.value())
         self.shift=shift
         #changed the way this works!!!
@@ -339,6 +340,7 @@ class curveWindow(QtWidgets.QMainWindow):
             ind=engine.np.argmin(engine.np.abs(s.z - s.offsetX))
             s.offsetY=s.ffil[ind]
             s.indentation, s.touch = engine.calculateIndentation(s)
+            print(s.offsetX, s.offsetY)
         self.b3Update()
         self.b3Fit()
         self.b3_Alistography()
@@ -395,7 +397,7 @@ class curveWindow(QtWidgets.QMainWindow):
                     s.plit.setPen(self.redPen)
                 else:
                     s.valid = True
-                    s.indMax = engine.np.argmin( (s.indentation - float(self.ui.b3_threshold.value()) )**2 )
+                    s.indMax = engine.np.argmin((s.indentation - float(self.ui.b3_threshold.value()) )**2 )
                     s.plit.setPen(self.blackPen)
         else:
             for s in self.b3['exp']:
@@ -498,6 +500,7 @@ class curveWindow(QtWidgets.QMainWindow):
             s.bol_deriv = None
             s.invalid = False
             s.bol=True
+            s.ElastX= None
             s.x_CPderiv=[0]
             s.y_CPderiv=[0]
             s.threshold_exp = 0
@@ -522,6 +525,9 @@ class curveWindow(QtWidgets.QMainWindow):
         self.b2['plit2b'].setData([0, 0], [0, 1], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
         self.b2['plit2c'] = pg.PlotCurveItem(clickable=True)
         self.b2['plit2c'].setData([0, 0], [0, 1], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
+        self.b2['plit3'] = pg.PlotCurveItem(clickable=True)
+        self.b2['plit3'].setData(s.z, s.f, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=1))
+
         self.ui.b2_plot_one.plotItem.addItem(self.b2['plit1a'])
         self.ui.b2_plot_one.plotItem.addItem(self.b2['plit1b'])
         self.ui.b2_plot_one.plotItem.addItem(self.b2['plit1c'])
@@ -529,7 +535,8 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b2_plot_two.plotItem.addItem(self.b2['plit2a'])
         self.ui.b2_plot_two.plotItem.addItem(self.b2['plit2b'])
         self.ui.b2_plot_two.plotItem.addItem(self.b2['plit2c'])
-
+        self.ui.b2_plot_two.plotItem.addItem(self.b2['plit2c'])
+        self.ui.b2_plot_three.plotItem.addItem(self.b2['plit3'])
 
 
         QtWidgets.QApplication.restoreOverrideCursor()
@@ -544,6 +551,7 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b2_deleteAllInvalid.clicked.connect(self.b2DeleteAllInvalid)
         self.ui.b2_b2tob3.clicked.connect(self.b2tob3)
         self.ui.b2_save.clicked.connect(self.save_pickle)
+        self.ui.b2_DoElasto.clicked.connect(self.b2_Alistography)
 
     def b2tob3(self):
         for s in self.b2['exp']:
@@ -556,6 +564,72 @@ class curveWindow(QtWidgets.QMainWindow):
             # s.touch_original=s.touch
         self.ui.switcher.setCurrentIndex(2)
         self.b3Init()
+
+    def b2_Alistography(self, fit=False):
+        self.ui.b2_plot_elasto.plotItem.clear()
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+
+        progress = QtWidgets.QProgressDialog("Performing elastography ...", "Cancel E-analysis", 0, len(self.b4['exp']))
+        a = panels.b2_Elasto()
+        if a.exec() == 0:
+            return
+        grainstep, scaledistance, maxind  = a.getParams()
+
+        cdown = 10
+        xx = []
+        yy = []
+
+        E0h = []
+        Ebh = []
+        d0h = []
+
+        for s in self.b2['exp']:
+            if s.invalid is False:
+                s.indentation, s.touch = engine.calculateIndentation(s)
+                Ex, Ey = engine.Elastography2withMax(s, grainstep, scaledistance, maxind)
+                if Ex is None:
+                    continue
+                s.ElastX = Ex
+                s.ElastY = Ey
+
+                pars = engine.fitExpDecay(Ex, Ey, s.R)
+                if pars is not None:
+                    E0h.append(pars[0] * 1e9)
+                    Ebh.append(pars[1] * 1e9)
+                    d0h.append(pars[2])
+
+                xx.append(Ex)
+                yy.append(Ey)
+                elit = pg.PlotCurveItem(Ex, Ey * 1e9, pen=self.blackPen)
+                self.ui.b2_plot_elasto.plotItem.addItem(elit)
+                progress.setValue(progress.value() + 1)
+                cdown -= 1
+                if cdown == 0:
+                    QtCore.QCoreApplication.processEvents()
+                    cdown = 10
+
+        xmed, ymed = engine.getMedCurve(xx, yy, loose=True)
+        # points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
+        points = pg.PlotCurveItem(xmed, ymed * 1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 255, 200), width=2))
+        self.ui.b2_plot_elasto.plotItem.addItem(points)
+
+        if any(engine.np.isnan(xmed)) == False and any(engine.np.isnan(ymed)) == False:
+            self.xmed = xmed
+            self.ymed = ymed
+        if any(engine.np.isnan(E0h)) == False:
+            self.E0h = E0h
+        if any(engine.np.isnan(Ebh)) == False:
+            self.Ebh = Ebh
+        if any(engine.np.isnan(d0h)) == False:
+            self.d0h = d0h
+
+        pars = engine.fitExpDecay(xmed, ymed, s.R)
+        if pars is not None:
+            yfit = engine.ExpDecay(xmed, *pars, s.R)
+            self.ui.b2_plot_elasto.addItem(pg.PlotCurveItem(xmed, yfit * 1e9, pen=self.greenPen))
+
+        QtWidgets.QApplication.restoreOverrideCursor()
+
 
     def b2Delete(self):
         index = int(self.ui.b2_segment.value())
@@ -654,12 +728,13 @@ class curveWindow(QtWidgets.QMainWindow):
             if a.exec()==0:
                 return
             p = a.getParams()
+            self.threshold_quot=p[1]
             f = a.getCall()
             QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
             if f is not None:
                 for s in self.b2['exp']:
                     s.invalid = False
-                    s.offsetX, s.offsetY = f(s, *p[:-1])
+                    s.offsetX, s.offsetY, s.quot = f(s, *p[:-1])
                     s.bol2 = engine.Nanosurf_FindInvalidCurves(s, p[-1])
                     if (s.offsetX, s.offsetY) == (0,0) or s.bol2==False:
                         s.invalid = True
@@ -738,8 +813,19 @@ class curveWindow(QtWidgets.QMainWindow):
             self.b2['plit2b'].setData([min(s.z0s - s.offsetX), max(s.z0s - s.offsetX)],[s.threshold_slopes, s.threshold_slopes], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
             slopes=engine.np.asarray(s.slopes)*10000
             self.b2['plit2c'].setData(s.x_slopes - s.offsetX, slopes, pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=1))
+        if s.quot is not None:
+            self.b2['plit2'].setData(s.z - s.offsetX, s.quot,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 0,255),width=1))
+            self.b2['plit2a'].setData([0, 0], [min(s.quot), max(s.quot)], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
+            self.b2['plit2b'].setData([min(s.z - s.offsetX), max(s.z - s.offsetX)],[self.threshold_quot, self.threshold_quot], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
+            self.b2['plit2c'].setData([0, 0], [min(s.quot), max(s.quot)], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
+            if s.invalid==True:
+                self.b2['plit2'].setData(s.z - s.offsetX, s.quot, pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=1))
+        if s.ElastX != None:
+            self.b2['plit3'].setData(s.ElastX, s.ElastY)
         else:
-            self.b2['plit2'].setData(s.z - s.offsetX, s.f - s.offsetY)
+            #self.b2['plit2'].setData(s.z - s.offsetX, s.f - s.offsetY,pen=pg.mkPen( pg.QtGui.QColor(255, 0, 0,255),width=1))
+            self.b2['plit3'].setData([0,0], [0,0])
+
         self.b2_view()
 
     def b2Color(self):

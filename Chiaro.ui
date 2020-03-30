@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1607</width>
-    <height>866</height>
+    <width>1332</width>
+    <height>741</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -480,12 +480,18 @@
            <widget class="PlotWidget" name="b2_plot_all"/>
           </item>
           <item>
+           <widget class="PlotWidget" name="b2_plot_elasto"/>
+          </item>
+          <item>
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
              <widget class="PlotWidget" name="b2_plot_one"/>
             </item>
             <item>
              <widget class="PlotWidget" name="b2_plot_two"/>
+            </item>
+            <item>
+             <widget class="PlotWidget" name="b2_plot_three"/>
             </item>
            </layout>
           </item>
@@ -578,6 +584,13 @@
               </widget>
              </item>
             </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="b2_DoElasto">
+            <property name="text">
+             <string>Do Elastography</string>
+            </property>
            </widget>
           </item>
           <item>
