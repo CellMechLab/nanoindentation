@@ -225,10 +225,16 @@ class b2_Elasto(uiPanel):
         self.maxind.setMaximum(99999)
         self.maxind.setValue(2000)
 
-        return [ ['Increment', self.grainstep],['Dash Depth', self.scaledistance],['Max Indent', self.maxind]]
+        self.filwin = QtWidgets.QSpinBox()
+        self.filwin.setMinimum(1)
+        self.filwin.setMaximum(99999)
+        self.filwin.setValue(301)
+
+
+        return [ ['Increment', self.grainstep],['Dash Depth', self.scaledistance],['Max Indent', self.maxind], ['Filter Window', self.filwin]]
 
     def getParams(self):
-        return[ int(self.grainstep.value()),float(self.scaledistance.value()),float(self.maxind.value())]
+        return[ int(self.grainstep.value()),float(self.scaledistance.value()),float(self.maxind.value()), int(self.filwin.value())]
 
 
 class FilterData(uiPanel):

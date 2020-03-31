@@ -528,6 +528,21 @@ def Nanosurf_FindInvalidCurves(s, threshold_invalid=10):
             s.bol2=True
     return s.bol2
 
+def InvalidCurvesFromElasticityRise(s, win=301):
+    if len(s.ElastY)<=win:
+        ElaInvalid = True
+        filEla= None
+    else:
+        filEla = savgol_filter(s.ElastY * 1e9, win, 1, 0)
+        start=np.mean(filEla[:20])
+        median=np.median(filEla[20:])
+        if start<median:
+            ElaInvalid=True
+        else:
+            ElaInvalid=False
+    return ElaInvalid, filEla
+
+
 def getHertz(E,R,threshold,indentation=True):
     poisson = 0.5
     if indentation is True:
@@ -595,7 +610,8 @@ def fitExpDecay(x,y,R):
             a=np.sqrt(R*x)
             return Eb+(E0-Eb)*np.exp(-a/d0)
         popt, pcov = curve_fit(TheExp, x,y , p0=seeds, maxfev=10000)
-        return popt
+        stds=[np.sqrt(pcov[0][0]), np.sqrt(pcov[1][1]), np.sqrt(pcov[2][2])]
+        return popt, stds
     except (RuntimeError,ValueError):
 
         return None

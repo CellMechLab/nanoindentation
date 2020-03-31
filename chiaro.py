@@ -181,7 +181,8 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b3_maxForce.clicked.connect(self.b3updMax)
         self.ui.b3_save.clicked.connect(self.save_pickle)
         self.ui.b3_doExport.clicked.connect(self.b3Export)
-        self.ui.b3_doExport2.clicked.connect(self.b3Export2)
+        self.ui.b3_doExport2.clicked.connect(lambda: self.b3Export2(fit=False))
+        self.ui.b3_doExport2fit.clicked.connect(lambda: self.b3Export2(fit=True))
         self.ui.b4_doElas.clicked.connect(self.b3_Alistography)
         self.ui.b3_CreateCpShiftArray.clicked.connect(self.b3_CreateCpShiftArray)
 
@@ -209,7 +210,7 @@ class curveWindow(QtWidgets.QMainWindow):
             s.ElastX = Ex
             s.ElastY = Ey
 
-            pars = engine.fitExpDecay(Ex,Ey,s.R)
+            pars, covs = engine.fitExpDecay(Ex,Ey,s.R)
             if pars is not None:
                 E0h.append(pars[0]*1e9)
                 Ebh.append(pars[1]*1e9)
@@ -240,7 +241,7 @@ class curveWindow(QtWidgets.QMainWindow):
         if any(engine.np.isnan(d0h)) == False:
             self.d0h=d0h
 
-        pars = engine.fitExpDecay(xmed,ymed,s.R)
+        pars, covs = engine.fitExpDecay(xmed,ymed,s.R)
         if pars is not None:
             yfit = engine.ExpDecay(xmed,*pars,s.R)
             self.ui.b3_long.addItem( pg.PlotCurveItem(xmed,yfit*1e9,pen=self.greenPen) )  
@@ -282,7 +283,7 @@ class curveWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.restoreOverrideCursor()
 
         if fit is True:
-            return xmed,ymed*1e9
+            return xmed,ymed*1e9, pars, covs
         else:
             return E0h,Ebh,d0h
 
@@ -295,8 +296,8 @@ class curveWindow(QtWidgets.QMainWindow):
         engine.np.savetxt(fname[0],Earray)
         QtWidgets.QApplication.restoreOverrideCursor()
 
-    def b3Export2(self):
-        fit = False
+    def b3Export2(self, fit=False):
+        #fit = False
         data = self.b3_Alistography(fit)
         fname = QtWidgets.QFileDialog.getSaveFileName(self,'Select the file to export your E data',self.workingdir,"Tab Separated Values (*.tsv)")
         if fname[0] =='':
@@ -304,6 +305,8 @@ class curveWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))        
         with open(fname[0],'w') as f:
             if fit is True:
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit params E0, Eb, d0",data[2][0], data[2][1], data[2][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit std dev E0, Eb, d0", data[3][0], data[3][1], data[3][2]))
                 f.write('Ex\tEy\n')
             else:
                 f.write('E0\tEb\td0\n')
@@ -570,7 +573,7 @@ class curveWindow(QtWidgets.QMainWindow):
         a = panels.b2_Elasto()
         if a.exec() == 0:
             return
-        grainstep, scaledistance, maxind  = a.getParams()
+        grainstep, scaledistance, maxind, filwin  = a.getParams()
         
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
         #progress = QtWidgets.QProgressDialog("Performing elastography ...", "Cancel E-analysis", 0, len(self.b4['exp']))
@@ -592,7 +595,7 @@ class curveWindow(QtWidgets.QMainWindow):
                 s.ElastX = Ex
                 s.ElastY = Ey
 
-                pars = engine.fitExpDecay(Ex, Ey, s.R)
+                pars, covs = engine.fitExpDecay(Ex, Ey, s.R)
 
                 s.E0=pars[0] * 1e9
                 s.Eb=pars[1] * 1e9
@@ -615,6 +618,11 @@ class curveWindow(QtWidgets.QMainWindow):
                     QtCore.QCoreApplication.processEvents()
                     cdown = 10
 
+                s.ElaInvalid, s.filEla =engine.InvalidCurvesFromElasticityRise(s,win=filwin)
+                if s.ElaInvalid == True:
+                    s.invalid=True
+
+
         xmed, ymed = engine.getMedCurve(xx, yy, loose=True)
         # points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
         points = pg.PlotCurveItem(xmed, ymed * 1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 255, 200), width=2))
@@ -630,10 +638,11 @@ class curveWindow(QtWidgets.QMainWindow):
         if any(engine.np.isnan(d0h)) == False:
             self.d0h = d0h
 
-        pars = engine.fitExpDecay(xmed, ymed, s.R)
+        pars, covs = engine.fitExpDecay(xmed, ymed, s.R)
         if pars is not None:
             yfit = engine.ExpDecay(xmed, *pars, s.R)
             self.ui.b2_plot_elasto.addItem(pg.PlotCurveItem(xmed, yfit * 1e9, pen=self.greenPen))
+
 
         QtWidgets.QApplication.restoreOverrideCursor()
 
@@ -840,8 +849,13 @@ class curveWindow(QtWidgets.QMainWindow):
                 self.b2['plit3'].setData(s.ElastX, s.ElastY*1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=1))                
             else:
                 self.b2['plit3'].setData(s.ElastX, s.ElastY * 1e9, pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=1))
-            filEla = engine.savgol_filter(s.ElastY*1e9,301,1,0)
-            self.b2['plit3b'].setData(s.ElastX, filEla)
+            if s.ElaInvalid != None:
+                if s.ElaInvalid==False:
+                    self.b2['plit3b'].setData(s.ElastX, s.filEla, pen=pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=1))
+                if s.ElaInvalid==True:
+                    self.b2['plit3b'].setData(s.ElastX, s.filEla, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=1))
+            else:
+                self.b2['plit3b'].setData([0, 0], [0, 0])
         else:
             #self.b2['plit2'].setData(s.z - s.offsetX, s.f - s.offsetY,pen=pg.mkPen( pg.QtGui.QColor(255, 0, 0,255),width=1))
             self.b2['plit3'].setData([0,0], [0,0])

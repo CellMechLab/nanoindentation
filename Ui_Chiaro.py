@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1332, 741)
+        MainWindow.resize(1334, 745)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("ico.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -458,6 +458,7 @@ class Ui_MainWindow(object):
         self.label_2.setObjectName("label_2")
         self.gridLayout.addWidget(self.label_2, 3, 3, 1, 1)
         self.b3_ShiftCurves = QtWidgets.QPushButton(self.HertzianFit)
+        self.b3_ShiftCurves.setEnabled(True)
         self.b3_ShiftCurves.setObjectName("b3_ShiftCurves")
         self.gridLayout.addWidget(self.b3_ShiftCurves, 3, 4, 1, 1)
         self.b3_ShiftValue = QtWidgets.QSpinBox(self.HertzianFit)
@@ -533,6 +534,9 @@ class Ui_MainWindow(object):
         self.b3_doExport2 = QtWidgets.QPushButton(self.groupBox_11)
         self.b3_doExport2.setObjectName("b3_doExport2")
         self.verticalLayout_12.addWidget(self.b3_doExport2)
+        self.b3_doExport2fit = QtWidgets.QPushButton(self.groupBox_11)
+        self.b3_doExport2fit.setObjectName("b3_doExport2fit")
+        self.verticalLayout_12.addWidget(self.b3_doExport2fit)
         self.horizontalLayout_5.addWidget(self.groupBox_11)
         self.verticalLayout_6.addLayout(self.horizontalLayout_5)
         self.horizontalLayout_13 = QtWidgets.QHBoxLayout()
@@ -588,7 +592,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.switcher.setCurrentIndex(1)
+        self.switcher.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -684,4 +688,5 @@ class Ui_MainWindow(object):
         self.b3_save.setShortcut(_translate("MainWindow", "Ctrl+S"))
         self.b3_doExport2.setText(_translate("MainWindow", "Export Bilayer"))
         self.b3_doExport2.setShortcut(_translate("MainWindow", "Ctrl+E, Ctrl+B"))
+        self.b3_doExport2fit.setText(_translate("MainWindow", "Export Bilayer Fit"))
 from pyqtgraph import PlotWidget

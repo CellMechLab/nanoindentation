@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1332</width>
-    <height>741</height>
+    <width>1334</width>
+    <height>745</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
     <item>
      <widget class="QStackedWidget" name="switcher">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="stackedWidgetPage1">
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
@@ -916,6 +916,9 @@
              </item>
              <item row="3" column="4">
               <widget class="QPushButton" name="b3_ShiftCurves">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
                <property name="text">
                 <string>Shift</string>
                </property>
@@ -1096,6 +1099,13 @@
                </property>
                <property name="shortcut">
                 <string>Ctrl+E, Ctrl+B</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="b3_doExport2fit">
+               <property name="text">
+                <string>Export Bilayer Fit</string>
                </property>
               </widget>
              </item>
