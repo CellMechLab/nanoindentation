@@ -29,3 +29,4 @@ PickleForTest2.pickle
 PickleForTest2b.pickle
 __pycache__/chiaro.cpython-37.pyc
 PickleForTest2small2.pickle
+*.pyc
