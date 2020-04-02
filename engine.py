@@ -600,18 +600,24 @@ def LayerRoss(x,E1,E2,h,R,poisson=0.5):
     F = 4.0*E1*coe*a**3/3.0/R/(1-poisson**2)
     return F
 
+def lamb():
+    return 2.0
+
+def area(x,R):
+    return np.sqrt(2*R*x)
+
 def ExpDecay(x,E0,Eb,d0,R):
     x[x<0]=0
-    a=np.sqrt(R*x)
-    return Eb+(E0-Eb)*np.exp(-a/d0)
+    a=area(x,R)
+    return Eb+(E0-Eb)*np.exp(-lamb()*a/d0)
 
 def fitExpDecay(x,y,R):
     seeds=[5000/1e9,1000/1e9,200]
     try:
         def TheExp(x,E0,Eb,d0):
             x[x<0]=0
-            a=np.sqrt(R*x)
-            return Eb+(E0-Eb)*np.exp(-a/d0)
+            a=area(x,R)
+            return Eb+(E0-Eb)*np.exp(-lamb()*a/d0)
         popt, pcov = curve_fit(TheExp, x,y , p0=seeds, maxfev=10000)
         stds=[np.sqrt(pcov[0][0]), np.sqrt(pcov[1][1]), np.sqrt(pcov[2][2])]
         return popt, stds
