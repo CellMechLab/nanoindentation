@@ -54,7 +54,7 @@ class curveWindow(QtWidgets.QMainWindow):
         mysegs = []
         noise = float(a.noiselevel.value())/1000.0
         E1 = float(a.E1.value())/1.0e9
-        R = 3200.0
+        R = 3000.0
         N = int(a.length.value())
         xbase = engine.np.linspace(0,N,N)
         for i in range(50):
@@ -69,7 +69,12 @@ class curveWindow(QtWidgets.QMainWindow):
                 if a.modAli.isChecked() is True:
                     mysegs[-1].touch = engine.noisify(engine.LayerStd(xbase,E1,E2,h,R),noise)
                 else:
-                    mysegs[-1].touch = engine.noisify(engine.LayerRoss(xbase,E1,E2,h,R),noise)
+                    data = engine.np.loadtxt('MyFile.txt')
+                    x = data[:,0]
+                    y = data[:,1]
+                    mysegs[-1].indentation = x
+                    mysegs[-1].touch = engine.noisify(y/1000.0,noise)
+                    #mysegs[-1].touch = engine.noisify(engine.LayerRoss(xbase,E1,E2,h,R),noise)
 
         self.b3['exp']=mysegs
         self.ui.switcher.setCurrentIndex(2)

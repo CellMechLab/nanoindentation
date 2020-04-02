@@ -162,21 +162,24 @@ def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=999
     if len(x)>1:
         yi = interp1d(x,y)
         max_x=np.min([np.max(s.indentation), maxindentation])
-        xx = np.linspace(np.min(x)+1,max_x,int(max_x))
+        min_x=1
+        if np.min(x)>1:
+            min_x=np.min(x)
+        xx = np.arange(min_x,max_x+1,1.0)
         yy = yi(xx)
 
         coeff = 3/8/np.sqrt(s.R)
         win = grainstep
         if win%2 == 0:
             win+=1
-        deriv = savgol_filter(yy,win,1,delta=xx[1]-xx[0],deriv=1,mode='nearest')
+        deriv = savgol_filter(yy,win,1,delta=1.0,deriv=1)
         Ey = coeff*deriv/np.sqrt(xx)
         Ex = list(xx)
-        dwin = int((win-1)/2)
+        #dwin = int((win-1)/2)
     else:
         Ex=None
         Ey=None
-    return Ex[dwin:-dwin],Ey[dwin:-dwin]
+    return Ex,Ey
 
 def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
     #select one index every grainstep in nm along indentation; works with uneven step as well
