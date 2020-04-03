@@ -517,6 +517,7 @@ class curveWindow(QtWidgets.QMainWindow):
             s.x_CPderiv=engine.np.array([0])
             s.y_CPderiv=engine.np.array([0])
             s.threshold_exp = 0
+            s.quot = None
         self.b2_view()        
         self.ui.b2_Alpha.setValue(self.ui.b1_Alpha.value())
         
