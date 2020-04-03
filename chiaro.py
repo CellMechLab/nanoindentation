@@ -231,10 +231,16 @@ class curveWindow(QtWidgets.QMainWindow):
                 QtCore.QCoreApplication.processEvents()
                 cdown = 10        
         
-        xmed,ymed = engine.getMedCurve(xx,yy,loose = True)
+        xmed,ymed, yerr = engine.getMedCurve(xx,yy,loose = True, error=True)
         #points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
         points = pg.PlotCurveItem(xmed,ymed*1e9,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 255,200),width=2))
-        self.ui.b3_long.plotItem.addItem( points )  
+        y_uperror=ymed+yerr
+        y_downerror=ymed-yerr
+        yup_curve = pg.PlotCurveItem(xmed,y_uperror*1e9,pen=pg.mkPen( pg.QtGui.QColor(255, 0, 0,255),width=2))
+        ydown_curve = pg.PlotCurveItem(xmed, y_downerror * 1e9,pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
+        errorzone= pg.FillBetweenItem(ydown_curve, yup_curve, brush='r')
+        self.ui.b3_long.plotItem.addItem( points )
+        self.ui.b3_long.plotItem.addItem(errorzone)
 
         if any(engine.np.isnan(xmed))== False and any(engine.np.isnan(ymed))==False:
             self.xmed=xmed
@@ -246,15 +252,13 @@ class curveWindow(QtWidgets.QMainWindow):
         if any(engine.np.isnan(d0h)) == False:
             self.d0h=d0h
 
-        pars, covs = engine.fitExpDecay(xmed,ymed,s.R)
+        pars, covs = engine.fitExpDecay(xmed,ymed, s.R,sigma=yerr)
         if pars is not None:
             yfit = engine.ExpDecay(xmed,*pars,s.R)
             self.ui.b3_long.addItem( pg.PlotCurveItem(xmed,yfit*1e9,pen=self.greenPen) )  
             self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars[0]*1e8)/100.0))
             self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars[1]*1e8)/100.0))
-            self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars[2])))        
-
-        
+            self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars[2])))
 
         self.ui.b3_plothist_E0.clear()
         self.ui.b3_plothist_Eb.clear()

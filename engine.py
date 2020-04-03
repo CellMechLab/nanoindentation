@@ -41,7 +41,7 @@ class bsegment(object):
         self.IndexDv = None   #aux indices
         self.E = None
 
-def getMedCurve(xar,yar,loose = True,threshold=5):
+def getMedCurve(xar,yar,loose = True,threshold=5, error=False):
     if loose is False:
         xmin = -np.inf
         xmax = np.inf
@@ -62,23 +62,43 @@ def getMedCurve(xar,yar,loose = True,threshold=5):
         xmax = -np.inf
         deltax = 0
         for x in xar:
-            xmin = np.min([xmin,np.min(x)])
-            xmax = np.max([xmax,np.max(x)])
-            deltax += ((np.max(x)-np.min(x))/(len(x)-1))
+            xmin = np.min([xmin, np.min(x)])
+            xmax = np.max([xmax, np.max(x)])
+            deltax += ((np.max(x) - np.min(x)) / (len(x) - 1))
         deltax /= len(xar)
-        xnewall = np.linspace(xmin,xmax,int( (xmax-xmin)/deltax) )
+        xnewall = np.linspace(xmin, xmax, int((xmax - xmin) / deltax))
         ynewall = np.zeros(len(xnewall))
         count = np.zeros(len(xnewall))
+        ys = np.zeros([len(xnewall), len(xar)])
         for i in range(len(xar)):
-            imin = np.argmin( (xnewall-np.min(xar[i]))**2 )#+1
-            imax = np.argmin( (xnewall-np.max(xar[i]))**2 )#-1
+            imin = np.argmin((xnewall - np.min(xar[i])) ** 2)  # +1
+            imax = np.argmin((xnewall - np.max(xar[i])) ** 2)  # -1
             ycur = np.interp(xnewall[imin:imax], xar[i], yar[i])
             ynewall[imin:imax] += ycur
             count[imin:imax] += 1
+            for j in range(imin, imax - 1):
+                ys[j][i] = ycur[j]
         cc = count > threshold
         xnew = xnewall[cc]
-        ynew = ynewall[cc]/count[cc]
-    return xnew,ynew
+        ynew = ynewall[cc] / count[cc]
+        yerrs_new = ys[cc]
+        yerr = []
+        for j in range(len(yerrs_new)):
+            squr_sum = 0
+            num = 0
+            std = 0
+            for i in range(0, len(yerrs_new[j])):
+                if yerrs_new[j][i] != 0:
+                    squr_sum += (yerrs_new[j][i] - ynew[j]) ** 2
+                    num += 1
+            if num > 0:
+                std = np.sqrt(squr_sum / num)
+            yerr.append(std)
+        yerr = np.asarray(yerr)
+    if error == False:
+        return xnew, ynew
+    elif error == True:
+        return xnew, ynew, yerr
 
 def calculateSS(s,indentation=None,touch=None):
     # a = sqrt(R delta)
@@ -165,7 +185,7 @@ def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=999
         min_x=1
         if np.min(x)>1:
             min_x=np.min(x)
-        xx = np.arange(min_x,max_x+1,1.0)
+        xx = np.arange(min_x,max_x,1.0)
         yy = yi(xx)
 
         coeff = 3/8/np.sqrt(s.R)
@@ -611,16 +631,15 @@ def ExpDecay(x,E0,Eb,d0,R):
     a=area(x,R)
     return Eb+(E0-Eb)*np.exp(-lamb()*a/d0)
 
-def fitExpDecay(x,y,R):
+def fitExpDecay(x,y,R,sigma=None):
     seeds=[5000/1e9,1000/1e9,200]
     try:
         def TheExp(x,E0,Eb,d0):
             x[x<0]=0
             a=area(x,R)
             return Eb+(E0-Eb)*np.exp(-lamb()*a/d0)
-        popt, pcov = curve_fit(TheExp, x,y , p0=seeds, maxfev=10000)
+        popt, pcov = curve_fit(TheExp, x,y ,sigma=sigma, p0=seeds, maxfev=10000)
         stds=[np.sqrt(pcov[0][0]), np.sqrt(pcov[1][1]), np.sqrt(pcov[2][2])]
         return popt, stds
     except (RuntimeError,ValueError):
-
         return None
