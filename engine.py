@@ -611,7 +611,7 @@ def ExpDecay(x,E0,Eb,d0,R):
     return Eb+(E0-Eb)*weight
 
 def fitExpDecay(x,y,R,sigma=None):
-    seeds=[5000/1e9,1000/1e9,200]
+    seeds=[10000/1e9,1000/1e9,200]
     try:
         def TheExp(x,E0,Eb,d0):
             x[x<0]=0            
@@ -621,11 +621,21 @@ def fitExpDecay(x,y,R,sigma=None):
             #a=a/d0
             #weight = 2/np.pi*np.arctan(1/a)-( a/(1+a**2) )/np.pi
             return Eb+(E0-Eb)*weight
-        popt, pcov = curve_fit(TheExp, x,y ,sigma=sigma, p0=seeds, maxfev=10000)
-        stds=[np.sqrt(pcov[0][0]), np.sqrt(pcov[1][1]), np.sqrt(pcov[2][2])]
-        return popt, stds
+        popt1, pcov1 = curve_fit(TheExp, x,y ,sigma=sigma, p0=seeds, maxfev=10000)
+        stds1=[np.sqrt(pcov1[0][0]), np.sqrt(pcov1[1][1]), np.sqrt(pcov1[2][2])]
+        d01 = popt1[2]
+        i_dhalf = np.argmin(abs(x-d01/2))
+        try:
+            popt2, pcov2 = curve_fit(TheExp, x[:i_dhalf], y[:i_dhalf], sigma=sigma, p0=seeds, maxfev=10000)
+            stds2 = [np.sqrt(pcov2[0][0]), np.sqrt(pcov2[1][1]), np.sqrt(pcov2[2][2])]
+
+        except:
+            print("Second Exp Fit failed!")
+            popt2=popt1
+            stds2=stds1
+        return popt1, stds1, popt2, stds2, i_dhalf
     except (RuntimeError,ValueError):
-        return None,None
+        return None, None, None, None, None
 
 def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
     x = s.indentation
