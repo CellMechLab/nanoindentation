@@ -96,9 +96,9 @@ def getMedCurve(xar,yar,loose = True,threshold=5, error=False):
             yerr.append(std)
         yerr = np.asarray(yerr)
     if error == False:
-        return xnew, ynew
+        return xnew[:-1], ynew[:-1]
     elif error == True:
-        return xnew, ynew, yerr
+        return xnew[:-1], ynew[:-1], yerr[:-1]
 
 def calculateSS(s,indentation=None,touch=None):
     # a = sqrt(R delta)
@@ -174,32 +174,7 @@ def Elastography2(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=
     Ey = coeff*deriv/np.sqrt(xx)
     Ex = list(s.indentation)
     dwin = int((win-1)/2)
-    return Ex[dwin:-dwin],Ey[dwin:-dwin]
-
-def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
-    x = s.indentation
-    y = s.touch
-    if len(x)>1:
-        yi = interp1d(x,y)
-        max_x=np.min([np.max(s.indentation), maxindentation])
-        min_x=1
-        if np.min(x)>1:
-            min_x=np.min(x)
-        xx = np.arange(min_x,max_x,1.0)
-        yy = yi(xx)
-
-        coeff = 3/8/np.sqrt(s.R)
-        win = grainstep
-        if win%2 == 0:
-            win+=1
-        deriv = savgol_filter(yy,win,1,delta=1.0,deriv=1)
-        Ey = coeff*deriv/np.sqrt(xx)
-        Ex = list(xx)
-        #dwin = int((win-1)/2)
-    else:
-        Ex=None
-        Ey=None
-    return Ex,Ey
+    return Ex[dwin:-dwin-1],Ey[dwin:-dwin-1]
 
 def Elastography(self,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
     #select one index every grainstep in nm along indentation; works with uneven step as well
@@ -621,25 +596,60 @@ def LayerRoss(x,E1,E2,h,R,poisson=0.5):
     return F
 
 def lamb():
-    return 2.0
+    return 0.8
 
 def area(x,R):
     return np.sqrt(2*R*x)
 
 def ExpDecay(x,E0,Eb,d0,R):
-    x[x<0]=0
+    x[x<0]=0    
+    #exp = Eb+(E0-Eb)*np.exp(-lamb()*a/d0)
     a=area(x,R)
-    return Eb+(E0-Eb)*np.exp(-lamb()*a/d0)
+    weight = np.exp(-lamb()*a/d0)
+    #a=a/d0
+    #weight = 2/np.pi*np.arctan(1/a)-( a/(1+a**2) )/np.pi
+    return Eb+(E0-Eb)*weight
 
 def fitExpDecay(x,y,R,sigma=None):
     seeds=[5000/1e9,1000/1e9,200]
     try:
         def TheExp(x,E0,Eb,d0):
-            x[x<0]=0
+            x[x<0]=0            
+            #return Eb+(E0-Eb)*np.exp(-lamb()*a/d0)            
             a=area(x,R)
-            return Eb+(E0-Eb)*np.exp(-lamb()*a/d0)
+            weight = np.exp(-lamb()*a/d0)
+            #a=a/d0
+            #weight = 2/np.pi*np.arctan(1/a)-( a/(1+a**2) )/np.pi
+            return Eb+(E0-Eb)*weight
         popt, pcov = curve_fit(TheExp, x,y ,sigma=sigma, p0=seeds, maxfev=10000)
         stds=[np.sqrt(pcov[0][0]), np.sqrt(pcov[1][1]), np.sqrt(pcov[2][2])]
         return popt, stds
     except (RuntimeError,ValueError):
-        return None
+        return None,None
+
+def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
+    x = s.indentation
+    y = s.touch
+    if len(x)>1:
+        yi = interp1d(x,y)
+        max_x=np.min([np.max(s.indentation), maxindentation])
+        min_x=1
+        if np.min(x)>1:
+            min_x=np.min(x)
+        xx = np.arange(min_x,max_x,1.0)
+        yy = yi(xx)
+
+        coeff = 3/8/np.sqrt(s.R)
+        win = grainstep
+        if win%2 == 0:
+            win+=1
+        deriv = savgol_filter(yy,win,1,delta=1.0,deriv=1)
+        Ey = coeff*deriv/np.sqrt(xx)
+        Ex = list(xx)
+        dwin = int(win-1) #int((win-1)/2)
+        #Ex=Ex[dwin:-dwin]
+        #Ey=Ey[dwin:-dwin]
+    else:
+        Ex=None
+        Ey=None
+    return Ex,Ey

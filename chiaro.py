@@ -232,6 +232,7 @@ class curveWindow(QtWidgets.QMainWindow):
                 cdown = 10        
         
         xmed,ymed, yerr = engine.getMedCurve(xx,yy,loose = True, error=True)
+
         #points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
         points = pg.PlotCurveItem(xmed,ymed*1e9,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 255,200),width=2))
         y_uperror=ymed+yerr
@@ -252,6 +253,8 @@ class curveWindow(QtWidgets.QMainWindow):
         if any(engine.np.isnan(d0h)) == False:
             self.d0h=d0h
 
+        engine.np.savetxt('x.txt',xmed)
+        engine.np.savetxt('y.txt',ymed)
         pars, covs = engine.fitExpDecay(xmed,ymed, s.R,sigma=yerr)
         if pars is not None:
             yfit = engine.ExpDecay(xmed,*pars,s.R)
