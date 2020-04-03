@@ -626,7 +626,7 @@ def fitExpDecay(x,y,R,sigma=None):
         d01 = popt1[2]
         i_dhalf = np.argmin(abs(x-d01/2))
         try:
-            popt2, pcov2 = curve_fit(TheExp, x[:i_dhalf], y[:i_dhalf], sigma=sigma, p0=seeds, maxfev=10000)
+            popt2, pcov2 = curve_fit(TheExp, x[:i_dhalf], y[:i_dhalf], p0=popt1, maxfev=10000)
             stds2 = [np.sqrt(pcov2[0][0]), np.sqrt(pcov2[1][1]), np.sqrt(pcov2[2][2])]
 
         except:
@@ -657,8 +657,8 @@ def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=999
         Ey = coeff*deriv/np.sqrt(xx)
         Ex = list(xx)
         dwin = int(win-1) #int((win-1)/2)
-        #Ex=Ex[dwin:-dwin]
-        #Ey=Ey[dwin:-dwin]
+        Ex=Ex[dwin:-dwin]
+        Ey=Ey[dwin:-dwin]
     else:
         Ex=None
         Ey=None
