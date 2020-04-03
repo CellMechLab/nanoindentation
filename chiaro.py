@@ -122,10 +122,10 @@ class curveWindow(QtWidgets.QMainWindow):
             pickle.dump(data, f)
         QtWidgets.QApplication.restoreOverrideCursor()
 
-        if phase == 2:
-            self.b2Init()
-        elif phase == 3:
-            self.b3Init()
+        #if phase == 2:
+        #    self.b2Init()
+        #elif phase == 3:
+        #    self.b3Init()
 
     
     ################################################
