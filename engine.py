@@ -430,7 +430,7 @@ def NanosurfOffsetDeriv(s, win=1000, step_z=50, factor=5, threshold_slopes=0.2, 
     ymax=[]
     xz0=[]
     z=s.z-min(s.z)
-    P = s.f - min(s.f) + 10
+    P = s.ffil - min(s.ffil) + 10             #NB, should be s.ffil, not f
     coeff = 3 / 8 / np.sqrt(s.R)
     if win % 2 == 0:
         win += 1
