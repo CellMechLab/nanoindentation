@@ -34,12 +34,15 @@ class contactPoint(uiPanel):
 class eeffPoint(contactPoint):
     def setSegment(self,s):
         self.s = s
-        self.curve = pg.PlotCurveItem( s.z,s.z,pen=pg.mkPen(pg.QtGui.QColor(0, 0, 255, 255), width=2))
+        self.curve = pg.PlotCurveItem( s.z,s.ffil,pen=pg.mkPen(pg.QtGui.QColor(0, 0, 255, 255), width=2))
         self.plot.addItem( self.curve )
         self.updatePlot()
 
     def updatePlot(self):
-        self.curve.setData(self.s.z,1000.0*engine.getEEE(self.s,int(self.minY.value()),float(self.offset.value())/1000.0))
+        #self.curve.setData(self.s.z,1000.0*engine.getEEE(self.s,int(self.minY.value()),float(self.offset.value())/1000.0))
+        p = self.getParams()
+        oX,oY,q = engine.eeffOffset(self.s,p[0],p[1])
+        self.curve.setData(self.s.z-oX,self.s.ffil-oY)
 
     def setUi(self):
         self.setWindowTitle("Eeff contact point")
@@ -51,8 +54,8 @@ class eeffPoint(contactPoint):
         self.minY.setSingleStep(100)
 
         self.offset = QtWidgets.QDoubleSpinBox()
-        self.offset.setMinimum(-100)
-        self.offset.setMaximum(100)
+        self.offset.setMinimum(-1000)
+        self.offset.setMaximum(1000)
         self.offset.setDecimals(2)
         self.offset.setValue(1.50)
         self.offset.setSingleStep(0.1)

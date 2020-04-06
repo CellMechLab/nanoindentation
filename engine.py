@@ -76,6 +76,10 @@ def getMedCurve(xar,yar,loose = True,threshold=5, error=False):
             ycur = np.interp(xnewall[imin:imax], xar[i], yar[i])
             ynewall[imin:imax] += ycur
             count[imin:imax] += 1
+            if imax>=len(ycur):
+                imax=len(ycur)-1
+            if imin==-1:
+                imin=0
             for j in range(imin, imax - 1):
                 ys[j][i] = ycur[j]
         cc = count > threshold
@@ -653,6 +657,8 @@ def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=999
         win = grainstep
         if win%2 == 0:
             win+=1
+        if len(yy)<=win:
+            return None,None
         deriv = savgol_filter(yy,win,1,delta=1.0,deriv=1)
         Ey = coeff*deriv/np.sqrt(xx)
         Ex = list(xx)
