@@ -463,9 +463,13 @@ class curveWindow(QtWidgets.QMainWindow):
         y,x = engine.np.histogram(Earray, bins=bins)
         if len(y)>=3:
             self.b3['plit2a'].setData(x,y)
-            e0,w,A,nx,ny = engine.gauss(x,y)
-            self.b3['plit2b'].setData(nx,ny)
-            w = w/engine.np.sqrt(len(Earray))
+            try:
+                e0,w,A,nx,ny = engine.gauss(x,y)
+                self.b3['plit2b'].setData(nx,ny)
+                w = w/engine.np.sqrt(len(Earray))
+            except:
+                e0=0
+                w=0
         else:
             e0=s.E
             w=0
