@@ -224,7 +224,7 @@ class curveWindow(QtWidgets.QMainWindow):
         self.d03=[]
         self.std_d03=[]
 
-        print('singles')
+        print('singles>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
         for s in self.b3['exp']:  
             Ex,Ey = engine.Elastography2withMax( s,grainstep,scaledistance,maxind)
             if Ex is None:
@@ -253,9 +253,7 @@ class curveWindow(QtWidgets.QMainWindow):
             if cdown == 0:
                 QtCore.QCoreApplication.processEvents()
                 cdown = 10        
-
-        xmed,ymed, yerr = engine.getMedCurve(xx,yy,loose = True, error=True)
-
+        xmed, ymed, yerr = engine.getMedCurve(xx,yy,loose = True, error=True)
         #points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
         points = pg.PlotCurveItem(xmed,ymed*1e9,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 255,200),width=2))
         y_uperror=ymed+yerr
@@ -278,7 +276,7 @@ class curveWindow(QtWidgets.QMainWindow):
 
         #engine.np.savetxt('x.txt',xmed)
         #engine.np.savetxt('y.txt',ymed)
-        print('bilayer')
+        print('bilayer>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
         pars1, covs1, pars2, covs2, pars3, covs3, i_dhalf = engine.fitExpDecay(xmed,ymed, s.R,sigma=yerr)
         print(pars1[2], pars2[2], pars3[2])
         if pars1 is not None:
@@ -663,25 +661,25 @@ class curveWindow(QtWidgets.QMainWindow):
                     s.invalid=True
 
 
-        xmed, ymed = engine.getMedCurve(xx, yy, loose=True)
-        # points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
-        points = pg.PlotCurveItem(xmed, ymed * 1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 255, 200), width=2))
-        self.ui.b2_plot_elasto.plotItem.addItem(points)
-
-        if any(engine.np.isnan(xmed)) == False and any(engine.np.isnan(ymed)) == False:
-            self.xmed = xmed
-            self.ymed = ymed
-        if any(engine.np.isnan(E0h)) == False:
-            self.E0h = E0h
-        if any(engine.np.isnan(Ebh)) == False:
-            self.Ebh = Ebh
-        if any(engine.np.isnan(d0h)) == False:
-            self.d0h = d0h
-
-        pars1, covs1, pars2, covs2, pars3, covs3, i_dhalf = engine.fitExpDecay(xmed, ymed, s.R)
-        if pars1 is not None:
-            yfit = engine.ExpDecay(xmed, pars2[0], pars1[1], pars1[2], s.R)
-            self.ui.b2_plot_elasto.addItem(pg.PlotCurveItem(xmed, yfit * 1e9, pen=self.greenPen))
+        # xmed, ymed = engine.getMedCurve(xx, yy, loose=True)
+        # # points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
+        # points = pg.PlotCurveItem(xmed, ymed * 1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 255, 200), width=2))
+        # self.ui.b2_plot_elasto.plotItem.addItem(points)
+        #
+        # if any(engine.np.isnan(xmed)) == False and any(engine.np.isnan(ymed)) == False:
+        #     self.xmed = xmed
+        #     self.ymed = ymed
+        # if any(engine.np.isnan(E0h)) == False:
+        #     self.E0h = E0h
+        # if any(engine.np.isnan(Ebh)) == False:
+        #     self.Ebh = Ebh
+        # if any(engine.np.isnan(d0h)) == False:
+        #     self.d0h = d0h
+        #
+        # pars1, covs1, pars2, covs2, pars3, covs3, i_dhalf = engine.fitExpDecay(xmed, ymed, s.R)
+        # if pars1 is not None:
+        #     yfit = engine.ExpDecay(xmed, pars2[0], pars1[1], pars1[2], s.R)
+        #     self.ui.b2_plot_elasto.addItem(pg.PlotCurveItem(xmed, yfit * 1e9, pen=self.greenPen))
 
 
         QtWidgets.QApplication.restoreOverrideCursor()
@@ -924,7 +922,7 @@ class curveWindow(QtWidgets.QMainWindow):
 
     def b1SelectDir(self):
         fname = QtWidgets.QFileDialog.getExistingDirectory(self,'Select the root dir','./')
-        if fname == '' or fname[0] =='':
+        if fname[0] =='':
             return
         self.workingdir = fname
         if self.ui.open_o11new.isChecked() is True:
@@ -951,19 +949,10 @@ class curveWindow(QtWidgets.QMainWindow):
         for node in self.b1['exp']:
             attach(node,self.ui.b1_mainList)
 
-        if len(self.b1['exp'].haystack)==0:
-            QtWidgets.QApplication.restoreOverrideCursor()
-            return
-
         for c in self.b1['exp'].haystack:
             c.open()
             progress.setValue(progress.value() + 1)
             QtCore.QCoreApplication.processEvents()
-        
-        if len(self.b1['exp'].haystack[0])==0:
-            QtWidgets.QApplication.restoreOverrideCursor()
-            return
-            
         self.ui.b1_forwardSegment.setMaximum( len(self.b1['exp'].haystack[0])-1 )
         self.ui.b1_forwardSegment.setValue(1)
         progress.setValue(len(self.b1['exp'].haystack))
