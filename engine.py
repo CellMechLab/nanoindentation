@@ -41,7 +41,7 @@ class bsegment(object):
         self.IndexDv = None   #aux indices
         self.E = None
 
-def getMedCurve(xar,yar,loose = True,threshold=5, error=False):
+def getMedCurve(xar,yar,loose = True,threshold=1, error=False):
     if loose is False:
         xmin = -np.inf
         xmax = np.inf
@@ -76,9 +76,9 @@ def getMedCurve(xar,yar,loose = True,threshold=5, error=False):
             ycur = np.interp(xnewall[imin:imax], xar[i], yar[i])
             ynewall[imin:imax] += ycur
             count[imin:imax] += 1
-            for j in range(imin, imax - 1):
+            for j in range(imin, imax - 2):
                 ys[j][i] = ycur[j]
-        cc = count > threshold
+        cc = count >= threshold
         xnew = xnewall[cc]
         ynew = ynewall[cc] / count[cc]
         yerrs_new = ys[cc]
@@ -596,7 +596,7 @@ def LayerRoss(x,E1,E2,h,R,poisson=0.5):
     return F
 
 def lamb():
-    return 0.8
+    return 1.31
 
 def area(x,R):
     return np.sqrt(2*R*x)
@@ -614,27 +614,43 @@ def fitExpDecay(x,y,R,sigma=None):
     seeds=[10000/1e9,1000/1e9,200]
     try:
         def TheExp(x,E0,Eb,d0):
-            x[x<0]=0            
-            #return Eb+(E0-Eb)*np.exp(-lamb()*a/d0)            
+            x[x<0]=0
+            #return Eb+(E0-Eb)*np.exp(-lamb()*a/d0)
             a=area(x,R)
             weight = np.exp(-lamb()*a/d0)
             #a=a/d0
             #weight = 2/np.pi*np.arctan(1/a)-( a/(1+a**2) )/np.pi
             return Eb+(E0-Eb)*weight
-        popt1, pcov1 = curve_fit(TheExp, x,y ,sigma=sigma, p0=seeds, maxfev=10000)
+        if sigma is None or any(sigma)==0:
+            popt1, pcov1 = curve_fit(TheExp, x[:-1],y[:-1], p0=seeds, maxfev=10000)
+        else:
+            popt1, pcov1 = curve_fit(TheExp, x[:-1], y[:-1], sigma=sigma[:-1], p0=seeds, maxfev=10000)#sigma=sigma[:-1],
         stds1=[np.sqrt(pcov1[0][0]), np.sqrt(pcov1[1][1]), np.sqrt(pcov1[2][2])]
         d01 = popt1[2]
         i_dhalf = np.argmin(abs(x-d01/2))
         try:
-            popt2, pcov2 = curve_fit(TheExp, x[:i_dhalf], y[:i_dhalf], p0=popt1, maxfev=10000)
+            if sigma is None or any(sigma)==0:
+                popt2, pcov2 = curve_fit(TheExp, x[:i_dhalf], y[:i_dhalf], p0=popt1, maxfev=10000)
+            else:
+                popt2, pcov2 = curve_fit(TheExp, x[:i_dhalf], y[:i_dhalf], sigma=sigma[:i_dhalf], p0=popt1, maxfev=10000)
             stds2 = [np.sqrt(pcov2[0][0]), np.sqrt(pcov2[1][1]), np.sqrt(pcov2[2][2])]
-
         except:
             print("Second Exp Fit failed!")
             popt2=popt1
             stds2=stds1
-        return popt1, stds1, popt2, stds2, i_dhalf
+        try:
+            if sigma is None or any(sigma)==0:
+                popt3, pcov3 = curve_fit(TheExp, x[i_dhalf:-1], y[i_dhalf:-1], p0=popt1, maxfev=10000)
+            else:
+                popt3, pcov3 = curve_fit(TheExp, x[i_dhalf:-1], y[i_dhalf:-1], sigma=sigma[i_dhalf:-1], p0=popt1, maxfev=10000)
+            stds3 = [np.sqrt(pcov3[0][0]), np.sqrt(pcov3[1][1]), np.sqrt(pcov3[2][2])]
+        except:
+            print("Third Exp Fit failed!")
+            popt3=popt1
+            stds3=stds1
+        return popt1, stds1, popt2, stds2, popt3, stds3, i_dhalf
     except (RuntimeError,ValueError):
+        print("First Exp Fit failed!")
         return None, None, None, None, None
 
 def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):

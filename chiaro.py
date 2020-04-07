@@ -57,7 +57,13 @@ class curveWindow(QtWidgets.QMainWindow):
         R = 3000.0
         N = int(a.length.value())
         xbase = engine.np.linspace(0,N,N)
-        for i in range(50):
+
+        if a.modAli.isChecked() is False:
+            data = engine.np.loadtxt('nanoindentation\Lambda_AllDataRos.txt') #'nanoindentation\MyFile.txt')#'nanoindentation\Lambda_AllDataRos.txt')  # ('MyFile.txt')
+            endrange =int(len(data[0,:])/2)
+        else:
+            endrange=50
+        for i in range(endrange):
             mysegs.append(engine.bsegment())
             mysegs[-1].R = R
             mysegs[-1].indentation = xbase
@@ -69,9 +75,12 @@ class curveWindow(QtWidgets.QMainWindow):
                 if a.modAli.isChecked() is True:
                     mysegs[-1].touch = engine.noisify(engine.LayerStd(xbase,E1,E2,h,R),noise)
                 else:
-                    data = engine.np.loadtxt('MyFile.txt')
-                    x = data[:,0]
-                    y = data[:,1]
+                    x = data[:,i*2]
+                    y = data[:,i*2+1]
+                    if x[1]<0.000001:
+                        x=x*1e9
+                    if y[1]<0.000001:
+                        y=y*1e12
                     mysegs[-1].indentation = x
                     mysegs[-1].touch = engine.noisify(y/1000.0,noise)
                     #mysegs[-1].touch = engine.noisify(engine.LayerRoss(xbase,E1,E2,h,R),noise)
@@ -208,6 +217,14 @@ class curveWindow(QtWidgets.QMainWindow):
         Ebh=[]
         d0h=[]
 
+        self.d01=[]
+        self.std_d01=[]
+        self.d02=[]
+        self.std_d02=[]
+        self.d03=[]
+        self.std_d03=[]
+
+        print('singles')
         for s in self.b3['exp']:  
             Ex,Ey = engine.Elastography2withMax( s,grainstep,scaledistance,maxind)
             if Ex is None:
@@ -215,11 +232,17 @@ class curveWindow(QtWidgets.QMainWindow):
             s.ElastX = Ex
             s.ElastY = Ey
 
-            pars1, covs1, pars2, covs2, i_dhalf = engine.fitExpDecay(Ex,Ey,s.R)
+            pars1, covs1, pars2, covs2, pars3, covs3, i_dhalf = engine.fitExpDecay(Ex,Ey,s.R)
             if pars1 is not None:
                 E0h.append(pars2[0]*1e9)
-                Ebh.append(pars1[1]*1e9)
-                d0h.append(pars1[2])
+                Ebh.append(pars3[1]*1e9)
+                d0h.append(pars2[2])
+            self.d01.append(pars1[2])
+            self.std_d01.append(engine.np.sqrt(covs1[2]))
+            self.d02.append(pars2[2])
+            self.std_d02.append(engine.np.sqrt(covs2[2]))
+            self.d03.append(pars3[2])
+            self.std_d03.append(engine.np.sqrt(covs3[2]))
 
             xx.append(Ex)
             yy.append(Ey)
@@ -230,7 +253,7 @@ class curveWindow(QtWidgets.QMainWindow):
             if cdown == 0:
                 QtCore.QCoreApplication.processEvents()
                 cdown = 10        
-        
+
         xmed,ymed, yerr = engine.getMedCurve(xx,yy,loose = True, error=True)
 
         #points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
@@ -253,17 +276,19 @@ class curveWindow(QtWidgets.QMainWindow):
         if any(engine.np.isnan(d0h)) == False:
             self.d0h=d0h
 
-        engine.np.savetxt('x.txt',xmed)
-        engine.np.savetxt('y.txt',ymed)
-        pars1, covs1, pars2, covs2, i_dhalf = engine.fitExpDecay(xmed,ymed, s.R,sigma=yerr)
+        #engine.np.savetxt('x.txt',xmed)
+        #engine.np.savetxt('y.txt',ymed)
+        print('bilayer')
+        pars1, covs1, pars2, covs2, pars3, covs3, i_dhalf = engine.fitExpDecay(xmed,ymed, s.R,sigma=yerr)
+        print(pars1[2], pars2[2], pars3[2])
         if pars1 is not None:
-            yfit1 = engine.ExpDecay(xmed[i_dhalf:],*pars1, s.R)
+            yfit1 = engine.ExpDecay(xmed[i_dhalf:],*pars3, s.R)
             yfit2 = engine.ExpDecay(xmed[:i_dhalf], *pars2, s.R)
             self.ui.b3_long.addItem( pg.PlotCurveItem(xmed[i_dhalf:],yfit1*1e9,pen=self.greenPen) )
             self.ui.b3_long.addItem(pg.PlotCurveItem(xmed[:i_dhalf], yfit2*1e9, pen=self.greenPen))
             self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars2[0]*1e8)/100.0))
-            self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars1[1]*1e8)/100.0))
-            self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars1[2])))
+            self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars3[1]*1e8)/100.0))
+            self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars2[2])))
 
         self.ui.b3_plothist_E0.clear()
         self.ui.b3_plothist_Eb.clear()
@@ -297,7 +322,7 @@ class curveWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.restoreOverrideCursor()
 
         if fit is True:
-            return xmed,ymed*1e9, pars1, covs1, pars2, covs2
+            return xmed,ymed*1e9, pars1, covs1, pars2, covs2, pars3, covs3
         else:
             return E0h,Ebh,d0h
 
@@ -319,8 +344,12 @@ class curveWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))        
         with open(fname[0],'w') as f:
             if fit is True:
-                f.write('{}\t{}\t{}\t{}\n'.format("mean fit params E0, Eb, d0",data[4][0], data[2][1], data[2][2]))
-                f.write('{}\t{}\t{}\t{}\n'.format("mean fit std dev E0, Eb, d0", data[5][0], data[3][1], data[3][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 1 params E0, Eb, d0",data[2][0], data[2][1], data[2][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 1 std dev E0, Eb, d0", data[3][0], data[3][1], data[3][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 2 params E0, Eb, d0",data[4][0], data[4][1], data[4][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 2 std dev E0, Eb, d0", data[5][0], data[5][1], data[5][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 3 params E0, Eb, d0",data[6][0], data[6][1], data[6][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 3 std dev E0, Eb, d0", data[7][0], data[7][1], data[7][2]))
                 f.write('Ex\tEy\n')
             else:
                 f.write('E0\tEb\td0\n')
@@ -434,10 +463,14 @@ class curveWindow(QtWidgets.QMainWindow):
         if bins==0:
             bins='auto'
         y,x = engine.np.histogram(Earray, bins=bins)
-        self.b3['plit2a'].setData(x,y)
-        e0,w,A,nx,ny = engine.gauss(x,y)        
-        self.b3['plit2b'].setData(nx,ny)
-        w = w/engine.np.sqrt(len(Earray))
+        if len(y)>=3:
+            self.b3['plit2a'].setData(x,y)
+            e0,w,A,nx,ny = engine.gauss(x,y)
+            self.b3['plit2b'].setData(nx,ny)
+            w = w/engine.np.sqrt(len(Earray))
+        else:
+            e0=s.E
+            w=0
         self.ui.b3_results.setText('<html><head/><body><p><span style=" font-weight:600;">{}&plusmn;{}</span> kPa</p></body></html>'.format(int(e0/10)/100.0,int(w/10)/100.0))
 
         R = self.b3['exp'][0].R
@@ -610,15 +643,7 @@ class curveWindow(QtWidgets.QMainWindow):
                 s.ElastX = Ex
                 s.ElastY = Ey
 
-                pars1, covs1, pars2, covs2, i_dhalf = engine.fitExpDecay(Ex, Ey, s.R)
-
-                s.E0=pars1[0] * 1e9
-                s.Eb=pars1[1] * 1e9
-                s.do=pars1[2]
-                if pars1 is not None:
-                    E0h.append(pars1[0] * 1e9)
-                    Ebh.append(pars1[1] * 1e9)
-                    d0h.append(pars1[2])
+                pars1, covs1, pars2, covs2, pars3, covs3, i_dhalf = engine.fitExpDecay(Ex, Ey, s.R)
 
                 xx.append(Ex)
                 yy.append(Ey)
@@ -653,7 +678,7 @@ class curveWindow(QtWidgets.QMainWindow):
         if any(engine.np.isnan(d0h)) == False:
             self.d0h = d0h
 
-        pars1, covs1, pars2, covs2, i_dhalf = engine.fitExpDecay(xmed, ymed, s.R)
+        pars1, covs1, pars2, covs2, pars3, covs3, i_dhalf = engine.fitExpDecay(xmed, ymed, s.R)
         if pars1 is not None:
             yfit = engine.ExpDecay(xmed, pars2[0], pars1[1], pars1[2], s.R)
             self.ui.b2_plot_elasto.addItem(pg.PlotCurveItem(xmed, yfit * 1e9, pen=self.greenPen))
@@ -843,7 +868,7 @@ class curveWindow(QtWidgets.QMainWindow):
                 self.b2['plit1b'].setData(s.z-s.offsetX,s.ffil-s.offsetY)
                 self.b2['plit1c'].setData([0, 0], [min(s.f), max(s.f)], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
 
-        if s.bol is not None:
+        if s.bol is not None and s.x_CPderiv[0]!=0:
             self.b2['plit2'].setData(s.x_CPderiv - s.offsetX, s.y_CPderiv,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 0,255),width=1))
             self.b2['plit2b'].setData([min(s.x_CPderiv - s.offsetX), max(s.x_CPderiv - s.offsetX)],[s.threshold_exp, s.threshold_exp], pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
         if s.bol_deriv is not None:
@@ -908,6 +933,7 @@ class curveWindow(QtWidgets.QMainWindow):
             self.b1['exp'] = experiment.ChiaroGenova(fname)
         elif self.ui.open_nanosurf.isChecked() is True:
             self.b1['exp'] = experiment.NanoSurf(fname)
+
         self.b1['exp'].browse()
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
         progress = QtWidgets.QProgressDialog("Opening files...", "Cancel opening", 0, len(self.b1['exp'].haystack))

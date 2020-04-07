@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Chiaro.ui'
+# Form implementation generated from reading ui file 'nanoindentation\Chiaro.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -15,7 +15,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1334, 745)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("ico.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("nanoindentation\\ico.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -516,7 +516,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5.addWidget(self.ShiftArray)
         self.b3_ShiftArrayImage = QtWidgets.QLabel(self.stackedWidgetPage3)
         self.b3_ShiftArrayImage.setText("")
-        self.b3_ShiftArrayImage.setPixmap(QtGui.QPixmap("out.png"))
+        self.b3_ShiftArrayImage.setPixmap(QtGui.QPixmap("nanoindentation\\out.png"))
         self.b3_ShiftArrayImage.setObjectName("b3_ShiftArrayImage")
         self.horizontalLayout_5.addWidget(self.b3_ShiftArrayImage)
         spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
@@ -592,7 +592,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.switcher.setCurrentIndex(2)
+        self.switcher.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

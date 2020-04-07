@@ -303,10 +303,10 @@ class Fakedata(uiPanel):
         self.setWindowTitle("Fake data generator")
 
         self.noiselevel = QtWidgets.QSpinBox()
-        self.noiselevel.setMinimum(1)
+        self.noiselevel.setMinimum(0)
         self.noiselevel.setMaximum(9999)
         self.noiselevel.setSingleStep(10)
-        self.noiselevel.setProperty("value", 100)
+        self.noiselevel.setProperty("value", 10)
 
         layers = QtWidgets.QGroupBox()
         horizontalLayout_1 = QtWidgets.QHBoxLayout()
