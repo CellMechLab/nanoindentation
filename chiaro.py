@@ -899,7 +899,7 @@ class curveWindow(QtWidgets.QMainWindow):
 
     def b1SelectDir(self):
         fname = QtWidgets.QFileDialog.getExistingDirectory(self,'Select the root dir','./')
-        if fname[0] =='':
+        if fname == '' or fname[0] =='':
             return
         self.workingdir = fname
         if self.ui.open_o11new.isChecked() is True:
@@ -925,10 +925,19 @@ class curveWindow(QtWidgets.QMainWindow):
         for node in self.b1['exp']:
             attach(node,self.ui.b1_mainList)
 
+        if len(self.b1['exp'].haystack)==0:
+            QtWidgets.QApplication.restoreOverrideCursor()
+            return
+
         for c in self.b1['exp'].haystack:
             c.open()
             progress.setValue(progress.value() + 1)
             QtCore.QCoreApplication.processEvents()
+        
+        if len(self.b1['exp'].haystack[0])==0:
+            QtWidgets.QApplication.restoreOverrideCursor()
+            return
+            
         self.ui.b1_forwardSegment.setMaximum( len(self.b1['exp'].haystack[0])-1 )
         self.ui.b1_forwardSegment.setValue(1)
         progress.setValue(len(self.b1['exp'].haystack))

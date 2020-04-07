@@ -86,6 +86,7 @@ class ChiaroBase(DataSet):
         f = open(self.filename)
         targets=['Tip radius (um)','Calibration factor','k (N/m)','SMDuration (s)','Piezo Indentation Sweep Settings','Profile:','E[eff] (Pa)','X-position (um)','Y-position (um)']
         reading_protocol = False
+         
         for line in f:
             if reading_protocol is False:
                 if line[0:len(targets[0])] == targets[0]:
@@ -100,9 +101,9 @@ class ChiaroBase(DataSet):
                 elif line[0:len(targets[6])] == targets[6]:
                     self.youngProvided = float(line.strip().replace(',','.').split('\t')[1])/1.0e9 #saved in Pa, internally in GPa; this is Eeff (i.e. including 1-\nu^2)
                 elif line[0:len(targets[7])] == targets[7]:
-                    self.xpos = float(line[len(targets[7]):].strip())
+                    self.xpos = float(line[len(targets[7]):].strip().replace(',','.'))
                 elif line[0:len(targets[8])] == targets[8]:
-                    self.ypos = float(line[len(targets[8]):].strip())
+                    self.ypos = float(line[len(targets[8]):].strip().replace(',','.'))
                 elif line[0:len(targets[5])] == targets[5]:
                     reading_protocol = True
                 elif line[0:len(targets[4])] == targets[4]:
