@@ -204,8 +204,9 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b4_doElas.clicked.connect(self.b3_Alistography)
         self.ui.b3_CreateCpShiftArray.clicked.connect(self.b3_CreateCpShiftArray)
 
-    def b3_Alistography(self,fit=False):
+    def b3_Alistography(self,fit=True):
         self.ui.b3_long.plotItem.clear()
+        self.ui.b3_plotRed.plotItem.clear()
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
         
         progress = QtWidgets.QProgressDialog("Performing elastography ...", "Cancel E-analysis", 0, len(self.b4['exp']))
@@ -217,9 +218,9 @@ class curveWindow(QtWidgets.QMainWindow):
         xx=[]
         yy=[]
 
-        E0h=[]
-        Ebh=[]
-        d0h=[]
+        #E0h=[]
+        #Ebh=[]
+        #d0h=[]
 
         self.d01=[]
         self.std_d01=[]
@@ -237,10 +238,10 @@ class curveWindow(QtWidgets.QMainWindow):
             s.ElastY = Ey
 
             pars1, covs1, pars2, covs2, pars3, covs3, i_dhalf = engine.fitExpDecay(Ex,Ey,s.R)
-            if pars1 is not None:
-                E0h.append(pars2[0]*1e9)
-                Ebh.append(pars3[1]*1e9)
-                d0h.append(pars2[2])
+            #if pars1 is not None:
+            #    E0h.append(pars2[0]*1e9)
+            #    Ebh.append(pars3[1]*1e9)
+            #    d0h.append(pars2[2])
             self.d01.append(pars1[2])
             self.std_d01.append(engine.np.sqrt(covs1[2]))
             self.d02.append(pars2[2])
@@ -259,24 +260,27 @@ class curveWindow(QtWidgets.QMainWindow):
                 cdown = 10        
         xmed, ymed, yerr = engine.getMedCurve(xx,yy,loose = True, error=True)
         #points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
+        points1 = pg.PlotCurveItem(xmed,ymed*1e9,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 255,200),width=2))
+        self.ui.b3_long.plotItem.addItem( points1 )
+
         points = pg.PlotCurveItem(xmed,ymed*1e9,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 255,200),width=2))
         y_uperror=ymed+yerr
         y_downerror=ymed-yerr
         yup_curve = pg.PlotCurveItem(xmed,y_uperror*1e9,pen=pg.mkPen( pg.QtGui.QColor(255, 0, 0,255),width=2))
         ydown_curve = pg.PlotCurveItem(xmed, y_downerror * 1e9,pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
         errorzone= pg.FillBetweenItem(ydown_curve, yup_curve, brush='r')
-        self.ui.b3_long.plotItem.addItem( points )
-        self.ui.b3_long.plotItem.addItem(errorzone)
+        self.ui.b3_plotRed.plotItem.addItem( points )
+        self.ui.b3_plotRed.plotItem.addItem(errorzone)
 
         if any(engine.np.isnan(xmed))== False and any(engine.np.isnan(ymed))==False:
             self.xmed=xmed
             self.ymed=ymed
-        if any(engine.np.isnan(E0h)) == False:
-            self.E0h=E0h
-        if any(engine.np.isnan(Ebh)) == False:
-            self.Ebh=Ebh
-        if any(engine.np.isnan(d0h)) == False:
-            self.d0h=d0h
+        #if any(engine.np.isnan(E0h)) == False:
+        #    self.E0h=E0h
+        #if any(engine.np.isnan(Ebh)) == False:
+        #    self.Ebh=Ebh
+        #if any(engine.np.isnan(d0h)) == False:
+        #    self.d0h=d0h
 
         #engine.np.savetxt('x.txt',xmed)
         #engine.np.savetxt('y.txt',ymed)
@@ -286,18 +290,18 @@ class curveWindow(QtWidgets.QMainWindow):
         if pars1 is not None:
             yfit1 = engine.ExpDecay(xmed[i_dhalf:],*pars3, s.R)
             yfit2 = engine.ExpDecay(xmed[:i_dhalf], *pars2, s.R)
-            self.ui.b3_long.addItem( pg.PlotCurveItem(xmed[i_dhalf:],yfit1*1e9,pen=self.greenPen) )
-            self.ui.b3_long.addItem(pg.PlotCurveItem(xmed[:i_dhalf], yfit2*1e9, pen=self.greenPen))
+            self.ui.b3_plotRed.addItem( pg.PlotCurveItem(xmed[i_dhalf:],yfit1*1e9,pen=self.greenPen) )
+            self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[:i_dhalf], yfit2*1e9, pen=self.greenPen))
             self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars2[0]*1e8)/100.0))
             self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars3[1]*1e8)/100.0))
             self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars2[2])))
 
-        self.ui.b3_plothist_E0.clear()
-        self.ui.b3_plothist_Eb.clear()
-        self.ui.b3_plothist_d0.clear()
+        #self.ui.b3_plothist_E0.clear()
+        #self.ui.b3_plothist_Eb.clear()
+        #self.ui.b3_plothist_d0.clear()
 
-        self.ui.b3_plothist_E0.addItem(pg.PlotDataItem(E0h, pen=None, symbol='o'))
-        self.ui.b3_plothist_E0.setYRange(-20000,200000, padding=0)
+        #self.ui.b3_plothist_E0.addItem(pg.PlotDataItem(E0h, pen=None, symbol='o'))
+        #self.ui.b3_plothist_E0.setYRange(-20000,200000, padding=0)
         #y,x = engine.np.histogram(E0h, bins='auto',range=(max(0,min(E0h)),min([1000000,max(E0h)])))
         #self.ui.b3_plothist_E0.addItem(pg.PlotDataItem(x, y, stepMode=True,pen=pg.mkPen('r')))
         #self.ui.b3_plothist_E0.addItem(pg.PlotCurveItem(x, y, stepMode=True,pen=pg.mkPen('r')))
@@ -305,16 +309,16 @@ class curveWindow(QtWidgets.QMainWindow):
         #err = engine.np.std(E0h)
         #self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}&plusmn;{}</span> kPa</p></body></html>'.format(int(val/10)/100.0,int(err/10)/100.0))
 
-        self.ui.b3_plothist_Eb.addItem(pg.PlotDataItem(Ebh, pen=None, symbol='o'))
-        self.ui.b3_plothist_Eb.setYRange(-2000, 25000, padding=0)
+        #self.ui.b3_plothist_Eb.addItem(pg.PlotDataItem(Ebh, pen=None, symbol='o'))
+        #self.ui.b3_plothist_Eb.setYRange(-2000, 25000, padding=0)
         #y,x = engine.np.histogram(Ebh, bins='auto',range=(max(0,min(Ebh)),min([100000,max(Ebh)])))
         #self.ui.b3_plothist_Eb.addItem(pg.PlotCurveItem(x, y, stepMode=True,pen=pg.mkPen('r')))
         #val = engine.np.average(Ebh)
         #err = engine.np.std(Ebh)
         #self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}&plusmn;{}</span> kPa</p></body></html>'.format(int(val/10)/100.0,int(err/10)/100.0))
 
-        self.ui.b3_plothist_d0.addItem(pg.PlotDataItem(d0h, pen=None, symbol='o'))
-        self.ui.b3_plothist_d0.setYRange(-100, 1000, padding=0)
+        #self.ui.b3_plothist_d0.addItem(pg.PlotDataItem(d0h, pen=None, symbol='o'))
+        #self.ui.b3_plothist_d0.setYRange(-100, 1000, padding=0)
         #y,x = engine.np.histogram(d0h, bins='auto',range=(max(0,min(d0h)),min([10000,max(d0h)])))
         #self.ui.b3_plothist_d0.addItem(pg.PlotCurveItem(x, y, stepMode=True,pen=pg.mkPen('r')))
         #val = engine.np.average(d0h)
@@ -323,10 +327,10 @@ class curveWindow(QtWidgets.QMainWindow):
 
         QtWidgets.QApplication.restoreOverrideCursor()
 
-        if fit is True:
-            return xmed,ymed*1e9, pars1, covs1, pars2, covs2, pars3, covs3
-        else:
-            return E0h,Ebh,d0h
+        #if fit is True:
+        return xmed,ymed*1e9, pars1, covs1, pars2, covs2, pars3, covs3
+        #else:
+        #    return E0h,Ebh,d0h
 
     def b3Export(self):
         Earray = self.b3Fit()

@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'nanoindentation\Chiaro.ui'
+# Form implementation generated from reading ui file 'Chiaro.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.1
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1334, 745)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("nanoindentation\\ico.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("ico.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -516,7 +514,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5.addWidget(self.ShiftArray)
         self.b3_ShiftArrayImage = QtWidgets.QLabel(self.stackedWidgetPage3)
         self.b3_ShiftArrayImage.setText("")
-        self.b3_ShiftArrayImage.setPixmap(QtGui.QPixmap("nanoindentation\\out.png"))
+        self.b3_ShiftArrayImage.setPixmap(QtGui.QPixmap("out.png"))
         self.b3_ShiftArrayImage.setObjectName("b3_ShiftArrayImage")
         self.horizontalLayout_5.addWidget(self.b3_ShiftArrayImage)
         spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
@@ -570,19 +568,9 @@ class Ui_MainWindow(object):
         self.b3_long = PlotWidget(self.stackedWidgetPage3)
         self.b3_long.setObjectName("b3_long")
         self.horizontalLayout_8.addWidget(self.b3_long)
-        self.b3_plothist_E0 = PlotWidget(self.stackedWidgetPage3)
-        self.b3_plothist_E0.setObjectName("b3_plothist_E0")
-        self.horizontalLayout_8.addWidget(self.b3_plothist_E0)
-        self.b3_plothist_Eb = PlotWidget(self.stackedWidgetPage3)
-        self.b3_plothist_Eb.setObjectName("b3_plothist_Eb")
-        self.horizontalLayout_8.addWidget(self.b3_plothist_Eb)
-        self.b3_plothist_d0 = PlotWidget(self.stackedWidgetPage3)
-        self.b3_plothist_d0.setObjectName("b3_plothist_d0")
-        self.horizontalLayout_8.addWidget(self.b3_plothist_d0)
-        self.horizontalLayout_8.setStretch(0, 4)
-        self.horizontalLayout_8.setStretch(1, 2)
-        self.horizontalLayout_8.setStretch(2, 2)
-        self.horizontalLayout_8.setStretch(3, 2)
+        self.b3_plotRed = PlotWidget(self.stackedWidgetPage3)
+        self.b3_plotRed.setObjectName("b3_plotRed")
+        self.horizontalLayout_8.addWidget(self.b3_plotRed)
         self.verticalLayout_6.addLayout(self.horizontalLayout_8)
         self.switcher.addWidget(self.stackedWidgetPage3)
         self.verticalLayout_3.addWidget(self.switcher)
@@ -592,7 +580,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.switcher.setCurrentIndex(0)
+        self.switcher.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -689,4 +677,5 @@ class Ui_MainWindow(object):
         self.b3_doExport2.setText(_translate("MainWindow", "Export Bilayer"))
         self.b3_doExport2.setShortcut(_translate("MainWindow", "Ctrl+E, Ctrl+B"))
         self.b3_doExport2fit.setText(_translate("MainWindow", "Export Bilayer Fit"))
+
 from pyqtgraph import PlotWidget
