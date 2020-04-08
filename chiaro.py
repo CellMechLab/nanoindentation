@@ -59,10 +59,10 @@ class curveWindow(QtWidgets.QMainWindow):
         xbase = engine.np.linspace(0,N,N)
 
         if a.modLambda.isChecked() is True:
-            data = engine.np.loadtxt('nanoindentation/Lambda_AllDataRos.txt')
+            data = engine.np.loadtxt('Lambda_AllDataRos.txt')
             endrange =int(len(data[0,:])/2)
         else:
-            data = engine.np.loadtxt('nanoindentation/MyFile.txt')
+            data = engine.np.loadtxt('MyFile.txt')
             endrange=50
         for i in range(endrange):
             mysegs.append(engine.bsegment())
