@@ -22,7 +22,7 @@
     <item>
      <widget class="QStackedWidget" name="switcher">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="stackedWidgetPage1">
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
@@ -1147,18 +1147,12 @@
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="4,2,2,2">
+         <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0">
           <item>
            <widget class="PlotWidget" name="b3_long"/>
           </item>
           <item>
-           <widget class="PlotWidget" name="b3_plothist_E0"/>
-          </item>
-          <item>
-           <widget class="PlotWidget" name="b3_plothist_Eb"/>
-          </item>
-          <item>
-           <widget class="PlotWidget" name="b3_plothist_d0"/>
+           <widget class="PlotWidget" name="b3_plotRed"/>
           </item>
          </layout>
         </item>
