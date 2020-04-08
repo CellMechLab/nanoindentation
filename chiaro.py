@@ -59,10 +59,10 @@ class curveWindow(QtWidgets.QMainWindow):
         xbase = engine.np.linspace(0,N,N)
 
         if a.modLambda.isChecked() is True:
-            data = engine.np.loadtxt('Lambda_AllDataRos.txt')
+            data = engine.np.loadtxt('nanoindentation/Lambda_AllDataRos.txt')
             endrange =int(len(data[0,:])/2)
         else:
-            data = engine.np.loadtxt('MyFile.txt')
+            data = engine.np.loadtxt('nanoindentation/MyFile.txt')
             endrange=50
         for i in range(endrange):
             mysegs.append(engine.bsegment())
@@ -221,6 +221,7 @@ class curveWindow(QtWidgets.QMainWindow):
         cdown = 10
         xx=[]
         yy=[]
+        Rs = []
 
         #E0h=[]
         #Ebh=[]
@@ -232,6 +233,8 @@ class curveWindow(QtWidgets.QMainWindow):
         self.std_d02=[]
         self.d03=[]
         self.std_d03=[]
+        self.d04=[]
+        self.std_d04=[]
 
         print('singles>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
         for s in self.b3['exp']:  
@@ -252,6 +255,8 @@ class curveWindow(QtWidgets.QMainWindow):
             self.std_d02.append(engine.np.sqrt(covs2[2]))
             self.d03.append(pars3[2])
             self.std_d03.append(engine.np.sqrt(covs3[2]))
+            self.d04.append(pars4[2])
+            self.std_d04.append(engine.np.sqrt(covs4[2]))
 
             xx.append(Ex)
             yy.append(Ey)
@@ -262,7 +267,8 @@ class curveWindow(QtWidgets.QMainWindow):
             if cdown == 0:
                 QtCore.QCoreApplication.processEvents()
                 cdown = 10        
-
+            Rs.append(s.R)
+        self.R=engine.np.mean(Rs)
         xmed, ymed, yerr = engine.getMedCurve(xx,yy,loose = True, error=True)
         #points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
         points1 = pg.PlotCurveItem(xmed,ymed*1e9,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 255,200),width=2))
@@ -290,19 +296,20 @@ class curveWindow(QtWidgets.QMainWindow):
         #engine.np.savetxt('x.txt',xmed)
         #engine.np.savetxt('y.txt',ymed)
         print('bilayer>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = engine.fitExpDecay(xmed,ymed, s.R,sigma=yerr)
+        pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = engine.fitExpDecay(xmed,ymed, self.R,sigma=yerr)
+        print(i_dhalf)
         print(pars1[2], pars2[2], pars3[2], pars4[2])
         if pars1 is not None:
-            yfit0 = engine.ExpDecay(xmed,*pars1, s.R)
-            yfit1 = engine.ExpDecay(xmed[:i_dhalf],*pars2, s.R)
-            yfit2 = engine.ExpDecay(xmed[i_dhalf:], *pars3, s.R)
-            yfit3 = engine.ExpDecay(xmed[:i_cut], *pars4, s.R)
+            yfit0 = engine.ExpDecay(xmed,*pars1, self.R)
+            yfit1 = engine.ExpDecay(xmed[:i_dhalf],*pars2, self.R)
+            yfit2 = engine.ExpDecay(xmed[i_dhalf:], *pars3, self.R)
+            yfit3 = engine.ExpDecay(xmed[:i_cut], *pars4, self.R)
             self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed, yfit0 * 1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=2)))
             self.ui.b3_plotRed.addItem( pg.PlotCurveItem(xmed[:i_dhalf:],yfit1 * 1e9,pen=self.greenPen) )
             self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[i_dhalf:], yfit2 * 1e9, pen=self.greenPen))
-            self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[:i_cut], yfit3 * 1e9,pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=3)))
+            #self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[:i_cut], yfit3 * 1e9,pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=3)))
             self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars2[0]*1e8)/100.0))
-            self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars3[1]*1e8)/100.0))
+            self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars1[1]*1e8)/100.0))
             self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars2[2])))
 
         #self.ui.b3_plothist_E0.clear()

@@ -603,7 +603,7 @@ def LayerRoss(x,E1,E2,h,R,poisson=0.5):
     return F
 
 def lamb():
-    return 1.31
+    return 1.
 
 def area(x,R):
     return np.sqrt(2*R*x)
@@ -619,6 +619,7 @@ def ExpDecay(x,E0,Eb,d0,R):
 
 def fitExpDecay(x,y,R,sigma=None):
     seeds=[10000/1e9,1000/1e9,200]
+    x=np.asarray(x)
     try:
         def TheExp(x,E0,Eb,d0):
             x[x<0]=0
@@ -634,7 +635,7 @@ def fitExpDecay(x,y,R,sigma=None):
             popt1, pcov1 = curve_fit(TheExp, x[:-1], y[:-1], sigma=sigma[:-1], p0=seeds, maxfev=10000)#sigma=sigma[:-1],
         stds1=[np.sqrt(pcov1[0][0]), np.sqrt(pcov1[1][1]), np.sqrt(pcov1[2][2])]
         d01 = popt1[2]
-        i_dhalf = np.argmin(abs(x-d01/2))
+        i_dhalf = np.argmin(abs(x-d01/3))
         try:
             if sigma is None or any(sigma)==0:
                 popt2, pcov2 = curve_fit(TheExp, x[:i_dhalf], y[:i_dhalf], p0=popt1, maxfev=10000)
@@ -655,7 +656,19 @@ def fitExpDecay(x,y,R,sigma=None):
             print("Third Exp Fit failed!")
             popt3=popt1
             stds3=stds1
-        return popt1, stds1, popt2, stds2, popt3, stds3, i_dhalf
+        cut = 100
+        i_cut = np.argmin(abs(x - cut))
+        try:
+            if sigma is None or any(sigma)==0:
+                popt4, pcov4 = curve_fit(TheExp, x[:i_cut], y[:i_cut], p0=popt1, maxfev=10000)
+            else:
+                popt4, pcov4 = curve_fit(TheExp, x[:i_cut], y[:i_cut], sigma=sigma[:i_cut], p0=popt1, maxfev=10000)
+            stds4 = [np.sqrt(pcov4[0][0]), np.sqrt(pcov4[1][1]), np.sqrt(pcov4[2][2])]
+        except:
+            print("Fourth Exp Fit failed!")
+            popt4=popt1
+            stds4=stds1
+        return popt1, stds1, popt2, stds2, popt3, stds3, popt4, stds4, i_dhalf, i_cut
     except (RuntimeError,ValueError):
         print("First Exp Fit failed!")
         return None, None, None, None, None, None, None
