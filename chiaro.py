@@ -122,6 +122,7 @@ class curveWindow(QtWidgets.QMainWindow):
             data = self.b4['exp'].copy()
         for s in data:
             s.plit = None
+            s.elit = None
         
         fname = QtWidgets.QFileDialog.getSaveFileName(self,'Select the file to save your processing',self.workingdir,"Python object serialization (*.pickle)")
         if fname[0] =='':
@@ -253,6 +254,7 @@ class curveWindow(QtWidgets.QMainWindow):
             if cdown == 0:
                 QtCore.QCoreApplication.processEvents()
                 cdown = 10        
+
         xmed, ymed, yerr = engine.getMedCurve(xx,yy,loose = True, error=True)
         #points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
         points = pg.PlotCurveItem(xmed,ymed*1e9,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 255,200),width=2))

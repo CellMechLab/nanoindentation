@@ -1,0 +1,20 @@
+mean of single values
+Ctrl
+Colch
+Cytod
+Jaspla
+Single
+
+with yerr
+Ctrl 302 381 238 mean 100
+Colch 177 900 159 mean 50
+Cytod 626 186 543 mean 50
+Jaspla 580 359 673 mean 50
+Single 359 383 327 mean 100
+
+without yerr
+Ctrl 306 505 250
+Colch 196 467 174
+Cytod 625 197 650
+Jaspla 525 243 737
+Single 360 263 346
