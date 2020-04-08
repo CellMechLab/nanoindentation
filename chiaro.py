@@ -58,10 +58,11 @@ class curveWindow(QtWidgets.QMainWindow):
         N = int(a.length.value())
         xbase = engine.np.linspace(0,N,N)
 
-        if a.modAli.isChecked() is False:
-            data = engine.np.loadtxt('nanoindentation\Lambda_AllDataRos.txt') #'nanoindentation\MyFile.txt')#'nanoindentation\Lambda_AllDataRos.txt')  # ('MyFile.txt')
+        if a.modLambda.isChecked() is True:
+            data = engine.np.loadtxt('Lambda_AllDataRos.txt')
             endrange =int(len(data[0,:])/2)
         else:
+            data = engine.np.loadtxt('MyFile.txt')
             endrange=50
         for i in range(endrange):
             mysegs.append(engine.bsegment())
@@ -74,6 +75,11 @@ class curveWindow(QtWidgets.QMainWindow):
                 h  = float(a.d0.value())
                 if a.modAli.isChecked() is True:
                     mysegs[-1].touch = engine.noisify(engine.LayerStd(xbase,E1,E2,h,R),noise)
+                if a.modRos.isChecked() is True:
+                    x = data[:,0]
+                    y = data[:,1]
+                    mysegs[-1].indentation = x
+                    mysegs[-1].touch = engine.noisify(y/1000.0,noise)
                 else:
                     x = data[:,i*2]
                     y = data[:,i*2+1]
