@@ -59,10 +59,10 @@ class curveWindow(QtWidgets.QMainWindow):
         xbase = engine.np.linspace(0,N,N)
 
         if a.modLambda.isChecked() is True:
-            data = engine.np.loadtxt('Lambda_AllDataRos.txt')
+            data = engine.np.loadtxt('nanoindentation/Lambda_AllDataRos.txt')
             endrange =int(len(data[0,:])/2)
         else:
-            data = engine.np.loadtxt('MyFile.txt')
+            data = engine.np.loadtxt('nanoindentation/MyFile.txt')
             endrange=50
         for i in range(endrange):
             mysegs.append(engine.bsegment())
@@ -102,6 +102,7 @@ class curveWindow(QtWidgets.QMainWindow):
             return
 
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))        
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
 
         with open(fname[0], 'rb') as f:
             data = pickle.load(f)
@@ -240,7 +241,7 @@ class curveWindow(QtWidgets.QMainWindow):
             s.ElastX = Ex
             s.ElastY = Ey
 
-            pars1, covs1, pars2, covs2, pars3, covs3, i_dhalf = engine.fitExpDecay(Ex,Ey,s.R)
+            pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = engine.fitExpDecay(Ex,Ey,s.R)
             #if pars1 is not None:
             #    E0h.append(pars2[0]*1e9)
             #    Ebh.append(pars3[1]*1e9)
@@ -289,13 +290,17 @@ class curveWindow(QtWidgets.QMainWindow):
         #engine.np.savetxt('x.txt',xmed)
         #engine.np.savetxt('y.txt',ymed)
         print('bilayer>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        pars1, covs1, pars2, covs2, pars3, covs3, i_dhalf = engine.fitExpDecay(xmed,ymed, s.R,sigma=yerr)
-        print(pars1[2], pars2[2], pars3[2])
+        pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = engine.fitExpDecay(xmed,ymed, s.R,sigma=yerr)
+        print(pars1[2], pars2[2], pars3[2], pars4[2])
         if pars1 is not None:
-            yfit1 = engine.ExpDecay(xmed[i_dhalf:],*pars3, s.R)
-            yfit2 = engine.ExpDecay(xmed[:i_dhalf], *pars2, s.R)
-            self.ui.b3_plotRed.addItem( pg.PlotCurveItem(xmed[i_dhalf:],yfit1*1e9,pen=self.greenPen) )
-            self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[:i_dhalf], yfit2*1e9, pen=self.greenPen))
+            yfit0 = engine.ExpDecay(xmed,*pars1, s.R)
+            yfit1 = engine.ExpDecay(xmed[:i_dhalf],*pars2, s.R)
+            yfit2 = engine.ExpDecay(xmed[i_dhalf:], *pars3, s.R)
+            yfit3 = engine.ExpDecay(xmed[:i_cut], *pars4, s.R)
+            self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed, yfit0 * 1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=2)))
+            self.ui.b3_plotRed.addItem( pg.PlotCurveItem(xmed[:i_dhalf:],yfit1 * 1e9,pen=self.greenPen) )
+            self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[i_dhalf:], yfit2 * 1e9, pen=self.greenPen))
+            self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[:i_cut], yfit3 * 1e9,pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=3)))
             self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars2[0]*1e8)/100.0))
             self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars3[1]*1e8)/100.0))
             self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars2[2])))
@@ -657,7 +662,7 @@ class curveWindow(QtWidgets.QMainWindow):
                 s.ElastX = Ex
                 s.ElastY = Ey
 
-                pars1, covs1, pars2, covs2, pars3, covs3, i_dhalf = engine.fitExpDecay(Ex, Ey, s.R)
+                pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = engine.fitExpDecay(Ex, Ey, s.R)
 
                 xx.append(Ex)
                 yy.append(Ey)
@@ -692,7 +697,7 @@ class curveWindow(QtWidgets.QMainWindow):
         # if any(engine.np.isnan(d0h)) == False:
         #     self.d0h = d0h
         #
-        # pars1, covs1, pars2, covs2, pars3, covs3, i_dhalf = engine.fitExpDecay(xmed, ymed, s.R)
+        # pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = engine.fitExpDecay(xmed, ymed, s.R)
         # if pars1 is not None:
         #     yfit = engine.ExpDecay(xmed, pars2[0], pars1[1], pars1[2], s.R)
         #     self.ui.b2_plot_elasto.addItem(pg.PlotCurveItem(xmed, yfit * 1e9, pen=self.greenPen))
