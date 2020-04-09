@@ -295,26 +295,34 @@ class curveWindow(QtWidgets.QMainWindow):
 
         #engine.np.savetxt('x.txt',xmed)
         #engine.np.savetxt('y.txt',ymed)
-        print('bilayer>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        getall = engine.fitExpDecay(xmed,ymed, self.R,sigma=yerr)
 
-        if getall is not None:
-            print(getall)
-            pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = getall
-            print(i_dhalf)
-            print(pars1[2], pars2[2], pars3[2], pars4[2])
-            if pars1 is not None:
-                yfit0 = engine.ExpDecay(xmed,*pars1, self.R)
-                yfit1 = engine.ExpDecay(xmed[:i_dhalf],*pars2, self.R)
-                yfit2 = engine.ExpDecay(xmed[i_dhalf:], *pars3, self.R)
-                yfit3 = engine.ExpDecay(xmed[:i_cut], *pars4, self.R)
-                self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed, yfit0 * 1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=2)))
-                self.ui.b3_plotRed.addItem( pg.PlotCurveItem(xmed[:i_dhalf:],yfit1 * 1e9,pen=self.greenPen) )
-                self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[i_dhalf:], yfit2 * 1e9, pen=self.greenPen))
-                #self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[:i_cut], yfit3 * 1e9,pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=3)))
-                self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars2[0]*1e8)/100.0))
-                self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars1[1]*1e8)/100.0))
-                self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars2[2])))
+        if self.ui.b3_sinfit.isChecked() is True:
+            med = engine.np.average(ymed)*1e9
+            pen = pg.mkPen(pg.QtGui.QColor(0, 255, 0), width=2)
+            pen = pen.setStyle( QtCore.Qt.DashLine )
+            medline = pg.PlotCurveItem([min(xmed),max(xmed)], [med,med], pen=pen)
+            self.ui.b3_plotRed.plotItem.addItem(medline)
+        else:
+            print('bilayer>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+            getall = engine.fitExpDecay(xmed,ymed, self.R,sigma=yerr)
+
+            if getall is not None:
+                print(getall)
+                pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = getall
+                print(i_dhalf)
+                print(pars1[2], pars2[2], pars3[2], pars4[2])
+                if pars1 is not None:
+                    yfit0 = engine.ExpDecay(xmed,*pars1, self.R)
+                    yfit1 = engine.ExpDecay(xmed[:i_dhalf],*pars2, self.R)
+                    yfit2 = engine.ExpDecay(xmed[i_dhalf:], *pars3, self.R)
+                    yfit3 = engine.ExpDecay(xmed[:i_cut], *pars4, self.R)
+                    self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed, yfit0 * 1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=2)))
+                    self.ui.b3_plotRed.addItem( pg.PlotCurveItem(xmed[:i_dhalf:],yfit1 * 1e9,pen=self.greenPen) )
+                    self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[i_dhalf:], yfit2 * 1e9, pen=self.greenPen))
+                    #self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[:i_cut], yfit3 * 1e9,pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=3)))
+                    self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars2[0]*1e8)/100.0))
+                    self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars1[1]*1e8)/100.0))
+                    self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars2[2])))
 
         QtWidgets.QApplication.restoreOverrideCursor()
 
