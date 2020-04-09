@@ -38,12 +38,12 @@ from scipy.signal import savgol_filter
 def smooth(f,win,order):
     if win%2 == 0:
         win +=1
-    return g=savgol_filter(f,win,order)
+    return savgol_filter(f,win,order)
 
 
-def ora(y,n,j=3,k=3):
-    plt.plot(y[:800],label='pre')
-    ynew = takeout(y,n,j,k)
-    plt.plot(ynew[:800],label='post')
+def ora(y,win=40,order=3):
+    plt.plot(y,label='pre')
+    ynew = takeout(y,win,order)
+    plt.plot(y-ynew,label='post')
     plt.legend()
     

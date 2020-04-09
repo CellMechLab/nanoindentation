@@ -286,22 +286,13 @@ class curveWindow(QtWidgets.QMainWindow):
         if any(engine.np.isnan(xmed))== False and any(engine.np.isnan(ymed))==False:
             self.xmed=xmed
             self.ymed=ymed
-        #if any(engine.np.isnan(E0h)) == False:
-        #    self.E0h=E0h
-        #if any(engine.np.isnan(Ebh)) == False:
-        #    self.Ebh=Ebh
-        #if any(engine.np.isnan(d0h)) == False:
-        #    self.d0h=d0h
-
-        #engine.np.savetxt('x.txt',xmed)
-        #engine.np.savetxt('y.txt',ymed)
 
         if self.ui.b3_sinfit.isChecked() is True:
-            med = engine.np.average(ymed)*1e9
-            pen = pg.mkPen(pg.QtGui.QColor(0, 255, 0), width=2)
-            pen = pen.setStyle( QtCore.Qt.DashLine )
-            medline = pg.PlotCurveItem([min(xmed),max(xmed)], [med,med], pen=pen)
+            med = engine.np.average(ymed)
+            ymedline = engine.np.ones(len(xmed))*med*1e9
+            medline = pg.PlotCurveItem(xmed, ymedline, pen=pg.mkPen('g', width=2, style=QtCore.Qt.DashLine))
             self.ui.b3_plotRed.plotItem.addItem(medline)
+            self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(med*1e8)/100.0))
         else:
             print('bilayer>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
             getall = engine.fitExpDecay(xmed,ymed, self.R,sigma=yerr)
