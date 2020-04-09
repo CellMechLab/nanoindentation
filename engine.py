@@ -671,7 +671,7 @@ def fitExpDecay(x,y,R,sigma=None):
         return popt1, stds1, popt2, stds2, popt3, stds3, popt4, stds4, i_dhalf, i_cut
     except (RuntimeError,ValueError):
         print("First Exp Fit failed!")
-        return None, None, None, None, None, None, None
+        return None
 
 def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
     x = s.indentation

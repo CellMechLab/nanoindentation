@@ -102,8 +102,6 @@ class curveWindow(QtWidgets.QMainWindow):
             return
 
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))        
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-
         with open(fname[0], 'rb') as f:
             data = pickle.load(f)
         QtWidgets.QApplication.restoreOverrideCursor()
@@ -243,8 +241,10 @@ class curveWindow(QtWidgets.QMainWindow):
                 continue
             s.ElastX = Ex
             s.ElastY = Ey
-
-            pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = engine.fitExpDecay(Ex,Ey,s.R)
+            getall = engine.fitExpDecay(Ex,Ey,s.R)
+            if getall is None:
+                continue
+            pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = getall
             #if pars1 is not None:
             #    E0h.append(pars2[0]*1e9)
             #    Ebh.append(pars3[1]*1e9)
@@ -296,50 +296,25 @@ class curveWindow(QtWidgets.QMainWindow):
         #engine.np.savetxt('x.txt',xmed)
         #engine.np.savetxt('y.txt',ymed)
         print('bilayer>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = engine.fitExpDecay(xmed,ymed, self.R,sigma=yerr)
-        print(i_dhalf)
-        print(pars1[2], pars2[2], pars3[2], pars4[2])
-        if pars1 is not None:
-            yfit0 = engine.ExpDecay(xmed,*pars1, self.R)
-            yfit1 = engine.ExpDecay(xmed[:i_dhalf],*pars2, self.R)
-            yfit2 = engine.ExpDecay(xmed[i_dhalf:], *pars3, self.R)
-            yfit3 = engine.ExpDecay(xmed[:i_cut], *pars4, self.R)
-            self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed, yfit0 * 1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=2)))
-            self.ui.b3_plotRed.addItem( pg.PlotCurveItem(xmed[:i_dhalf:],yfit1 * 1e9,pen=self.greenPen) )
-            self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[i_dhalf:], yfit2 * 1e9, pen=self.greenPen))
-            #self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[:i_cut], yfit3 * 1e9,pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=3)))
-            self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars2[0]*1e8)/100.0))
-            self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars1[1]*1e8)/100.0))
-            self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars2[2])))
+        getall = engine.fitExpDecay(xmed,ymed, self.R,sigma=yerr)
 
-        #self.ui.b3_plothist_E0.clear()
-        #self.ui.b3_plothist_Eb.clear()
-        #self.ui.b3_plothist_d0.clear()
-
-        #self.ui.b3_plothist_E0.addItem(pg.PlotDataItem(E0h, pen=None, symbol='o'))
-        #self.ui.b3_plothist_E0.setYRange(-20000,200000, padding=0)
-        #y,x = engine.np.histogram(E0h, bins='auto',range=(max(0,min(E0h)),min([1000000,max(E0h)])))
-        #self.ui.b3_plothist_E0.addItem(pg.PlotDataItem(x, y, stepMode=True,pen=pg.mkPen('r')))
-        #self.ui.b3_plothist_E0.addItem(pg.PlotCurveItem(x, y, stepMode=True,pen=pg.mkPen('r')))
-        #val = engine.np.average(E0h)
-        #err = engine.np.std(E0h)
-        #self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}&plusmn;{}</span> kPa</p></body></html>'.format(int(val/10)/100.0,int(err/10)/100.0))
-
-        #self.ui.b3_plothist_Eb.addItem(pg.PlotDataItem(Ebh, pen=None, symbol='o'))
-        #self.ui.b3_plothist_Eb.setYRange(-2000, 25000, padding=0)
-        #y,x = engine.np.histogram(Ebh, bins='auto',range=(max(0,min(Ebh)),min([100000,max(Ebh)])))
-        #self.ui.b3_plothist_Eb.addItem(pg.PlotCurveItem(x, y, stepMode=True,pen=pg.mkPen('r')))
-        #val = engine.np.average(Ebh)
-        #err = engine.np.std(Ebh)
-        #self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}&plusmn;{}</span> kPa</p></body></html>'.format(int(val/10)/100.0,int(err/10)/100.0))
-
-        #self.ui.b3_plothist_d0.addItem(pg.PlotDataItem(d0h, pen=None, symbol='o'))
-        #self.ui.b3_plothist_d0.setYRange(-100, 1000, padding=0)
-        #y,x = engine.np.histogram(d0h, bins='auto',range=(max(0,min(d0h)),min([10000,max(d0h)])))
-        #self.ui.b3_plothist_d0.addItem(pg.PlotCurveItem(x, y, stepMode=True,pen=pg.mkPen('r')))
-        #val = engine.np.average(d0h)
-        #err = engine.np.std(d0h)
-        #self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}&plusmn;{}</span> nm</p></body></html>'.format(int(val),int(err)))        
+        if getall is not None:
+            print(getall)
+            pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = getall
+            print(i_dhalf)
+            print(pars1[2], pars2[2], pars3[2], pars4[2])
+            if pars1 is not None:
+                yfit0 = engine.ExpDecay(xmed,*pars1, self.R)
+                yfit1 = engine.ExpDecay(xmed[:i_dhalf],*pars2, self.R)
+                yfit2 = engine.ExpDecay(xmed[i_dhalf:], *pars3, self.R)
+                yfit3 = engine.ExpDecay(xmed[:i_cut], *pars4, self.R)
+                self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed, yfit0 * 1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=2)))
+                self.ui.b3_plotRed.addItem( pg.PlotCurveItem(xmed[:i_dhalf:],yfit1 * 1e9,pen=self.greenPen) )
+                self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[i_dhalf:], yfit2 * 1e9, pen=self.greenPen))
+                #self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[:i_cut], yfit3 * 1e9,pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=3)))
+                self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars2[0]*1e8)/100.0))
+                self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars1[1]*1e8)/100.0))
+                self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars2[2])))
 
         QtWidgets.QApplication.restoreOverrideCursor()
 
@@ -950,7 +925,7 @@ class curveWindow(QtWidgets.QMainWindow):
 
     def b1SelectDir(self):
         fname = QtWidgets.QFileDialog.getExistingDirectory(self,'Select the root dir','./')
-        if fname[0] =='':
+        if fname =='' or fname is None or fname[0] =='':
             return
         self.workingdir = fname
         if self.ui.open_o11new.isChecked() is True:
