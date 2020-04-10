@@ -753,7 +753,7 @@ class curveWindow(QtWidgets.QMainWindow):
         pars = a.getParams()
         fun = a.getCall()
         for s in self.b2['exp']:
-            s.ffil = fun(s.f,*pars)
+            s.ffil = fun(s.ffil,*pars)
             s.ffil_original=s.ffil
 
         QtWidgets.QApplication.restoreOverrideCursor()
