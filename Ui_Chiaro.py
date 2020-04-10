@@ -649,7 +649,7 @@ class Ui_MainWindow(object):
         self.b2_doContactPoint.setShortcut(_translate("MainWindow", "Ctrl+C"))
         self.groupBox_3.setTitle(_translate("MainWindow", "Filter"))
         self.comboFilter.setItemText(0, _translate("MainWindow", "Prominency"))
-        self.comboFilter.setItemText(1, _translate("MainWindow", "Savitzky"))
+        self.comboFilter.setItemText(1, _translate("MainWindow", "SmoothFFT"))
         self.b2_doFilter.setText(_translate("MainWindow", "Filter"))
         self.b2_doFilter.setShortcut(_translate("MainWindow", "Ctrl+F"))
         self.b2_DoElasto.setText(_translate("MainWindow", "Do Elastography"))

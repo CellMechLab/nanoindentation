@@ -743,7 +743,7 @@ class curveWindow(QtWidgets.QMainWindow):
             a = panels.FilterData()
             if(a.exec()==0):
                 return
-        elif self.ui.comboFilter.currentText()=='Savitzky':
+        elif self.ui.comboFilter.currentText()=='SmoothFFT':
             a = panels.FilterSavData()
             if(a.exec()==0):
                 return
@@ -751,9 +751,14 @@ class curveWindow(QtWidgets.QMainWindow):
             return
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
         pars = a.getParams()
+        summative = pars[0]
+        del(pars[0])
         fun = a.getCall()
         for s in self.b2['exp']:
-            s.ffil = fun(s.ffil,*pars)
+            if summative is True:
+                s.ffil = fun(s.ffil,*pars)
+            else:
+                s.ffil = fun(s.f,*pars)
             s.ffil_original=s.ffil
 
         QtWidgets.QApplication.restoreOverrideCursor()

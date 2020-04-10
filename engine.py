@@ -3,7 +3,7 @@ import random
 from scipy.signal import find_peaks
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
-from scipy.signal import savgol_filter
+from scipy.signal import savgol_filter,medfilt
 from matplotlib import pyplot as plt
 
 class bsegment(object):
@@ -277,10 +277,15 @@ def calculateIndentation(s):
     touch=Yf
     return indentation, touch
 
-def filterSav(y,win):
+def filterSav(y,win,method):
     df = np.fft.rfft(y)
-    df.real[win:-win] = savgol_filter(df.real,win,3)[win:-win]
-    df.imag[win:-win] = savgol_filter(df.imag,win,3)[win:-win]
+    if method=='SG':
+        df.real[win:-win] = savgol_filter(df.real,win,3)[win:-win]
+        df.imag[win:-win] = savgol_filter(df.imag,win,3)[win:-win]
+    elif method=='MM':
+        df.real[win:-win] = medfilt(df.real,win)[win:-win]
+        df.imag[win:-win] = medfilt(df.imag,win)[win:-win]
+    
     return np.fft.irfft(df,len(y))  
 
 def filterOsc(y,pro = 0.2, winperc = 1, threshold = 25):
@@ -641,7 +646,7 @@ def fitExpDecay(x,y,R,sigma=None):
             popt1, pcov1 = curve_fit(TheExp, x[:-1], y[:-1], sigma=sigma[:-1], p0=seeds, maxfev=10000)#sigma=sigma[:-1],
         stds1=[np.sqrt(pcov1[0][0]), np.sqrt(pcov1[1][1]), np.sqrt(pcov1[2][2])]
         d01 = popt1[2]
-        i_dhalf = np.argmin(abs(x-d01/3))
+        i_dhalf = np.argmin(abs(x-d01*0.75))
         try:
             if sigma is None or any(sigma)==0:
                 popt2, pcov2 = curve_fit(TheExp, x[:i_dhalf], y[:i_dhalf], p0=popt1, maxfev=10000)

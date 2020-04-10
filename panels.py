@@ -35,19 +35,33 @@ class FilterSavData(contactPoint):
     def setUi(self):
         self.setWindowTitle("Filter FFT-Savitzky")
 
+        self.sumup = QtWidgets.QCheckBox()
+        self.sumup.setChecked(False)
+
         self.win = QtWidgets.QSpinBox()
         self.win.setMinimum(5)
         self.win.setMaximum(99)
         self.win.setValue(25)
         self.win.setSingleStep(2)
 
-        return [ ['Window', self.win]]
+        self.methodSG = QtWidgets.QRadioButton()
+        self.methodSG.setText('Savitzky')
+        self.methodSG.setChecked(True)
+
+        self.methodMM = QtWidgets.QRadioButton()
+        self.methodMM.setText('Median')
+
+        return [ ['Cumulative', self.sumup],['Window', self.win],[self.methodSG,self.methodMM]]
     
     def getParams(self):
         win = int(self.win.value() )
         if win%2 == 0:
             win+=1
-        return [ win ]
+        if self.methodSG.isChecked() == True:
+            method = 'SG'
+        else:
+            method = 'MM'
+        return [ self.sumup.isChecked(),win ,method]
 
     def getCall(self):
         return engine.filterSav
@@ -55,6 +69,9 @@ class FilterSavData(contactPoint):
 class FilterData(contactPoint):
     def setUi(self):
         self.setWindowTitle("Filter parameters")
+
+        self.sumup = QtWidgets.QCheckBox()
+        self.sumup.setChecked(False)
 
         self.prominency = QtWidgets.QDoubleSpinBox()
         self.prominency.setMinimum(0.0)
@@ -72,14 +89,14 @@ class FilterData(contactPoint):
         self.band.setMaximum(999)
         self.band.setValue(30)
 
-        return [ ['Prominency', self.prominency],['MIN cut', self.minfreq],['Model', self.band]]
+        return [ ['Cumulative', self.sumup],['Prominency', self.prominency],['MIN cut', self.minfreq],['Model', self.band]]
     
     def getParams(self):
         pro = float(self.prominency.value() )
         winperc = float(self.band.value())/10.0
         thresh = int(self.minfreq.value())
 
-        return [ pro,winperc,thresh ]
+        return [ self.sumup.isChecked(),pro,winperc,thresh ]
 
     def getCall(self):
         return engine.filterOsc
