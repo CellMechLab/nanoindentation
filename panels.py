@@ -31,6 +31,59 @@ class contactPoint(uiPanel):
     def getCall(self):
         return max
 
+class FilterSavData(contactPoint):
+    def setUi(self):
+        self.setWindowTitle("Filter FFT-Savitzky")
+
+        self.win = QtWidgets.QSpinBox()
+        self.win.setMinimum(5)
+        self.win.setMaximum(99)
+        self.win.setValue(25)
+        self.win.setSingleStep(2)
+
+        return [ ['Window', self.win]]
+    
+    def getParams(self):
+        win = int(self.win.value() )
+        if win%2 == 0:
+            win+=1
+        return [ win ]
+
+    def getCall(self):
+        return engine.filterSav
+
+class FilterData(contactPoint):
+    def setUi(self):
+        self.setWindowTitle("Filter parameters")
+
+        self.prominency = QtWidgets.QDoubleSpinBox()
+        self.prominency.setMinimum(0.0)
+        self.prominency.setMaximum(9.0)
+        self.prominency.setValue(0.40)
+        self.prominency.setDecimals(2)
+
+        self.minfreq = QtWidgets.QSpinBox()
+        self.minfreq.setMinimum(1)
+        self.minfreq.setMaximum(999)
+        self.minfreq.setValue(25)
+
+        self.band = QtWidgets.QSpinBox()
+        self.band.setMinimum(1)
+        self.band.setMaximum(999)
+        self.band.setValue(30)
+
+        return [ ['Prominency', self.prominency],['MIN cut', self.minfreq],['Model', self.band]]
+    
+    def getParams(self):
+        pro = float(self.prominency.value() )
+        winperc = float(self.band.value())/10.0
+        thresh = int(self.minfreq.value())
+
+        return [ pro,winperc,thresh ]
+
+    def getCall(self):
+        return engine.filterOsc
+
 class eeffPoint(contactPoint):
     def setSegment(self,s):
         self.s = s
@@ -240,27 +293,7 @@ class b2_Elasto(uiPanel):
         return[ int(self.grainstep.value()),float(self.scaledistance.value()),float(self.maxind.value()), int(self.filwin.value())]
 
 
-class FilterData(uiPanel):
-    def setUi(self):
-        self.setWindowTitle("Filter parameters")
 
-        self.prominency = QtWidgets.QDoubleSpinBox()
-        self.prominency.setMinimum(0.0)
-        self.prominency.setMaximum(9.0)
-        self.prominency.setValue(0.40)
-        self.prominency.setDecimals(2)
-
-        self.minfreq = QtWidgets.QSpinBox()
-        self.minfreq.setMinimum(1)
-        self.minfreq.setMaximum(999)
-        self.minfreq.setValue(25)
-
-        self.band = QtWidgets.QSpinBox()
-        self.band.setMinimum(1)
-        self.band.setMaximum(999)
-        self.band.setValue(30)
-
-        return [ ['Prominency', self.prominency],['MIN cut', self.minfreq],['Model', self.band]]
 
 class CropCurves(uiPanel):
     def setUi(self):

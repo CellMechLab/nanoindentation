@@ -737,16 +737,24 @@ class curveWindow(QtWidgets.QMainWindow):
                         s.plit.setPen(self.nonePen)
 
     def b2Filter(self):
-        a = panels.FilterData()
-        if(a.exec()==0):
+
+        if self.ui.comboFilter.currentText()=='Prominency':
+            a = panels.FilterData()
+            if(a.exec()==0):
+                return
+        elif self.ui.comboFilter.currentText()=='Savitzky':
+            a = panels.FilterSavData()
+            if(a.exec()==0):
+                return
+        else:
             return
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-        pro = float(a.prominency.value() )
-        winperc = float(a.band.value())/10.0
-        thresh = int(a.minfreq.value())
+        pars = a.getParams()
+        fun = a.getCall()
         for s in self.b2['exp']:
-            s.ffil = engine.filterOsc(s.f,pro=pro,winperc=winperc,threshold=thresh)
+            s.ffil = fun(s.f,*pars)
             s.ffil_original=s.ffil
+
         QtWidgets.QApplication.restoreOverrideCursor()
         self.b2Update()
         self.b2_view()

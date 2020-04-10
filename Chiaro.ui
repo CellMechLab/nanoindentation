@@ -22,7 +22,7 @@
     <item>
      <widget class="QStackedWidget" name="switcher">
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="stackedWidgetPage1">
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
@@ -528,16 +528,6 @@
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QPushButton" name="b2_doFilter">
-              <property name="text">
-               <string>Filter</string>
-              </property>
-              <property name="shortcut">
-               <string>Ctrl+F</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
           <item>
@@ -580,6 +570,39 @@
                </property>
                <property name="shortcut">
                 <string>Ctrl+C</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_3">
+            <property name="title">
+             <string>Filter</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+             <item>
+              <widget class="QComboBox" name="comboFilter">
+               <item>
+                <property name="text">
+                 <string>Prominency</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Savitzky</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="b2_doFilter">
+               <property name="text">
+                <string>Filter</string>
+               </property>
+               <property name="shortcut">
+                <string>Ctrl+F</string>
                </property>
               </widget>
              </item>

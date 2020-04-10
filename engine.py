@@ -277,6 +277,12 @@ def calculateIndentation(s):
     touch=Yf
     return indentation, touch
 
+def filterSav(y,win):
+    df = np.fft.rfft(y)
+    df.real[win:-win] = savgol_filter(df.real,win,3)[win:-win]
+    df.imag[win:-win] = savgol_filter(df.imag,win,3)[win:-win]
+    return np.fft.irfft(df,len(y))  
+
 def filterOsc(y,pro = 0.2, winperc = 1, threshold = 25):
     # threshold is the minimum frequency to be eventually filtered
     # winperc is the width around the filtered frequency in % of the position
