@@ -47,3 +47,8 @@ def ora(y,win=40,order=3):
     plt.plot(y-ynew,label='post')
     plt.legend()
     
+def yn(y,win=33):
+    df = np.fft.rfft(y)
+    df.real[win:-win] = savgol_filter(df.real,win,3)[win:-win]
+    df.imag[win:-win] = savgol_filter(df.imag,win,3)[win:-win]
+    return np.fft.irfft(df,len(y))        
