@@ -245,19 +245,19 @@ class curveWindow(QtWidgets.QMainWindow):
             getall = engine.fitExpDecay(Ex,Ey,s.R)
             if getall is None:
                 continue
-            pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = getall
+            #pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = getall
             #if pars1 is not None:
             #    E0h.append(pars2[0]*1e9)
             #    Ebh.append(pars3[1]*1e9)
             #    d0h.append(pars2[2])
-            self.d01.append(pars1[2])
-            self.std_d01.append(engine.np.sqrt(covs1[2]))
-            self.d02.append(pars2[2])
-            self.std_d02.append(engine.np.sqrt(covs2[2]))
-            self.d03.append(pars3[2])
-            self.std_d03.append(engine.np.sqrt(covs3[2]))
-            self.d04.append(pars4[2])
-            self.std_d04.append(engine.np.sqrt(covs4[2]))
+            #self.d01.append(pars1[2])
+            #self.std_d01.append(engine.np.sqrt(covs1[2]))
+            #self.d02.append(pars2[2])
+            #self.std_d02.append(engine.np.sqrt(covs2[2]))
+            #self.d03.append(pars3[2])
+            #self.std_d03.append(engine.np.sqrt(covs3[2]))
+            #self.d04.append(pars4[2])
+            #self.std_d04.append(engine.np.sqrt(covs4[2]))
 
             xx.append(Ex)
             yy.append(Ey)
@@ -318,10 +318,10 @@ class curveWindow(QtWidgets.QMainWindow):
 
         QtWidgets.QApplication.restoreOverrideCursor()
 
-        #if fit is True:
-        return xmed,ymed*1e9, pars1, covs1, pars2, covs2, pars3, covs3
-        #else:
-        #    return E0h,Ebh,d0h
+        if self.ui.b3_sinfit.isChecked() is True:
+            return xmed,ymed*1e9
+        else:
+            return xmed,ymed*1e9, pars1, covs1, pars2, covs2, pars3, covs3
 
     def b3Export(self):
         Earray = self.b3Fit()
