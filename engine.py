@@ -697,7 +697,7 @@ def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=999
             win+=1
         if len(yy)<=win:
             return None,None
-        deriv = savgol_filter(yy,win,1,delta=1.0,deriv=1)
+        deriv = savgol_filter(yy,win,3,delta=1.0,deriv=1)
         Ey = coeff*deriv/np.sqrt(xx)
         Ex = list(xx)
         dwin = int(win-1) #int((win-1)/2)
