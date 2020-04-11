@@ -627,6 +627,7 @@ class curveWindow(QtWidgets.QMainWindow):
         self.ui.b2_DoElasto.clicked.connect(self.b2_Alistography)
 
     def b2tob3(self):
+        self.b3['exp']=[]
         for s in self.b2['exp']:
             if s.invalid is False:
                 self.b3['exp'].append(s)
