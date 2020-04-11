@@ -544,18 +544,22 @@ def Nanosurf_FindInvalidCurves(s, threshold_invalid=10):
             s.bol2=True
     return s.bol2
 
-def InvalidCurvesFromElasticityRise(s, win=301):
+def InvalidCurvesFromElasticityRise(s, win=301, scaledistance=500, threshold_oscillation=15000):
+    ElaInvalid = False
     if len(s.ElastY)<=win:
         ElaInvalid = True
         filEla= None
     else:
         filEla = savgol_filter(s.ElastY * 1e9, win, 1, 0)
         start=np.mean(filEla[:20])
-        median=np.median(filEla[20:])
+        median=np.median(filEla[200:])
         if start<median:
             ElaInvalid=True
         else:
-            ElaInvalid=False
+            print(s.ElastY[100]*1e9, median, threshold_oscillation)
+            for val in s.ElastY[scaledistance:]:
+                if np.abs(val*1e9-median)-threshold_oscillation>0:
+                    ElaInvalid = True
     return ElaInvalid, filEla
 
 
@@ -682,7 +686,7 @@ def fitExpDecay(x,y,R,sigma=None):
         return popt1, stds1, popt2, stds2, popt3, stds3, popt4, stds4, i_dhalf, i_cut
     except (RuntimeError,ValueError):
         print("First Exp Fit failed!")
-        return None
+        return None, None, None, None, None, None, None, None, None, None
 
 def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
     x = s.indentation

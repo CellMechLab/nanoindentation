@@ -622,7 +622,7 @@ class curveWindow(QtWidgets.QMainWindow):
         a = panels.b2_Elasto()
         if a.exec() == 0:
             return
-        grainstep, scaledistance, maxind, filwin  = a.getParams()
+        grainstep, scaledistance, maxind, filwin, thresh_osc  = a.getParams()
         
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
         #progress = QtWidgets.QProgressDialog("Performing elastography ...", "Cancel E-analysis", 0, len(self.b4['exp']))
@@ -645,7 +645,10 @@ class curveWindow(QtWidgets.QMainWindow):
                 s.ElastY = Ey
 
                 pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = engine.fitExpDecay(Ex, Ey, s.R)
-
+                if pars1 is not None:
+                    s.E0=pars2[0]
+                    s.Eb=pars1[1]
+                    s.d0=pars2[2]
                 xx.append(Ex)
                 yy.append(Ey)
                 elit = pg.PlotCurveItem(Ex, Ey * 1e9, pen=self.blackPen, clickable=True)
@@ -659,7 +662,7 @@ class curveWindow(QtWidgets.QMainWindow):
                     QtCore.QCoreApplication.processEvents()
                     cdown = 10
 
-                s.ElaInvalid, s.filEla =engine.InvalidCurvesFromElasticityRise(s,win=filwin)
+                s.ElaInvalid, s.filEla =engine.InvalidCurvesFromElasticityRise(s,win=filwin, scaledistance= int(scaledistance), threshold_oscillation=thresh_osc)
                 if s.ElaInvalid == True:
                     s.invalid=True
 
@@ -734,6 +737,10 @@ class curveWindow(QtWidgets.QMainWindow):
                     pass
                 if s.invalid is True:
                     s.plit.setPen(self.redPen)
+                    try:
+                        s.elit.setPen(self.redPen)
+                    except:
+                        pass
                     if self.MakeInvalidInvisible==True:
                         s.plit.setPen(self.nonePen)
 
@@ -899,7 +906,7 @@ class curveWindow(QtWidgets.QMainWindow):
             if s.invalid==True:
                 self.b2['plit2'].setData(s.z - s.offsetX, s.quot, pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=1))
         if s.ElastX != None:
-            if s.E0>s.Eb:
+            if s.E0 is not None and s.E0>s.Eb:
                 self.b2['plit3'].setData(s.ElastX, s.ElastY*1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=1))                
             else:
                 self.b2['plit3'].setData(s.ElastX, s.ElastY * 1e9, pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=1))

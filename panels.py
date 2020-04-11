@@ -303,11 +303,15 @@ class b2_Elasto(uiPanel):
         self.filwin.setMaximum(99999)
         self.filwin.setValue(301)
 
+        self.threshold_oscillation = QtWidgets.QSpinBox()
+        self.threshold_oscillation.setMinimum(0)
+        self.threshold_oscillation.setMaximum(9999999)
+        self.threshold_oscillation.setValue(15000)
 
-        return [ ['Increment', self.grainstep],['Dash Depth', self.scaledistance],['Max Indent', self.maxind], ['Filter Window', self.filwin]]
+        return [ ['Increment', self.grainstep],['Dash Depth', self.scaledistance],['Max Indent', self.maxind], ['Filter Window', self.filwin], ['Threshold Oscillation', self.threshold_oscillation]]
 
     def getParams(self):
-        return[ int(self.grainstep.value()),float(self.scaledistance.value()),float(self.maxind.value()), int(self.filwin.value())]
+        return[ int(self.grainstep.value()),float(self.scaledistance.value()),float(self.maxind.value()), int(self.filwin.value()), float(self.threshold_oscillation.value())]
 
 
 

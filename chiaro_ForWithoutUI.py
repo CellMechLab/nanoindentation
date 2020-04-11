@@ -31,40 +31,43 @@ class curveWindow():
     ############## SL actions ######################
     ################################################
 
-    def generateFake(self):
-        a = panels.Fakedata()
-        if a.exec() == 0:
-            return
+    def generateFake(self, params=[0, 4000,  20000, 2000, 300, 1]):
 
         mysegs = []
-        noise = float(a.noiselevel.value())/1000.0
-        E1 = float(a.E1.value())/1.0e9
+        mode=params[-1]
+        noise = float(params[0])/1000.0
         R = 3000.0
-        N = int(a.length.value())
+        N = int(params[1])
         xbase = engine.np.linspace(0,N,N)
-        for i in range(50):
-            mysegs.append(engine.bsegment())
-            mysegs[-1].R = R
-            mysegs[-1].indentation = xbase
-            if a.el_one.isChecked() is True:
-                mysegs[-1].touch = engine.noisify(engine.standardHertz(xbase,E1,R),noise)
-            else:                
-                E2 = float(a.E2.value())/1.0e9
-                h  = float(a.d0.value())
-                if a.modAli.isChecked() is True:
-                    mysegs[-1].touch = engine.noisify(engine.LayerStd(xbase,E1,E2,h,R),noise)
-                else:
-                    #mysegs[-1].touch = engine.noisify(engine.LayerRoss(xbase,E1,E2,h,R),noise)
-                    data = engine.np.loadtxt('MyFile.txt')
-                    x = data[:, 0]
-                    y = data[:, 1]
-                    mysegs[-1].indentation = x
-                    mysegs[-1].touch = engine.noisify(y / 1000.0, noise)
-                    # mysegs[-1].touch = engine.noisify(engine.LayerRoss(xbase,E1,E2,h,R),noise)
+        E1 = float(params[2])/1.0e9
+        E2 = float(params[3]) / 1.0e9
+        h = float(params[4])
 
-        self.b3['exp']=mysegs
-        self.ui.switcher.setCurrentIndex(2)
-        self.b3Init()
+        if mode ==1:
+            data = engine.np.loadtxt('nanoindentation\Lambda_AllDataRos.txt') #'nanoindentation\MyFile.txt')#'nanoindentation\Lambda_AllDataRos.txt')  # ('MyFile.txt')
+            for i in range(int(len(data[0,:])/2)):
+                mysegs.append(engine.bsegment())
+                mysegs[-1].R = R
+                mysegs[-1].indentation = xbase
+                x = data[:,i*2]
+                y = data[:,i*2+1]
+                if x[1]<0.000001:
+                    x=x*1e9
+                if y[1]<0.000001:
+                    y=y*1e12
+                mysegs[-1].indentation = x
+                mysegs[-1].touch = engine.noisify(y/1000.0,noise)
+        elif mode==0:
+            data = engine.np.loadtxt('nanoindentation/MyFile.txt')
+            for i in range(50):
+                mysegs.append(engine.bsegment())
+                mysegs[-1].R = R
+                mysegs[-1].indentation = xbase
+                x = data[:, 0]
+                y = data[:, 1]
+                mysegs[-1].indentation = x
+                mysegs[-1].touch = engine.noisify(y / 1000.0, noise)
+        self.b3['exp'] = mysegs
 
     def load_pickle(self):
 
@@ -118,60 +121,83 @@ class curveWindow():
     ############## b3 actions ######################
     ################################################
 
-    
-    #def b3Init(self):
-        #print('why b3init?')
-        #pass
-        #vals = engine.np.hstack([engine.np.random.normal(size=500), engine.np.random.normal(size=260, loc=4)])
-        #y,x = engine.np.histogram(vals, bins=engine.np.linspace(-3, 8, 40))
-        #e0,w,A,nx,ny = engine.gauss(x,y)
-
-        ##self.b3_ShiftAllCurves()
-        #self.b3Fit()
-        #self.b3_Alistography
-        #self.b3_CreateCpShiftArray
-        ##self.save_pickle
-        #self.b3Export
-        #self.b3Export2(fit=False)
-        #self.b3Export2(fit=True)
-
-    def b3_Alistography(self, params=[30, 500, 2000]):
+    def b3_Alistography(self, params=[30, 500, 2000, 0.75]):
         grainstep = int( params[0] )
         scaledistance = float( params[1] )
         maxind = float( params[2] )
+        cutoff=float(params[3])
         xx=[]
         yy=[]
+        Rs=[]
         E0h=[]
         Ebh=[]
         d0h=[]
+        self.d01 = []
+        self.std_d01 = []
+        self.d02 = []
+        self.std_d02 = []
+        self.d03 = []
+        self.std_d03 = []
+        self.d04 = []
+        self.std_d04 = []
         for s in self.b3['exp']:
             Ex,Ey = engine.Elastography2withMax( s,grainstep,scaledistance,maxind)
             if Ex is None:
                 continue
             s.ElastX = Ex
             s.ElastY = Ey
-            pars_i, covs_i = engine.fitExpDecay(Ex,Ey,s.R)
-            if pars_i is not None:
-                E0h.append(pars_i[0]*1e9)
-                Ebh.append(pars_i[1]*1e9)
-                d0h.append(pars_i[2])
+            # pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = engine.fitExpDecay(Ex,Ey,s.R)
+            # if pars1 is not None:
+            #     # E0s = engine.np.asarray([pars1[0], pars2[0], pars3[0], pars4[0]])
+            #     # Ebs = engine.np.asarray([pars1[1], pars2[1], pars3[1], pars4[1]])
+            #     # d0s = engine.np.asarray([pars1[2], pars2[2], pars3[2], pars4[2]])
+            #     E0h.append(pars2[0]*1e9)
+            #     Ebh.append(pars1[1]*1e9)
+            #     d0h.append(pars2[2])
+            # self.d01.append(pars1[2])
+            # self.std_d01.append(engine.np.sqrt(covs1[2]))
+            # self.d02.append(pars2[2])
+            # self.std_d02.append(engine.np.sqrt(covs2[2]))
+            # self.d03.append(pars3[2])
+            # self.std_d03.append(engine.np.sqrt(covs3[2]))
+            # self.d04.append(pars4[2])
+            # self.std_d04.append(engine.np.sqrt(covs4[2]))
             xx.append(Ex)
             yy.append(Ey)
+            Rs.append(s.R)
+        self.R=engine.np.mean(Rs)
         xmed,ymed, yerr = engine.getMedCurve(xx,yy,loose = True, error=True)
-        pars, covs = engine.fitExpDecay(xmed, ymed, s.R, sigma=yerr)
+        pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = engine.fitExpDecay(xmed, ymed, self.R, sigma=yerr)#, cutoff=cutoff)
+        self.E0=pars2[0]
+        self.Eb=pars1[1]
+        self.d0=pars2[2]
+        self.i_cutoff=i_dhalf
+        self.fit1= engine.ExpDecay(xmed,*pars1, self.R)
+        self.fit2= engine.ExpDecay(xmed, *pars2, self.R)
+        print(self.E0, self.Eb, self.d0)
         if any(engine.np.isnan(xmed))== False and any(engine.np.isnan(ymed))==False:
             self.xmed=xmed
             self.ymed=ymed
-        if any(engine.np.isnan(pars))== False:
-            self.pars=pars
-            self.covs=covs
-        if any(engine.np.isnan(E0h)) == False:
-            self.E0h=E0h
-        if any(engine.np.isnan(Ebh)) == False:
-            self.Ebh=Ebh
-        if any(engine.np.isnan(d0h)) == False:
-            self.d0h=d0h
-        return pars, covs, xmed, ymed*1e9, E0h,Ebh,d0h
+            self.yerr=yerr
+        if any(engine.np.isnan(pars1))== False:
+            self.pars1=pars1
+            self.covs1=covs1
+        if any(engine.np.isnan(pars2))== False:
+            self.pars2=pars2
+            self.covs2=covs2
+        if any(engine.np.isnan(pars3)) == False:
+            self.pars3 = pars3
+            self.covs3 = covs3
+        if any(engine.np.isnan(pars4)) == False:
+            self.pars4 = pars4
+            self.covs4 = covs4
+        # if any(engine.np.isnan(E0h)) == False:
+        #     self.E0h=E0h
+        # if any(engine.np.isnan(Ebh)) == False:
+        #     self.Ebh=Ebh
+        # if any(engine.np.isnan(d0h)) == False:
+        #     self.d0h=d0h
+        return pars1, covs1, pars2, covs2, pars3, covs3, xmed, ymed*1e9, E0h,Ebh,d0h, self.R
 
     def b3Export(self, fname=None):
         if fname is None:
@@ -184,15 +210,21 @@ class curveWindow():
             engine.np.savetxt(fname,Earray)
 
     def b3Export2(self, fit=False, fname=None):
-        data_Bilayer=[self.E0h, self.Ebh, self.d0h]
-        data_Fit= [self.xmed, self.ymed*1e9, self.pars, self.covs]
         with open(fname,'w') as f:
             if fit is True:
+                data_Fit = [self.xmed, self.ymed * 1e9, self.pars1, self.covs1, self.pars2, self.covs2, self.pars3, self.covs3, self.pars4, self.covs4]
                 data=data_Fit
-                f.write('{}\t{}\t{}\t{}\n'.format("mean fit params E0, Eb, d0",data[2][0], data[2][1], data[2][2]))
-                f.write('{}\t{}\t{}\t{}\n'.format("mean fit std dev E0, Eb, d0", data[3][0], data[3][1], data[3][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 1 params E0, Eb, d0",data[2][0], data[2][1], data[2][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 1 std dev E0, Eb, d0", data[3][0], data[3][1], data[3][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 2 params E0, Eb, d0",data[4][0], data[4][1], data[4][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 2 std dev E0, Eb, d0", data[5][0], data[5][1], data[5][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 3 params E0, Eb, d0",data[6][0], data[6][1], data[6][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 3 std dev E0, Eb, d0", data[7][0], data[7][1], data[7][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 4 params E0, Eb, d0",data[8][0], data[8][1], data[8][2]))
+                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 4 std dev E0, Eb, d0", data[9][0], data[9][1], data[9][2]))
                 f.write('Ex\tEy\n')
             else:
+                data_Bilayer = [self.E0h, self.Ebh, self.d0h]
                 data=data_Bilayer
                 f.write('E0\tEb\td0\n')
             for i in range(len(data[0])):
@@ -332,13 +364,6 @@ class curveWindow():
         maxind = float(params[2])
         filwin = int(params[3])
 
-        cdown = 10
-        xx = []
-        yy = []
-
-        E0h = []
-        Ebh = []
-        d0h = []
         print('Filtering curves by rising E(z)!')
         for s in self.b2['exp']:
             if s.invalid is False:
@@ -487,3 +512,4 @@ class curveWindow():
 
     def b1Forward(self, forward_segment=0):
         self.b1['exp'].setForwardSegment(forward_segment)
+
