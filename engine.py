@@ -76,15 +76,8 @@ def getMedCurve(xar,yar,loose = True,threshold=1, error=False):
             ycur = np.interp(xnewall[imin:imax], xar[i], yar[i])
             ynewall[imin:imax] += ycur
             count[imin:imax] += 1
-            for j in range(imin, imax - 2):
-                ys[j][i] = ycur[j]
-            # for j in range(imin, imax - 2):
-            #     if imax>=len(ycur):
-            #         imax=len(ycur)-1
-            #     if imin==-1:
-            #         imin=0
-            # for j in range(imin, imax - 1):
-            #        ys[j][i] = ycur[j]
+            for j in range(imin, imax):
+                ys[j][i] = ycur[j-imin]
         cc = count >= threshold
         xnew = xnewall[cc]
         ynew = ynewall[cc] / count[cc]
