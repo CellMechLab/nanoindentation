@@ -453,13 +453,14 @@ class curveWindow(QtWidgets.QMainWindow):
     def b3Fit(self):
         if self.ui.b3_maxIndentation.isChecked():
             for s in self.b3['exp']:
-                if engine.np.max(s.indentation)<float(self.ui.b3_threshold.value()):
-                    s.valid = False
-                    s.plit.setPen(self.redPen)
-                else:
-                    s.valid = True
-                    s.indMax = engine.np.argmin((s.indentation - float(self.ui.b3_threshold.value()) )**2 )
-                    s.plit.setPen(self.blackPen)
+                if s.plit is not None:
+                    if engine.np.max(s.indentation)<float(self.ui.b3_threshold.value()):
+                        s.valid = False
+                        s.plit.setPen(self.redPen)
+                    else:
+                        s.valid = True
+                        s.indMax = engine.np.argmin((s.indentation - float(self.ui.b3_threshold.value()) )**2 )
+                        s.plit.setPen(self.blackPen)
         else:
             for s in self.b3['exp']:
                 if engine.np.max(s.touch)<float(self.ui.b3_threshold.value()):
