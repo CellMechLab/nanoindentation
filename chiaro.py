@@ -180,18 +180,21 @@ class curveWindow(QtWidgets.QMainWindow):
         self.b3updMax()
 
         self.ui.b3_plotscatter.clear()
-        self.b3['plit1'] = pg.PlotDataItem([1,2,3],[0,0,0],pen=None,symbol='o')
-        self.ui.b3_plotscatter.addItem(self.b3['plit1'])
-        ## compute standard histogram
         self.ui.b3_plothist.clear()
-        vals = engine.np.hstack([engine.np.random.normal(size=500), engine.np.random.normal(size=260, loc=4)])
-        y,x = engine.np.histogram(vals, bins=engine.np.linspace(-3, 8, 40))
-        self.b3['plit2a'] = pg.PlotDataItem(x, y, stepMode=True,pen=pg.mkPen('r'))
+        #prepare plots for histo data - standard
+        self.b3['plit1'] = pg.PlotDataItem(pen=None,symbolBrush=pg.mkBrush('b'),symbol='o')
+        self.ui.b3_plotscatter.addItem(self.b3['plit1'])
+        self.b3['plit2a'] = pg.PlotDataItem(stepMode=True,pen=pg.mkPen('b'))
+        self.b3['plit2b'] = pg.PlotDataItem(pen=pg.mkPen((0,0,255,100),width=4))
         self.ui.b3_plothist.addItem(self.b3['plit2a'])
-
-        e0,w,A,nx,ny = engine.gauss(x,y)        
-        self.b3['plit2b'] = pg.PlotDataItem(nx, ny,pen=self.greenPen)
         self.ui.b3_plothist.addItem(self.b3['plit2b'])
+        #prepare plots for histo data - elastography
+        self.b3['pela1'] = pg.PlotDataItem(pen=None,symbolBrush=pg.mkBrush('r'),symbol='o')
+        self.ui.b3_plotscatter.addItem(self.b3['pela1'])
+        self.b3['pela2a'] = pg.PlotDataItem(stepMode=True,pen=pg.mkPen('r'))
+        self.b3['pela2b'] = pg.PlotDataItem(pen=pg.mkPen((255,0,0,100),width=4))
+        self.ui.b3_plothist.addItem(self.b3['pela2a'])
+        self.ui.b3_plothist.addItem(self.b3['pela2b'])
 
         QtWidgets.QApplication.restoreOverrideCursor()
 
@@ -294,6 +297,25 @@ class curveWindow(QtWidgets.QMainWindow):
             medline = pg.PlotCurveItem(xmed, ymedline, pen=pg.mkPen('g', width=2, style=QtCore.Qt.DashLine))
             self.ui.b3_plotRed.plotItem.addItem(medline)
             self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(med*1e8)/100.0))
+
+            #self.b3['pela1'].setData(engine.np.arange(len(ymed)),ymed*1e9)
+            bins = int(self.ui.b3_bins.value())
+            if bins==0:
+                bins='auto'
+            y,x = engine.np.histogram(ymed*1e9, bins=bins, density=True)
+            if len(y)>=3:
+                self.b3['pela2a'].setData(x,y)
+                try:
+                    e0,w,A,nx,ny = engine.gauss(x,y)
+                    self.b3['pela2b'].setData(nx,ny)
+                    w = w/engine.np.sqrt(len(Earray))
+                except:
+                    e0=0
+                    w=0
+            else:
+                e0=s.E
+                w=0
+
         else:
             print('bilayer>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
             getall = engine.fitExpDecay(xmed,ymed, self.R,sigma=yerr)
@@ -459,7 +481,7 @@ class curveWindow(QtWidgets.QMainWindow):
         bins = int(self.ui.b3_bins.value())
         if bins==0:
             bins='auto'
-        y,x = engine.np.histogram(Earray, bins=bins)
+        y,x = engine.np.histogram(Earray, bins=bins, density=True)
         if len(y)>=3:
             self.b3['plit2a'].setData(x,y)
             try:
