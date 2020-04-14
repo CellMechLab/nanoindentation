@@ -5,7 +5,7 @@ import numpy as np
 names=['Ctrl', 'Colch', 'Cytod', 'Jaspla']
 files=['data_Elasto\Control_BilayerFit.tsv', 'data_Elasto\Colch_1000uM_BilayerFit.tsv', 'data_Elasto\CytoD_25uM_BilayerFit.tsv', 'data_Elasto\Jaspla_1uM_BilayerFit.tsv']
 filesY=['data_Elasto\Control_Y.np.txt', 'data_Elasto\Colch_1000uM_Y.np.txt', 'data_Elasto\CytoD_25uM_Y.np.txt', 'data_Elasto\Jaspla_1uM_Y.np.txt']
-file_out=r"C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisScriptMassimo\GitHub_Nanoindentation2\nanoindentation\data_figures\Fig4bcd_CellConditions_BarPlots.csv"
+file_out=r"C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisScriptMassimo\GitHub_Nanoindentation2\nanoindentation\data_figures\Fig5bcd_CellConditions_BarPlots.csv"
 
 E0_fit = []
 Eb_fit = []
@@ -93,7 +93,6 @@ for j in range(len(mags)):
     sig.append(sig_j)
     colors.append(colors_j)
 
-#fig = plt.figure(figsize=(10,20))
 fig, (ax0, ax1, ax2, ax3) = plt.subplots(1,4, figsize=(15,5))
 
 ax0.bar([0,1,2,3], Ymeans, tick_label=names, yerr=Ymeanstd, color=colors[0])

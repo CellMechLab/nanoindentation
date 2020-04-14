@@ -549,7 +549,6 @@ def InvalidCurvesFromElasticityRise(s, win=301, scaledistance=500, threshold_osc
         if start<median:
             ElaInvalid=True
         else:
-            print(s.ElastY[100]*1e9, median, threshold_oscillation)
             for val in s.ElastY[scaledistance:]:
                 if np.abs(val*1e9-median)-threshold_oscillation>0:
                     ElaInvalid = True
