@@ -304,7 +304,7 @@ class curveWindow(QtWidgets.QMainWindow):
                 try:
                     e0,w,A,nx,ny = engine.gauss(x,y)
                     self.b3['pela2b'].setData(nx,ny)
-                    w = w/engine.np.sqrt(len(Earray))
+                    w = w/engine.np.sqrt(len(ymed*1e9))
                 except:
                     e0=0
                     w=0

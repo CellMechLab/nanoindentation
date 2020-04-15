@@ -32,7 +32,6 @@ class curveWindow():
     ################################################
 
     def generateFake(self, params=[0, 4000,  20000, 2000, 300, 1]):
-
         mysegs = []
         mode=params[-1]
         noise = float(params[0])/1000.0
@@ -42,9 +41,8 @@ class curveWindow():
         E1 = float(params[2])/1.0e9
         E2 = float(params[3]) / 1.0e9
         h = float(params[4])
-
         if mode ==1:
-            data = engine.np.loadtxt('nanoindentation\Lambda_AllDataRos.txt') #'nanoindentation\MyFile.txt')#'nanoindentation\Lambda_AllDataRos.txt')  # ('MyFile.txt')
+            data = engine.np.loadtxt('Lambda_AllDataRos.txt') #'nanoindentation\MyFile.txt')#'nanoindentation\Lambda_AllDataRos.txt')  # ('MyFile.txt')
             for i in range(int(len(data[0,:])/2)):
                 mysegs.append(engine.bsegment())
                 mysegs[-1].R = R
@@ -58,7 +56,7 @@ class curveWindow():
                 mysegs[-1].indentation = x
                 mysegs[-1].touch = engine.noisify(y/1000.0,noise)
         elif mode==0:
-            data = engine.np.loadtxt('nanoindentation/MyFile.txt')
+            data = engine.np.loadtxt('MyFile.txt')
             for i in range(50):
                 mysegs.append(engine.bsegment())
                 mysegs[-1].R = R
@@ -67,30 +65,23 @@ class curveWindow():
                 y = data[:, 1]
                 mysegs[-1].indentation = x
                 mysegs[-1].touch = engine.noisify(y / 1000.0, noise)
+        elif mode==2:
+            for i in range(50):
+                mysegs.append(engine.bsegment())
+                mysegs[-1].R = R
+                mysegs[-1].indentation = xbase
+                mysegs[-1].touch = engine.noisify(engine.standardHertz(xbase,E1,R),noise)
         self.b3['exp'] = mysegs
 
-    def load_pickle(self):
-
-        fname = QtWidgets.QFileDialog.getOpenFileName(self,'Select the file to load your processing',self.workingdir,"Python object serialization (*.pickle)")
-        if fname[0] =='':
-            return
-
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))        
-
-        with open(fname[0], 'rb') as f:
+    def load_pickle(self, fname):
+        with open(fname, 'rb') as f:
             data = pickle.load(f)
-        QtWidgets.QApplication.restoreOverrideCursor()
-
         if data[0].phase == 2:
             self.b2['exp']=data
-            self.b2Init()
         elif data[0].phase == 3:
             self.b3['exp']=data
-            self.b3Init()
         elif data[0].phase == 4:
             self.b4['exp']=data
-            self.b4Init()
-        self.ui.switcher.setCurrentIndex(data[0].phase-1)
 
     def save_pickle(self):
         phase = self.ui.switcher.currentIndex()+1
@@ -174,7 +165,7 @@ class curveWindow():
         self.i_cutoff=i_dhalf
         self.fit1= engine.ExpDecay(xmed,*pars1, self.R)
         self.fit2= engine.ExpDecay(xmed, *pars2, self.R)
-        print(self.E0, self.Eb, self.d0)
+        #print(self.E0, self.Eb, self.d0)
         if any(engine.np.isnan(xmed))== False and any(engine.np.isnan(ymed))==False:
             self.xmed=xmed
             self.ymed=ymed
@@ -197,6 +188,35 @@ class curveWindow():
         #     self.Ebh=Ebh
         # if any(engine.np.isnan(d0h)) == False:
         #     self.d0h=d0h
+
+        med = engine.np.average(ymed)
+        ymedline = engine.np.ones(len(xmed)) * med * 1e9
+        self.medlinex = xmed
+        self.medliney = ymedline
+
+        bins = 'auto'
+        y, x = engine.np.histogram(ymed*1e9, bins=bins, density=True)
+        if len(y) >= 3:
+            self.elastohistox=x
+            self.elastohistoy=y
+            try:
+                e0, w, A, nx, ny = engine.gauss(x, y)
+                self.elastogaussx=nx
+                self.elastogaussy=ny
+                w = w / engine.np.sqrt(len(ymed*1e9))
+                self.elastogaussE0=e0
+                self.elastogaussE0std=w
+            except:
+                self.elastogaussx=None
+                self.elastogaussy=None
+                self.elastogaussE0=None
+                self.elastogaussE0std=None
+        else:
+            self.elastogaussx = None
+            self.elastogaussy = None
+            self.elastogaussE0 = None
+            self.elastogaussE0std = None
+
         return pars1, covs1, pars2, covs2, pars3, covs3, xmed, ymed*1e9, E0h,Ebh,d0h, self.R
 
     def b3Export(self, fname=None):
@@ -233,6 +253,96 @@ class curveWindow():
                 else:
                     f.write('{}\t{}\t{}\n'.format(data[0][i],data[1][i],data[2][i]))
             f.close()
+
+    def b3ExportToCsvForPlots(self, fnames, settings):
+        print('Saving data!')
+        [fname_IndentResultsData, fname_ElastoAllData, fname_ElastoResultsData, fname_HistoData]=fnames
+        data1a = []
+        data1b = []
+        data2a = []
+        data2b = []
+        for i, s in enumerate(self.b3['exp']):
+            label_1a = ['d_' + str(i)]
+            label_1b = ['F_' + str(i)]
+            data_1a = label_1a + list(s.indentation)
+            data_1b = label_1b + list(s.touch)
+            label_2a = ['d_' + str(i)]
+            label_2b = ['E_' + str(i)]
+            data_2a = label_2a + list(s.ElastX)
+            data_2b = label_2b + list(s.ElastY)
+            data1a.append(data_1a)
+            data1b.append(data_1b)
+            data2a.append(data_2a)
+            data2b.append(data_2b)
+        data1c = ['HertzFit_d'] + list(self.HertzFit_x)
+        data1d = ['HertzFit_F'] + list(self.HertzFit_y)
+        data3a = ['xmed'] + list(self.xmed)
+        data3b = ['ymed'] + list(self.ymed)
+        data3c = ['yerr'] + list(self.yerr)
+        data3d = ['y+err'] + list(self.ymed + self.yerr)
+        data3e = ['y-err'] + list(self.ymed - self.yerr)
+        if settings[4]=='bilayer':
+            data3f = ['fit1x'] + list(self.xmed)
+            data3g = ['fit1y'] + list(self.fit1)
+            data3h = ['fit2x'] + list(self.xmed[:self.i_cutoff])
+            data3i = ['fit2y'] + list(self.fit2[:self.i_cutoff])
+        if settings[4]=='single':
+            data3f = ['fitlinx'] + list(self.medlinex)
+            data3g = ['fitliny'] + list(self.medliney)
+        data4a = ['Hertz_E0'] + [self.gaussE0]
+        data4b = ['Hertz_E0std'] + [self.gaussE0std]
+        data4c = ['HistoHertz_x'] + list(self.histox)
+        data4d = ['HistoHertz_y'] + list(self.histoy)
+        data4e = ['GaussHertz_x'] + list(self.gaussx)
+        data4f = ['GaussHertz_y'] + list(self.gaussy)
+        data4g = ['Elasto_E0'] + [self.elastogaussE0]
+        data4h = ['Elasto_E0std'] + [self.elastogaussE0std]
+        data4i = ['HistoElasto_x'] + list(self.elastohistox)
+        data4j = ['HistoElasto_y'] + list(self.elastohistoy)
+        data4k = ['GaussElasto_x'] + list(self.elastogaussx)
+        data4l = ['GaussElasto_y'] + list(self.elastogaussy)
+        if settings[0] is True:
+            with open(fname_IndentResultsData, mode='w', newline='') as f:
+                w = csv.writer(f)
+                w.writerow(data1c)
+                w.writerow(data1d)
+                for i in range(len(data1a)):
+                    w.writerow(data1a[i])
+                    w.writerow(data1b[i])
+        if settings[1] is True:
+            with open(fname_ElastoAllData, mode='w', newline='') as f:
+                w = csv.writer(f)
+                for i in range(len(data2a)):
+                    w.writerow(data2a[i])
+                    w.writerow(data2b[i])
+        if settings[2] is True:
+            with open(fname_ElastoResultsData, mode='w', newline='') as f:
+                w = csv.writer(f)
+                w.writerow(data3a)
+                w.writerow(data3b)
+                w.writerow(data3c)
+                w.writerow(data3d)
+                w.writerow(data3e)
+                w.writerow(data3f)
+                w.writerow(data3g)
+                if settings[4] == 'bilayer':
+                    w.writerow(data3h)
+                    w.writerow(data3i)
+        if settings[3] is True:
+            with open(fname_HistoData, mode='w', newline='') as f:
+                w = csv.writer(f)
+                w.writerow(data4a)
+                w.writerow(data4b)
+                w.writerow(data4c)
+                w.writerow(data4d)
+                w.writerow(data4e)
+                w.writerow(data4f)
+                w.writerow(data4g)
+                w.writerow(data4h)
+                w.writerow(data4i)
+                w.writerow(data4j)
+                w.writerow(data4k)
+                w.writerow(data4l)
 
     def b3_ShiftAllCurves(self, shift=None):
         if shift == False:
@@ -318,6 +428,37 @@ class curveWindow():
                     Earray.append(s.E*1e9)
         if any(engine.np.isnan(Earray))==False:
             self.Earray=Earray
+
+        bins = 'auto'
+        y, x = engine.np.histogram(Earray, bins=bins, density=True)
+        if len(y) >= 3:
+            self.histox=x
+            self.histoy=y
+            try:
+                e0, w, A, nx, ny = engine.gauss(x, y)
+                self.gaussx=nx
+                self.gaussy=ny
+                w = w / engine.np.sqrt(len(Earray))
+                self.gaussE0=e0
+                self.gaussE0std=w
+            except:
+                self.gaussx=None
+                self.gaussy=None
+                self.gaussE0=None
+                self.gaussE0std=None
+        else:
+            self.gaussx = None
+            self.gaussy = None
+            self.gaussE0 = None
+            self.gaussE0std = None
+        R = self.R
+        E = engine.np.average(Earray) / 1e9
+        if mode==0:
+            x, y = engine.getHertz(E, R, threshold, indentation=True)
+        if mode==1:
+            x, y = engine.getHertz(E, R, threshold, indentation=False)
+        self.HertzFit_x=x
+        self.HertzFit_y=y
         return Earray
 
 
