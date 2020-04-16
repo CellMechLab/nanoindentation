@@ -613,7 +613,7 @@ def lamb():
     return 1.
 
 def area(x,R):
-    return np.sqrt(2*R*x)
+    return np.sqrt(R*x)
 
 def ExpDecay(x,E0,Eb,d0,R):
     x[x<0]=0    
@@ -623,6 +623,17 @@ def ExpDecay(x,E0,Eb,d0,R):
     #a=a/d0
     #weight = 2/np.pi*np.arctan(1/a)-( a/(1+a**2) )/np.pi
     return Eb+(E0-Eb)*weight
+
+def ExpSimple(x,E0,Eb,d0):
+    x[x<0]=0
+    weight = np.exp(-np.sqrt(x/d0))
+    return Eb+(E0-Eb)*weight
+
+def fitExpSimple(x,y):
+    seeds=[10000/1e9,1000/1e9,np.sqrt(200)]
+    x=np.array(x)
+    popt1, pcov1 = curve_fit(ExpSimple, x,y, p0=seeds, maxfev=10000)
+    return popt1
 
 def fitExpDecay(x,y,R,sigma=None):
     seeds=[10000/1e9,1000/1e9,200]

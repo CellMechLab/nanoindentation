@@ -73,10 +73,11 @@ class curveWindow(QtWidgets.QMainWindow):
                 if a.modAli.isChecked() is True:
                     mysegs[-1].touch = engine.noisify(engine.LayerStd(xbase,E1,E2,h,R),noise)
                 if a.modRos.isChecked() is True:
-                    x = data[:,0]
-                    y = data[:,1]
+                    data = engine.np.loadtxt('alldata.txt')
+                    x = data[:,0]*1e9
+                    y = data[:,1]*1e9
                     mysegs[-1].indentation = x
-                    mysegs[-1].touch = engine.noisify(y/1000.0,noise)
+                    mysegs[-1].touch = engine.noisify(y,noise)
                 else:
                     x = data[:,i*2]
                     y = data[:,i*2+1]
