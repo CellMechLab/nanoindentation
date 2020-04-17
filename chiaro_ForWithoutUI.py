@@ -56,21 +56,23 @@ class curveWindow():
                 mysegs[-1].indentation = x
                 mysegs[-1].touch = engine.noisify(y/1000.0,noise)
         elif mode==0:
-            data = engine.np.loadtxt('MyFile.txt')
-            for i in range(50):
+            R = 3200.0
+            data = engine.np.loadtxt('alldata3.txt')#('MyFile.txt')
+            for i in range(100):
                 mysegs.append(engine.bsegment())
                 mysegs[-1].R = R
                 mysegs[-1].indentation = xbase
-                x = data[:, 0]
-                y = data[:, 1]
+                x = data[:, 0]*1e9
+                y = data[:, 1]*1e9
                 mysegs[-1].indentation = x
-                mysegs[-1].touch = engine.noisify(y / 1000.0, noise)
+                mysegs[-1].touch = engine.noisify(y, noise)
         elif mode==2:
             for i in range(50):
+                Eact = engine.random.gauss(E1, noise * E1 / 10.0)
                 mysegs.append(engine.bsegment())
                 mysegs[-1].R = R
                 mysegs[-1].indentation = xbase
-                mysegs[-1].touch = engine.noisify(engine.standardHertz(xbase,E1,R),noise)
+                mysegs[-1].touch = engine.noisify(engine.standardHertz(xbase,Eact,R),noise)
         self.b3['exp'] = mysegs
 
     def load_pickle(self, fname):
@@ -112,11 +114,12 @@ class curveWindow():
     ############## b3 actions ######################
     ################################################
 
-    def b3_Alistography(self, params=[30, 500, 2000, 0.75]):
+    def b3_Alistography(self, params=[30, 500, 2000, 0.75, 15000]):
         grainstep = int( params[0] )
-        scaledistance = float( params[1] )
+        scaledistance = int( params[1] )
         maxind = float( params[2] )
         cutoff=float(params[3])
+        threshold_oscillation=float(params[4])
         xx=[]
         yy=[]
         Rs=[]
@@ -125,47 +128,33 @@ class curveWindow():
         d0h=[]
         self.d01 = []
         self.std_d01 = []
-        self.d02 = []
-        self.std_d02 = []
-        self.d03 = []
-        self.std_d03 = []
-        self.d04 = []
-        self.std_d04 = []
         for s in self.b3['exp']:
             Ex,Ey = engine.Elastography2withMax( s,grainstep,scaledistance,maxind)
             if Ex is None:
                 continue
             s.ElastX = Ex
             s.ElastY = Ey
-            # pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = engine.fitExpDecay(Ex,Ey,s.R)
-            # if pars1 is not None:
-            #     # E0s = engine.np.asarray([pars1[0], pars2[0], pars3[0], pars4[0]])
-            #     # Ebs = engine.np.asarray([pars1[1], pars2[1], pars3[1], pars4[1]])
-            #     # d0s = engine.np.asarray([pars1[2], pars2[2], pars3[2], pars4[2]])
-            #     E0h.append(pars2[0]*1e9)
-            #     Ebh.append(pars1[1]*1e9)
-            #     d0h.append(pars2[2])
-            # self.d01.append(pars1[2])
-            # self.std_d01.append(engine.np.sqrt(covs1[2]))
-            # self.d02.append(pars2[2])
-            # self.std_d02.append(engine.np.sqrt(covs2[2]))
-            # self.d03.append(pars3[2])
-            # self.std_d03.append(engine.np.sqrt(covs3[2]))
-            # self.d04.append(pars4[2])
-            # self.std_d04.append(engine.np.sqrt(covs4[2]))
+            pars1, covs1= engine.fitExpSimple(Ex,Ey,s.R)
+            if pars1 is not None:
+                # E0s = engine.np.asarray([pars1[0], pars2[0], pars3[0], pars4[0]])
+                # Ebs = engine.np.asarray([pars1[1], pars2[1], pars3[1], pars4[1]])
+                # d0s = engine.np.asarray([pars1[2], pars2[2], pars3[2], pars4[2]])
+                E0h.append(pars1[0]*1e9)
+                Ebh.append(pars1[1]*1e9)
+                d0h.append(pars1[2])
+            self.d01.append(pars1[2])
+            self.std_d01.append(engine.np.sqrt(covs1[2]))
             xx.append(Ex)
             yy.append(Ey)
             Rs.append(s.R)
         self.R=engine.np.mean(Rs)
         xmed,ymed, yerr = engine.getMedCurve(xx,yy,loose = True, error=True)
-        pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = engine.fitExpDecay(xmed, ymed, self.R, sigma=yerr)#, cutoff=cutoff)
-        self.E0=pars2[0]
+        pars1, covs1 = engine.fitExpSimple(xmed, ymed, self.R, sigma=yerr)#, cutoff=cutoff)
+        self.E0=pars1[0]
         self.Eb=pars1[1]
-        self.d0=pars2[2]
-        self.i_cutoff=i_dhalf
+        self.d0=pars1[2]
         self.fit1= engine.ExpDecay(xmed,*pars1, self.R)
-        self.fit2= engine.ExpDecay(xmed, *pars2, self.R)
-        #print(self.E0, self.Eb, self.d0)
+        print(self.E0, self.Eb, self.d0)
         if any(engine.np.isnan(xmed))== False and any(engine.np.isnan(ymed))==False:
             self.xmed=xmed
             self.ymed=ymed
@@ -173,15 +162,6 @@ class curveWindow():
         if any(engine.np.isnan(pars1))== False:
             self.pars1=pars1
             self.covs1=covs1
-        if any(engine.np.isnan(pars2))== False:
-            self.pars2=pars2
-            self.covs2=covs2
-        if any(engine.np.isnan(pars3)) == False:
-            self.pars3 = pars3
-            self.covs3 = covs3
-        if any(engine.np.isnan(pars4)) == False:
-            self.pars4 = pars4
-            self.covs4 = covs4
         # if any(engine.np.isnan(E0h)) == False:
         #     self.E0h=E0h
         # if any(engine.np.isnan(Ebh)) == False:
@@ -216,8 +196,56 @@ class curveWindow():
             self.elastogaussy = None
             self.elastogaussE0 = None
             self.elastogaussE0std = None
+        return pars1, covs1, xmed, ymed*1e9, E0h,Ebh,d0h, self.R
 
-        return pars1, covs1, pars2, covs2, pars3, covs3, xmed, ymed*1e9, E0h,Ebh,d0h, self.R
+    def b3_AlistographyFromForceMed(self, params=[30, 500, 2000, 0.75, 15000]):
+        grainstep = int( params[0] )
+        scaledistance = int( params[1] )
+        maxind = float( params[2] )
+        cutoff=float(params[3])
+        threshold_oscillation=float(params[4])
+        xx=[]
+        yy=[]
+        Rs=[]
+        for s in self.b3['exp']:
+            xx.append(s.indentation)
+            yy.append(s.touch)
+            Rs.append(s.R)
+        self.R = engine.np.mean(Rs)
+        fxmed, fymed, fyerr = engine.getMedCurve(xx, yy, loose=True, error=True)
+        Ex, Ey = engine.Elastography2ForMedForce(fxmed, fymed, self.R, grainstep, scaledistance, maxind)
+        Ex=engine.np.asarray(Ex)
+        Ey=engine.np.asarray(Ey)
+        pars1, covs1= engine.fitExpSimple(Ex, Ey, self.R)#, sigma=yerr)  # , cutoff=cutoff)
+        self.E0 = pars1[0]
+        self.Eb = pars1[1]
+        self.d0 = pars1[2]
+        self.fit1 = engine.ExpDecay(Ex, *pars1, self.R)
+
+
+        if any(engine.np.isnan(fxmed))== False and any(engine.np.isnan(fymed))==False:
+            self.fxmed=fxmed
+            self.fymed=fymed
+            self.fyerr=fyerr
+        if any(engine.np.isnan(Ex))== False and any(engine.np.isnan(Ey))==False:
+            self.xmed=Ex
+            self.ymed=Ey
+            self.yerr=fyerr
+        if any(engine.np.isnan(pars1))== False:
+            self.pars1=pars1
+            self.covs1=covs1
+        if any(engine.np.isnan(pars2))== False:
+            self.pars2=pars2
+            self.covs2=covs2
+        if any(engine.np.isnan(pars3)) == False:
+            self.pars3 = pars3
+            self.covs3 = covs3
+        if any(engine.np.isnan(pars4)) == False:
+            self.pars4 = pars4
+            self.covs4 = covs4
+
+        #return pars1, covs1, pars2, covs2, pars3, covs3, xmed, ymed*1e9, E0h,Ebh,d0h, self.R
+
 
     def b3Export(self, fname=None):
         if fname is None:
@@ -232,16 +260,10 @@ class curveWindow():
     def b3Export2(self, fit=False, fname=None):
         with open(fname,'w') as f:
             if fit is True:
-                data_Fit = [self.xmed, self.ymed * 1e9, self.pars1, self.covs1, self.pars2, self.covs2, self.pars3, self.covs3, self.pars4, self.covs4]
+                data_Fit = [self.xmed, self.ymed * 1e9, self.pars1, self.covs1]
                 data=data_Fit
                 f.write('{}\t{}\t{}\t{}\n'.format("mean fit 1 params E0, Eb, d0",data[2][0], data[2][1], data[2][2]))
                 f.write('{}\t{}\t{}\t{}\n'.format("mean fit 1 std dev E0, Eb, d0", data[3][0], data[3][1], data[3][2]))
-                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 2 params E0, Eb, d0",data[4][0], data[4][1], data[4][2]))
-                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 2 std dev E0, Eb, d0", data[5][0], data[5][1], data[5][2]))
-                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 3 params E0, Eb, d0",data[6][0], data[6][1], data[6][2]))
-                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 3 std dev E0, Eb, d0", data[7][0], data[7][1], data[7][2]))
-                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 4 params E0, Eb, d0",data[8][0], data[8][1], data[8][2]))
-                f.write('{}\t{}\t{}\t{}\n'.format("mean fit 4 std dev E0, Eb, d0", data[9][0], data[9][1], data[9][2]))
                 f.write('Ex\tEy\n')
             else:
                 data_Bilayer = [self.E0h, self.Ebh, self.d0h]
@@ -269,7 +291,7 @@ class curveWindow():
             label_2a = ['d_' + str(i)]
             label_2b = ['E_' + str(i)]
             data_2a = label_2a + list(s.ElastX)
-            data_2b = label_2b + list(s.ElastY)
+            data_2b = label_2b + list(s.ElastY*1e9)
             data1a.append(data_1a)
             data1b.append(data_1b)
             data2a.append(data_2a)
@@ -277,26 +299,26 @@ class curveWindow():
         data1c = ['HertzFit_d'] + list(self.HertzFit_x)
         data1d = ['HertzFit_F'] + list(self.HertzFit_y)
         data3a = ['xmed'] + list(self.xmed)
-        data3b = ['ymed'] + list(self.ymed)
-        data3c = ['yerr'] + list(self.yerr)
-        data3d = ['y+err'] + list(self.ymed + self.yerr)
-        data3e = ['y-err'] + list(self.ymed - self.yerr)
+        data3b = ['ymed'] + list(self.ymed*1e9)
+        data3c = ['yerr'] + list(self.yerr*1e9)
+        data3d = ['y+err'] + list((self.ymed + self.yerr)*1e9)
+        data3e = ['y-err'] + list((self.ymed - self.yerr)*1e9)
         if settings[4]=='bilayer':
             data3f = ['fit1x'] + list(self.xmed)
-            data3g = ['fit1y'] + list(self.fit1)
-            data3h = ['fit2x'] + list(self.xmed[:self.i_cutoff])
-            data3i = ['fit2y'] + list(self.fit2[:self.i_cutoff])
+            data3g = ['fit1y'] + list(self.fit1*1e9)
         if settings[4]=='single':
             data3f = ['fitlinx'] + list(self.medlinex)
             data3g = ['fitliny'] + list(self.medliney)
         data4a = ['Hertz_E0'] + [self.gaussE0]
         data4b = ['Hertz_E0std'] + [self.gaussE0std]
+        data4bc = ['HistoHertz_data'] + list(self.Earray)
         data4c = ['HistoHertz_x'] + list(self.histox)
         data4d = ['HistoHertz_y'] + list(self.histoy)
         data4e = ['GaussHertz_x'] + list(self.gaussx)
         data4f = ['GaussHertz_y'] + list(self.gaussy)
         data4g = ['Elasto_E0'] + [self.elastogaussE0]
         data4h = ['Elasto_E0std'] + [self.elastogaussE0std]
+        data4hi = ['HistoElasto_data'] + list(self.ymed*1e9)
         data4i = ['HistoElasto_x'] + list(self.elastohistox)
         data4j = ['HistoElasto_y'] + list(self.elastohistoy)
         data4k = ['GaussElasto_x'] + list(self.elastogaussx)
@@ -325,20 +347,19 @@ class curveWindow():
                 w.writerow(data3e)
                 w.writerow(data3f)
                 w.writerow(data3g)
-                if settings[4] == 'bilayer':
-                    w.writerow(data3h)
-                    w.writerow(data3i)
         if settings[3] is True:
             with open(fname_HistoData, mode='w', newline='') as f:
                 w = csv.writer(f)
                 w.writerow(data4a)
                 w.writerow(data4b)
+                w.writerow(data4bc)
                 w.writerow(data4c)
                 w.writerow(data4d)
                 w.writerow(data4e)
                 w.writerow(data4f)
                 w.writerow(data4g)
                 w.writerow(data4h)
+                w.writerow(data4hi)
                 w.writerow(data4i)
                 w.writerow(data4j)
                 w.writerow(data4k)
@@ -527,20 +548,6 @@ class curveWindow():
             s.ffil = engine.filterOsc(s.f,pro=pro,winperc=winperc,threshold=thresh)
             s.ffil_original=s.ffil
 
-    # def b2_crop(self):
-    #     a = panels.CropCurves()
-    #     if(a.exec()==0):
-    #         return
-    #     QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-    #     front = int(a.CropStart.value())
-    #     back = int(a.CropEnd.value())
-    #     for s in self.b2['exp']:
-    #         s.z=s.z_original
-    #         s.ffil =s.ffil_original
-    #         s.f=s.f_original
-    #         s.z=s.z[front:-(back+1)]
-    #         s.ffil=s.ffil[front:-(back+1)]
-    #         s.f=s.f[front:-(back+1)]
 
     def b2_contactPoint(self, mode, params=[100, 1.5, 10]):
         minY=int(params[0])
@@ -613,8 +620,16 @@ class curveWindow():
             #             s.invalid = True
 
 
-
-
+    def b2_crop(self, params=[100,100]):
+        front = params[0]
+        back = params[1]
+        for s in self.b2['exp']:
+            # s.z=s.z_original
+            # s.ffil =s.ffil_original
+            # s.f=s.f_original
+            s.z=s.z[front:-(back+1)]
+            s.ffil=s.ffil[front:-(back+1)]
+            s.f=s.f[front:-(back+1)]
 
 
 

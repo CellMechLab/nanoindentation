@@ -73,6 +73,7 @@ class curveWindow(QtWidgets.QMainWindow):
                 if a.modAli.isChecked() is True:
                     mysegs[-1].touch = engine.noisify(engine.LayerStd(xbase,E1,E2,h,R),noise)
                 if a.modRos.isChecked() is True:
+                    R = 3200.0
                     data = engine.np.loadtxt('alldata3.txt')
                     x = data[:,0]*1e9
                     y = data[:,1]*1e9
@@ -226,25 +227,26 @@ class curveWindow(QtWidgets.QMainWindow):
         #Ebh=[]
         #d0h=[]
 
-        self.d01=[]
-        self.std_d01=[]
-        self.d02=[]
-        self.std_d02=[]
-        self.d03=[]
-        self.std_d03=[]
-        self.d04=[]
-        self.std_d04=[]
+        #self.d01=[]
+        #self.std_d01=[]
+        #self.d02=[]
+        #self.std_d02=[]
+        #self.d03=[]
+        #self.std_d03=[]
+        #self.d04=[]
+        #self.std_d04=[]
 
-        print('singles>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        #print('singles>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
         for s in self.b3['exp']:  
             Ex,Ey = engine.Elastography2withMax( s,grainstep,scaledistance,maxind)
             if Ex is None:
                 continue
             s.ElastX = Ex
             s.ElastY = Ey
-            getall = engine.fitExpDecay(Ex,Ey,s.R)
-            if getall is None:
-                continue
+
+            #getall = engine.fitExpSimple(Ex,Ey)
+            #if getall is None:
+            #    continue
             #pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = getall
             #if pars1 is not None:
             #    E0h.append(pars2[0]*1e9)
@@ -272,8 +274,8 @@ class curveWindow(QtWidgets.QMainWindow):
         self.R=engine.np.mean(Rs)
         xmed, ymed, yerr = engine.getMedCurve(xx,yy,loose = True, error=True)
         #points = pg.PlotDataItem(xmed,ymed*1e9,pen=None,symbol='o')
-        points1 = pg.PlotCurveItem(xmed,ymed*1e9,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 255,200),width=2))
-        self.ui.b3_long.plotItem.addItem( points1 )
+        #points1 = pg.PlotCurveItem(xmed,ymed*1e9,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 255,200),width=2))
+        #self.ui.b3_long.plotItem.addItem( points1 )
 
         points = pg.PlotCurveItem(xmed,ymed*1e9,pen=pg.mkPen( pg.QtGui.QColor(0, 0, 255,200),width=2))
         y_uperror=ymed+yerr
@@ -281,7 +283,7 @@ class curveWindow(QtWidgets.QMainWindow):
         yup_curve = pg.PlotCurveItem(xmed,y_uperror*1e9,pen=pg.mkPen( pg.QtGui.QColor(255, 0, 0,255),width=2))
         ydown_curve = pg.PlotCurveItem(xmed, y_downerror * 1e9,pen=pg.mkPen(pg.QtGui.QColor(255, 0, 0, 255), width=2))
         errorzone= pg.FillBetweenItem(ydown_curve, yup_curve, brush='r')
-        self.ui.b3_plotRed.plotItem.addItem( points )
+        self.ui.b3_plotRed.plotItem.addItem(points)
         self.ui.b3_plotRed.plotItem.addItem(errorzone)
 
         if any(engine.np.isnan(xmed))== False and any(engine.np.isnan(ymed))==False:
@@ -314,33 +316,33 @@ class curveWindow(QtWidgets.QMainWindow):
                 w=0
 
         else:
-            print('bilayer>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-            getall = engine.fitExpDecay(xmed,ymed, self.R,sigma=yerr)
+            #print('bilayer>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+            getall = engine.fitExpSimple(xmed,ymed, R=self.R,  sigma=yerr)
 
             if getall is not None:
-                print(getall)
-                pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = getall
-                print(i_dhalf)
-                print(pars1[2], pars2[2], pars3[2], pars4[2])
+                pars1, covs1 = getall
+                #pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = getall
+                #print(i_dhalf)
+                #print(pars1[2], pars2[2], pars3[2], pars4[2])
                 if pars1 is not None:
                     yfit0 = engine.ExpDecay(xmed,*pars1, self.R)
-                    yfit1 = engine.ExpDecay(xmed[:i_dhalf],*pars2, self.R)
-                    yfit2 = engine.ExpDecay(xmed[i_dhalf:], *pars3, self.R)
-                    yfit3 = engine.ExpDecay(xmed[:i_cut], *pars4, self.R)
-                    self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed, yfit0 * 1e9, pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=2)))
-                    self.ui.b3_plotRed.addItem( pg.PlotCurveItem(xmed[:i_dhalf:],yfit1 * 1e9,pen=self.greenPen) )
-                    self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[i_dhalf:], yfit2 * 1e9, pen=self.greenPen))
+                    #yfit1 = engine.ExpDecay(xmed[:i_dhalf],*pars2, self.R)
+                    #yfit2 = engine.ExpDecay(xmed[i_dhalf:], *pars3, self.R)
+                    #yfit3 = engine.ExpDecay(xmed[:i_cut], *pars4, self.R)
+                    self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed, yfit0 * 1e9, pen=self.greenPen))
+                    #self.ui.b3_plotRed.addItem( pg.PlotCurveItem(xmed[:i_dhalf:],yfit1 * 1e9,pen=self.greenPen) )
+                    #self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[i_dhalf:], yfit2 * 1e9, pen=self.greenPen))
                     #self.ui.b3_plotRed.addItem(pg.PlotCurveItem(xmed[:i_cut], yfit3 * 1e9,pen=pg.mkPen(pg.QtGui.QColor(0, 0, 0, 255), width=3)))
-                    self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars2[0]*1e8)/100.0))
+                    self.ui.b3_labE0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars1[0]*1e8)/100.0))
                     self.ui.b3_labEb.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> kPa</p></body></html>'.format(int(pars1[1]*1e8)/100.0))
-                    self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars2[2])))
+                    self.ui.b3_labd0.setText('<html><head/><body><p><span style=" font-weight:600;">{}</span> nm</p></body></html>'.format(int(pars1[2])))
 
         QtWidgets.QApplication.restoreOverrideCursor()
 
         if self.ui.b3_sinfit.isChecked() is True:
-            return xmed,ymed*1e9
+            return xmed,ymed*1e9, ymedline
         else:
-            return xmed,ymed*1e9, pars1, covs1, pars2, covs2, pars3, covs3
+            return xmed,ymed*1e9, pars1, covs1 #, pars2, covs2, pars3, covs3
 
     def b3Export(self):
         Earray = self.b3Fit()
