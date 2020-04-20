@@ -7,9 +7,9 @@ fname_HistoData =r"C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisS
 
 GenerateFake_params = [100, 4000,  5000, 2000, 300, 2] #noiselevel, maxlength, E1, E2, d0, mode: 0=50*same Ros curve, 1= Ros curves for different d, 2= 50*Hertz curve
 Yfit_params = [0, 1000]  # mode (0: maxIndentation, 1: maxForce), maxIndentValue
-Elasto3_params = [25, 500, 2000, 0.75]  # grainstep, scaledistance, maxind, cutoff
+Elasto3_params = [25, 500, 2000, 15000, 'yeserror']  # grainstep, scaledistance, maxind, threshold_oscialltions, error_in_med_curve yes/no
 fnamesCsv=[fname_IndentResultsData, fname_ElastoAllData, fname_ElastoResultsData, fname_HistoData]
-CsvSettings=[True, True, True, True, 'single'] #'bilayer'] #0: save force curves, 1: save all elasto data, 2: save elasto med + fit, 3: save histo data + gauss, 4: 'single' or 'bilayer'
+CsvSettings=[True, True, True, True, 'single', 'yeserror'] #0: save force curves, 1: save all elasto data, 2: save elasto med + fit, 3: save histo data + gauss, 4: 'single' or 'bilayer', error_in_med_curve yes/no
 
 
 c=chiaro.curveWindow()

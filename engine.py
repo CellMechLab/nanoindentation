@@ -524,7 +524,7 @@ def IndentationForDerivative(s, z0=0):
 def Nanosurf_FindInvalidCurves(s, threshold_invalid=10):
     s.bol2=None
     ind=np.argmin(abs(s.z-s.offsetX))
-    if ind<199:
+    if ind<=200:
         s.bol2 = False
     else:
         f_abs = np.absolute(s.ffil[200:ind])
@@ -610,7 +610,7 @@ def LayerRoss(x,E1,E2,h,R,poisson=0.5):
     return F
 
 def lamb():
-    return 2.43
+    return 1.74
 
 def area(x,R):
     return np.sqrt(R*x)
