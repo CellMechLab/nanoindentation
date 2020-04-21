@@ -777,6 +777,11 @@ def fitExpDecay_EsFixed(x,y,R,sigma=None):
         print("First Exp Fit failed!")
         return None, None, None, None, None, None, None, None, None, None
 
+def Oliver(delta,R):
+    area = np.pi * R**2 *(2 * delta/R - delta ** 2/R**2)
+    area = np.pi * R ** 2 * (2 * delta / R )
+    return area
+
 def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
     x = s.indentation
     y = s.touch
@@ -789,14 +794,17 @@ def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=999
         xx = np.arange(min_x,max_x,1.0)
         yy = yi(xx)
 
-        coeff = 3/8/np.sqrt(s.R)
+        #E = 3/8 sqrt(pi)/sqrt(A)
+        #coeff = 3/8/np.sqrt(s.R)/np.sqrt(xx)
+        coeff = 3 * np.sqrt(np.pi) / 8 / np.sqrt(Oliver(xx,s.R))
+
         win = grainstep
         if win%2 == 0:
             win+=1
         if len(yy)<=win:
             return None,None
         deriv = savgol_filter(yy,win,3,delta=1.0,deriv=1)
-        Ey = coeff*deriv/np.sqrt(xx)
+        Ey = coeff*deriv
         Ex = list(xx)
         dwin = int(win-1) #int((win-1)/2)
         Ex=Ex[dwin:-dwin]
