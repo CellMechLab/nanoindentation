@@ -666,12 +666,6 @@ class curveWindow(QtWidgets.QMainWindow):
                     continue
                 s.ElastX = Ex
                 s.ElastY = Ey
-
-                pars1, covs1, pars2, covs2, pars3, covs3, pars4, covs4, i_dhalf, i_cut = engine.fitExpDecay(Ex, Ey, s.R)
-                if pars1 is not None:
-                    s.E0=pars2[0]
-                    s.Eb=pars1[1]
-                    s.d0=pars2[2]
                 xx.append(Ex)
                 yy.append(Ey)
                 elit = pg.PlotCurveItem(Ex, Ey * 1e9, pen=self.blackPen, clickable=True)
@@ -685,7 +679,7 @@ class curveWindow(QtWidgets.QMainWindow):
                     QtCore.QCoreApplication.processEvents()
                     cdown = 10
 
-                s.ElaInvalid, s.filEla =engine.InvalidCurvesFromElasticityRise(s,win=filwin, scaledistance= int(scaledistance), threshold_oscillation=thresh_osc)
+                s.ElaInvalid, s.filEla =engine.InvalidCurvesFromElasticityRise(s,win=filwin, scaledistance=int(scaledistance), threshold_oscillation=thresh_osc)
                 if s.ElaInvalid == True:
                     s.invalid=True
 

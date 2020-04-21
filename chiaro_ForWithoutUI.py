@@ -114,12 +114,12 @@ class curveWindow():
     ############## b3 actions ######################
     ################################################
 
-    def b3_Alistography(self, params=[30, 500, 2000, 0.75, 15000]):
+    def b3_Alistography(self, params=[30, 500, 2000, 15000, 'yeserror']):
         grainstep = int( params[0] )
         scaledistance = int( params[1] )
         maxind = float( params[2] )
-        cutoff=float(params[3])
-        threshold_oscillation=float(params[4])
+        threshold_oscillation=float(params[3])
+        mode=str(params[4])
         xx=[]
         yy=[]
         Rs=[]
@@ -136,20 +136,22 @@ class curveWindow():
             s.ElastY = Ey
             pars1, covs1= engine.fitExpSimple(Ex,Ey,s.R)
             if pars1 is not None:
-                # E0s = engine.np.asarray([pars1[0], pars2[0], pars3[0], pars4[0]])
-                # Ebs = engine.np.asarray([pars1[1], pars2[1], pars3[1], pars4[1]])
-                # d0s = engine.np.asarray([pars1[2], pars2[2], pars3[2], pars4[2]])
                 E0h.append(pars1[0]*1e9)
                 Ebh.append(pars1[1]*1e9)
                 d0h.append(pars1[2])
-            self.d01.append(pars1[2])
-            self.std_d01.append(engine.np.sqrt(covs1[2]))
+                self.d01.append(pars1[2])
+                self.std_d01.append(engine.np.sqrt(covs1[2]))
             xx.append(Ex)
             yy.append(Ey)
             Rs.append(s.R)
         self.R=engine.np.mean(Rs)
-        xmed,ymed, yerr = engine.getMedCurve(xx,yy,loose = True, error=True)
-        pars1, covs1 = engine.fitExpSimple(xmed, ymed, self.R, sigma=yerr)#, cutoff=cutoff)
+        if mode=='noerror':
+            xmed, ymed = engine.getMedCurve(xx,yy,loose = True, error=False)
+            yerr= None
+            pars1, covs1 = engine.fitExpSimple(xmed, ymed, self.R)
+        else:
+            xmed, ymed, yerr = engine.getMedCurve(xx, yy, loose=True, error=True)
+            pars1, covs1 = engine.fitExpSimple(xmed, ymed, self.R, sigma=yerr)
         self.E0=pars1[0]
         self.Eb=pars1[1]
         self.d0=pars1[2]
@@ -198,12 +200,11 @@ class curveWindow():
             self.elastogaussE0std = None
         return pars1, covs1, xmed, ymed*1e9, E0h,Ebh,d0h, self.R
 
-    def b3_AlistographyFromForceMed(self, params=[30, 500, 2000, 0.75, 15000]):
+    def b3_AlistographyFromForceMed(self, params=[30, 500, 2000, 15000]):
         grainstep = int( params[0] )
         scaledistance = int( params[1] )
         maxind = float( params[2] )
-        cutoff=float(params[3])
-        threshold_oscillation=float(params[4])
+        threshold_oscillation=float(params[3])
         xx=[]
         yy=[]
         Rs=[]
@@ -300,9 +301,14 @@ class curveWindow():
         data1d = ['HertzFit_F'] + list(self.HertzFit_y)
         data3a = ['xmed'] + list(self.xmed)
         data3b = ['ymed'] + list(self.ymed*1e9)
-        data3c = ['yerr'] + list(self.yerr*1e9)
-        data3d = ['y+err'] + list((self.ymed + self.yerr)*1e9)
-        data3e = ['y-err'] + list((self.ymed - self.yerr)*1e9)
+        if settings[5]=='noerror':
+            data3c = ['yerr'] + ['None']
+            data3d = ['y+err'] + ['None']
+            data3e = ['y-err'] + ['None']
+        else:
+            data3c = ['yerr'] + list(self.yerr*1e9)
+            data3d = ['y+err'] + list((self.ymed + self.yerr)*1e9)
+            data3e = ['y-err'] + list((self.ymed - self.yerr)*1e9)
         if settings[4]=='bilayer':
             data3f = ['fit1x'] + list(self.xmed)
             data3g = ['fit1y'] + list(self.fit1*1e9)
@@ -312,10 +318,18 @@ class curveWindow():
         data4a = ['Hertz_E0'] + [self.gaussE0]
         data4b = ['Hertz_E0std'] + [self.gaussE0std]
         data4bc = ['HistoHertz_data'] + list(self.Earray)
-        data4c = ['HistoHertz_x'] + list(self.histox)
-        data4d = ['HistoHertz_y'] + list(self.histoy)
-        data4e = ['GaussHertz_x'] + list(self.gaussx)
-        data4f = ['GaussHertz_y'] + list(self.gaussy)
+        if self.gaussx is not None:
+            data4c = ['HistoHertz_x'] + list(self.histox)
+            data4d = ['HistoHertz_y'] + list(self.histoy)
+            data4e = ['GaussHertz_x'] + list(self.gaussx)
+            data4f = ['GaussHertz_y'] + list(self.gaussy)
+        else:
+            data4c = ['HistoHertz_x']
+            data4c.append(self.histox)
+            data4d = ['HistoHertz_y']
+            data4d.append(self.histoy)
+            data4e = ['GaussHertz_x']
+            data4f = ['GaussHertz_y']
         data4g = ['Elasto_E0'] + [self.elastogaussE0]
         data4h = ['Elasto_E0std'] + [self.elastogaussE0std]
         data4hi = ['HistoElasto_data'] + list(self.ymed*1e9)
@@ -468,6 +482,8 @@ class curveWindow():
                 self.gaussE0=None
                 self.gaussE0std=None
         else:
+            self.histox = engine.np.mean(Earray)
+            self.histoy = 1
             self.gaussx = None
             self.gaussy = None
             self.gaussE0 = None
@@ -520,11 +536,12 @@ class curveWindow():
             # s.touch_original=s.touch
         self.SwitcherIndex = 2
 
-    def b2_Alistography(self, fit=False, params=[30, 50, 2000, 301]):
+    def b2_Alistography(self, fit=False, params=[30, 50, 2000, 301, 15000]):
         grainstep = int(params[0])
         scaledistance = float(params[1])
         maxind = float(params[2])
         filwin = int(params[3])
+        thresh_osc = float(params[4])
 
         print('Filtering curves by rising E(z)!')
         for s in self.b2['exp']:
@@ -535,7 +552,7 @@ class curveWindow():
                     continue
                 s.ElastX = Ex
                 s.ElastY = Ey
-                s.ElaInvalid, s.filEla =engine.InvalidCurvesFromElasticityRise(s,win=filwin)
+                s.ElaInvalid, s.filEla =engine.InvalidCurvesFromElasticityRise(s,win=filwin, scaledistance=int(scaledistance), threshold_oscillation=thresh_osc)
                 if s.ElaInvalid == True:
                     s.invalid=True
 
