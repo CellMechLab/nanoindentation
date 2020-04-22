@@ -3,7 +3,9 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
-class indent():
+class indentAll():
+    pass
+class indentMed():
     pass
 class elastoAll():
     pass
@@ -11,33 +13,38 @@ class elastoMed():
     pass
 class histo():
     pass
+class elastoHisto():
+    pass
 class bar():
     pass
 
 class plots():
     def __init__(self, parent=None):
         self.workingdir = './'
-        self.indent = indent
+        self.indentAll = indentAll
+        self.indentMed = indentMed
         self.elastoAll = elastoAll
         self.elastoMed = elastoMed
         self.histo = histo
+        self.elastoHisto = elastoHisto
         self.bar = bar
 
     def LoadData(self, fnames):
-        objects=[self.indent, self.elastoAll, self.elastoMed, self.histo]
+        objects=[self.indentAll, self.indentMed, self.elastoAll, self.elastoMed, self.histo, self.elastoHisto]
         for i, o in enumerate(objects):
-            with open(fnames[i], newline='') as csvfile:
-                reader=csv.reader(csvfile, delimiter=',')
-                labels=[]
-                data=[]
-                for row in reader:
-                    label=row[0]
-                    row=np.asarray(row[1:])
-                    row=row.astype(float)
-                    labels.append(label)
-                    data.append(row)
-            o.labels=labels
-            o.data=data
+            if fnames[i] is not None:
+                with open(fnames[i], newline='') as csvfile:
+                    reader=csv.reader(csvfile, delimiter=',')
+                    labels=[]
+                    data=[]
+                    for row in reader:
+                        label=row[0]
+                        row=np.asarray(row[1:])
+                        row=row.astype(float)
+                        labels.append(label)
+                        data.append(row)
+                o.labels=labels
+                o.data=data
 
     def LoadData_Conditions(self, fnames):
         self.elastoMed.datas=[]
@@ -107,8 +114,8 @@ class plots():
         if self.lenax_x==1:
             ax = self.axes[int(pos)]
         else:
-            pos1=int(math.floor(pos/self.lenax_x))
-            pos2=int(pos-pos1*self.lenax_x)
+            pos1=int(math.floor(pos/self.lenax_y))
+            pos2=int(pos-pos1*self.lenax_y)
             ax = self.axes[pos1][pos2]
         return ax
 
@@ -119,8 +126,8 @@ class plots():
 
     def ForceCurves(self, pos=1, ax_lim=None):
         ax=self.FindPosition(pos)
-        Forces=self.indent.data[2:]
-        HertzFit=self.indent.data[0:2]
+        Forces=self.indentAll.data[2:]
+        HertzFit=self.indentMed.data[0:2]
         maxForceAtXlim = 0
         for i in range(0, len(Forces), 2):
             ax.plot(Forces[i], Forces[i+1], color='black', linewidth=0.1)
@@ -134,7 +141,32 @@ class plots():
         if ax_lim is not None:
             ax.set_xlim(0,ax_lim[0])
             if len(ax_lim)>1:
-                ax.set_ylim(0, ax_lim[1])
+                ax.set_ylim(ax_lim[1], ax_lim[2])
+            else:
+                self.AdjustAxis_ylim(ax, Forces[indMaxCurve], Forces[indMaxCurve+1])
+
+    def ForceCurvesWithAverage(self, pos=1, ax_lim=None):
+        ax=self.FindPosition(pos)
+        Forces=self.indentAll.data[2:]
+        MedCurve=self.indentMed.data[0:2]
+        MedErr = self.indentMed.data[3:5]
+        Fit= self.indentMed.data[5:7]
+        maxForceAtXlim = 0
+        for i in range(0, len(Forces), 2):
+            ax.plot(Forces[i], Forces[i+1], color='black', linewidth=0.1)
+            if ax_lim is not None and len(Forces[i+1])>ax_lim[0]:
+                if Forces[i+1][ax_lim[0]]>maxForceAtXlim:
+                    maxForceAtXlim = Forces[i+1][ax_lim[0]]
+                    indMaxCurve = i
+        ax.plot(MedCurve[0], MedCurve[1], color='blue', linewidth=1)
+        ax.fill_between(MedCurve[0], MedErr[0], MedErr[1], color='red', alpha=0.5)
+        ax.plot(Fit[0], Fit[1], color='lime', linewidth=2)
+        ax.set_xlabel('\u03B4 (nm)')
+        ax.set_ylabel('F (nN)')
+        if ax_lim is not None:
+            ax.set_xlim(0,ax_lim[0])
+            if len(ax_lim)>1:
+                ax.set_ylim(ax_lim[1], ax_lim[2])
             else:
                 self.AdjustAxis_ylim(ax, Forces[indMaxCurve], Forces[indMaxCurve+1])
 
@@ -158,7 +190,7 @@ class plots():
 
     def ElastoMed_Conditions(self, mode=None, pos=1):
         ax=self.FindPosition(pos)
-        colors=['blue', 'red', 'black', 'lime']
+        colors=['blue', 'red', 'black', 'lime', 'yellow', 'cyan', 'magenta']
         for i in range(len(self.elastoMed.datas)):
             MedCurve=self.elastoMed.datas[i][0:2]
             MedErr = self.elastoMed.datas[i][3:5]
@@ -173,6 +205,24 @@ class plots():
         ax.set_xlabel('\u03B4 (nm)')
         ax.set_ylabel('E (Pa)')
 
+    def ElastoNoAverage(self, mode=None, pos=2, ax_lim=None):
+        ax=self.FindPosition(pos)
+        AllData=self.elastoAll.data
+        print(AllData[1])
+        Fit= self.elastoMed.data[5:]
+        for i in range(0, len(AllData), 2):
+            ax.plot(AllData[i], AllData[i+1], color='black', linewidth=0.1, alpha=0.25)
+            print(i,AllData[i],AllData[i+1])
+        ax.plot(Fit[0], Fit[1], color='lime', linewidth=2)
+        ax.set_xlabel('\u03B4 (nm)')
+        ax.set_ylabel('E (Pa)')
+        if ax_lim is not None:
+            ax.set_xlim(0,ax_lim[0])
+            if len(ax_lim)>1:
+                ax.set_ylim(ax_lim[1], ax_lim[2])
+        from matplotlib.ticker import ScalarFormatter
+        ax.get_yaxis().get_major_formatter().set_useOffset(False)
+
     def Histo(self, mode=None, pos=3):
         ax=self.FindPosition(pos)
         FromHertz=self.histo.data[:7]
@@ -185,6 +235,14 @@ class plots():
             ax.plot(FromElasto[5], FromElasto[6], color='red')
         ax.set_xlabel('E (Pa)')
         ax.set_ylabel('frequency')
+
+    def BarPlotsInsteadOfHisto(self, pos=3):
+        ax = self.FindPosition(pos)
+        FromHertz=self.indentMed.data[7:9]
+        FromElasto=self.elastoMed.data[7:9]
+        print(FromHertz)
+        print([FromHertz[0], FromElasto[0]])
+        ax.bar(x=[0,1], height=[FromHertz[0][0], FromElasto[0][0]], tick_label=['Hertz', 'Elasto'], yerr=[FromHertz[1][0], FromElasto[1][0]], color=['lime', 'red'], alpha=0.5)
 
     def BarPlots(self,pos):
         num_conds=int(len(self.bar.conds)/3)
@@ -240,6 +298,33 @@ class plots():
             else:
                 ax.set_ylabel('d (nm)')
         plt.tight_layout()
+
+    def ElastoHisto(self, pos=0):
+        E0_data=self.elastoHisto.data[:7]
+        Eb_data=self.elastoHisto.data[7:14]
+        d0_data = self.elastoHisto.data[14:]
+        data=[E0_data, Eb_data, d0_data]
+        for i in range(3):
+            dat=data[i]
+            ax = self.FindPosition(pos+i)
+            ax.hist(dat[2], bins='auto', density=True, color='lime', alpha=0.5)
+            ax.plot(dat[5], dat[6], color='lime')
+            if i<3:
+                ax.set_xlabel('E (Pa)')
+            else:
+                ax.set_xlabel('d (nm)')
+            ax.set_ylabel('frequency')
+
+    def gauss(x, y):
+        def gaussDist(x, x0, w, A):
+            return A * np.exp(-((x - x0) / w) ** 2)
+
+        if len(x) == len(y) + 1:
+            x = (x[1:] + x[:-1]) / 2.0
+        popt, pcov = curve_fit(gaussDist, x, y, p0=[x[np.argmax(y)], (np.max(x) - np.min(x)) / 10.0, np.max(y)],
+                               maxfev=100000)
+        nx = np.linspace(np.min(x), np.max(x), 100)
+        return popt[0], popt[1], popt[2], nx, gaussDist(nx, *popt)
 
     def SaveFigSvg(self, fname):
         plt.savefig(fname+'.svg')

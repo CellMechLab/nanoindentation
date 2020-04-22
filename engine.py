@@ -41,7 +41,7 @@ class bsegment(object):
         self.IndexDv = None   #aux indices
         self.E = None
 
-def getMedCurve(xar,yar,loose = True,threshold=1, error=False):
+def getMedCurve(xar,yar,loose = True,threshold=3, error=False):
     if loose is False:
         xmin = -np.inf
         xmax = np.inf
@@ -565,7 +565,7 @@ def getHertz(E,R,threshold,indentation=True):
 
     return x,(4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
 
-def fitHertz(s,x=None,y=None):
+def fitHertz(s,x=None,y=None, error=None):
     if x is None:
         x = s.indentation[:s.indMax]
         y = s.touch[:s.indMax]
@@ -578,10 +578,13 @@ def fitHertz(s,x=None,y=None):
             poisson = 0.5
             # Eeff = E*1.0e9 #to convert E in GPa to keep consistency with the units nm and nN
             return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
-
-        popt, pcov = curve_fit(Hertz, x,y , p0=seeds, maxfev=10000)
+        if error is not None:
+            popt, pcov = curve_fit(Hertz, x[1:],y[1:] , p0=seeds, maxfev=10000, sigma=error[1:])
+        else:
+            popt, pcov = curve_fit(Hertz, x,y , p0=seeds, maxfev=10000)
         Einternal = popt[0]
-        return Einternal
+        E_std = np.sqrt(pcov[0][0])
+        return Einternal, E_std
     except (RuntimeError,ValueError):
         return None
 

@@ -473,7 +473,8 @@ class curveWindow(QtWidgets.QMainWindow):
         Earray = []
         for s in self.b3['exp']:
             if s.valid is True:
-                s.E = engine.fitHertz(s)
+                s.E, std = engine.fitHertz(s)
+
                 if s.E is not None:
                     Earray.append(s.E*1e9)
 

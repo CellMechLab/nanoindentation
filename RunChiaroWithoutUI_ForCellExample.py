@@ -4,10 +4,12 @@ import matplotlib.pyplot as plt
 data='Control\Control_1_20191217\\'
 
 fname_OriginData_front=r"C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisScriptMassimo\data\20200320_Elastography_FinalIndentData\\"
-fname_IndentResultsData =r"C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisScriptMassimo\GitHub_Nanoindentation2\nanoindentation\data_figures\Fig4b_IndentCellExample.csv"
+fname_IndentResultsData =r"C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisScriptMassimo\GitHub_Nanoindentation2\nanoindentation\data_figures\Fig4b_IndentCellExample_AllData.csv"
 fname_ElastoAllData =r"C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisScriptMassimo\GitHub_Nanoindentation2\nanoindentation\data_figures\Fig4c_ElastoCellExample_AllData.csv"
 fname_ElastoResultsData =r"C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisScriptMassimo\GitHub_Nanoindentation2\nanoindentation\data_figures\Fig4c_ElastoCellExample_MedCurve+Fit.csv"
 fname_HistoData =r"C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisScriptMassimo\GitHub_Nanoindentation2\nanoindentation\data_figures\Fig4d_HistoCellExample.csv"
+fname_AvHertzData =r"C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisScriptMassimo\GitHub_Nanoindentation2\nanoindentation\data_figures\Fig4b_IndentCellExample_MedCurve+Fit.csv"
+
 
 open_mode = 2  # possible modes: 0: open_o11new, 1: open_o11old, 2: open_nanosurf
 forward_segment = 0
@@ -18,8 +20,8 @@ CP_params = [100, 1.5, 10]  # window_length, threshold_CP, threshold_invalid
 Elasto2_params = [30, 500, 2000, 301, 15000]  # grainstep, scaledistance, maxind, filwin
 Yfit_params = [0, 1000]  # mode (0: maxIndentation, 1: maxForce), maxIndentValue
 Elasto3_params = [25, 500, 2000, 15000, 'yeserror']  # grainstep, scaledistance, maxind
-fnamesCsv=[fname_IndentResultsData, fname_ElastoAllData, fname_ElastoResultsData, fname_HistoData]
-CsvSettings=[True, True, True, True, 'bilayer', 'yeserror'] #0: save force curves, 1: save all elasto data, 2: save elasto med + fit, 3: save histo data + gauss, 4: 'single' or 'bilayer'
+fnamesCsv=[fname_IndentResultsData, fname_ElastoAllData, fname_ElastoResultsData, fname_HistoData, None, fname_AvHertzData]
+CsvSettings=[True, True, True, True, False, True, 'bilayer', 'yeserror'] #0: save force curves, 1: save all elasto data, 2: save elasto med + fit, 3: save histo data + gauss, 4: 'single' or 'bilayer'
 fname_OriginData= fname_OriginData_front + data
 
 c=chiaro.curveWindow()
@@ -40,6 +42,8 @@ c.b3_Alistography(params=Elasto3_params)#FromForceMed
 print('Step 7: Elastic spectra calculated!')
 c.b3Fit(params=Yfit_params)
 print('Step 8: Hertz calculated!')
+c.b3_HertzFitOfAverage(params=Yfit_params)
+print('Step 8: Average Hertz calculated!')
 c.b3ExportToCsvForPlots(fnamesCsv, CsvSettings)
 print('Step 9: Data saved to csv!')
 
