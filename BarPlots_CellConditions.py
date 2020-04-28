@@ -35,13 +35,7 @@ for file in files:
                 Eb_std = float(row[2])*1e9
                 E0_std= float(row[1])*1e9
                 d0_std = float(row[3])
-            # if i==2:
-            #     E0= float(row[1])*1e9
-            #     d0 = float(row[3])
-            # if i==3:
-            #     E0_std= float(row[1])*1e9
-            #     d0_std = float(row[3])
-            if i>8:
+            if i>2:
                  Ex.append(float(row[0])*1e9)
                  Ey.append(float(row[1])*1e9)
         E0_fit.append(E0)
@@ -93,7 +87,7 @@ for j in range(len(mags)):
     sig.append(sig_j)
     colors.append(colors_j)
 
-fig, (ax0, ax1, ax2, ax3) = plt.subplots(1,4, figsize=(15,5))
+fig, (ax0, ax1, ax2, ax3) = plt.subplots(1,4, figsize=(15,6))
 
 ax0.bar([0,1,2,3], Ymeans, tick_label=names, yerr=Ymeanstd, color=colors[0])
 ax0.set_title('Y')

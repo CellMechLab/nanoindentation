@@ -21,7 +21,7 @@ CP_params = [100, 1.5, 10]  # window_length, threshold_CP, threshold_invalid
 Elasto2_params = [25, 500, 2000, 301, 15000]  # grainstep, scaledistance, maxind, filwin, threshold_oscillations
 Yfit_params = [0, 1000]  # mode (0: maxIndentation, 1: maxForce), maxIndentValue
 Elasto3_params = [30, 500, 2000, 15000, 'yeserror']  # grainstep, scaledistance, maxind, threshold_oscialltions, error_in_med_curve yes/no
-CsvSettings=[False, False, True, False, 'bilayer', 'yeserror'] #0: save force curves, 1: save all elasto data, 2: save elasto med + fit, 3: save histo data + gauss, 4: 'single' or 'bilayer', error_in_med_curve yes/no
+CsvSettings=[False, False, True, False, False, 'bilayer', 'yeserror'] #0: save force curves, 1: save all elasto data, 2: save elasto med + fit, 3: save histo data + gauss, 4: 'single' or 'bilayer', error_in_med_curve yes/no
 
 for i, data_i in enumerate(data):
     print('<<<<<<<< Treating data set', data_i, '! >>>>>>>>')

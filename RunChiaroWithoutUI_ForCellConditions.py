@@ -5,6 +5,7 @@ data=['Control', 'Colch_1000uM', 'CytoD_10uM', 'CytoD_25uM', 'Jaspla_1uM']
 fname_OriginData_front=r"C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisScriptMassimo\data\20200320_Elastography_FinalIndentData\\"
 fname_ResultsData_front =r"C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisScriptMassimo\GitHub_Nanoindentation2\nanoindentation\data_Elasto"
 fname_ElastoResultsData =r"C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisScriptMassimo\GitHub_Nanoindentation2\nanoindentation\data_figures\Fig5a_ElastoCells_MedCurve+Fit_"
+fname_AvHertzData =r"C:\Users\Ines\Documents\PhD\Projects\Cortex-Massimo\AnalysisScriptMassimo\GitHub_Nanoindentation2\nanoindentation\data_figures\Fig5a_AvHertzCells_"
 
 open_mode = 2  # possible modes: 0: open_o11new, 1: open_o11old, 2: open_nanosurf
 forward_segment = 0
@@ -15,13 +16,13 @@ CP_params = [100, 1.5, 10]  # window_length, threshold_CP, threshold_invalid
 Elasto2_params = [25, 500, 2000, 301, 15000]  # grainstep, scaledistance, maxind, filwin, threshold_oscialltions
 Yfit_params = [0, 1000]  # mode (0: maxIndentation, 1: maxForce), maxIndentValue
 Elasto3_params = [30, 500, 2000, 15000, 'yeserror']  # grainstep, scaledistance, maxind, threshold_oscialltions, error_in_med_curve yes/no
-CsvSettings=[False, False, True, False, 'bilayer', 'yeserror'] #0: save force curves, 1: save all elasto data, 2: save elasto med + fit, 3: save histo data + gauss, 4: 'single' or 'bilayer', error_in_med_curve yes/no
+CsvSettings=[False, False, True, False, False, True, 'bilayer', 'yeserror'] #0: save force curves, 1: save all elasto data, 2: save elasto med + fit, 3: save histo data + gauss, 4: 'single' or 'bilayer', error_in_med_curve yes/no
 
 for data_i in data:
     print('<<<<<<<< Treating data set', data_i, '! >>>>>>>>')
     fname_OriginData= fname_OriginData_front + data_i
     fname_ResultsData = fname_ResultsData_front + "\\" +  data_i
-    fnamesCsv = [None, None, fname_ElastoResultsData+data_i+'.csv', None]
+    fnamesCsv = [None, None, fname_ElastoResultsData+data_i+'.csv', None, None, fname_AvHertzData+data_i+'.csv']
 
     c=chiaro.curveWindow()
     print('Step 0: Starting!')
@@ -41,6 +42,8 @@ for data_i in data:
     print('Step 7: Elasticity spectra calculated!')
     c.b3Fit(params=Yfit_params)
     print('Step 8: Hertz calculated!')
+    c.b3_HertzFitOfAverage(params=Yfit_params)
+    print('Step 8: Average Hertz calculated!')
     c.b3Export(fname=fname_ResultsData+"_Y.np.txt")
     #c.b3Export2(fit=False, fname=fname_ResultsData+"_Bilayer.tsv")
     c.b3Export2(fit=True, fname=fname_ResultsData+"_BilayerFit.tsv")
