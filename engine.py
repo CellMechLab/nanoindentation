@@ -778,8 +778,10 @@ def fitExpDecay_EsFixed(x,y,R,sigma=None):
         return None, None, None, None, None, None, None, None, None, None
 
 def Oliver(delta,R):
-    area = np.pi * R**2 *(2 * delta/R - delta ** 2/R**2)
-    area = np.pi * R ** 2 * (2 * delta / R )
+    #area = np.pi * R**2 *(2 * delta/R - delta ** 2/R**2)
+    #area[delta>=R]=np.pi * R**2
+    #area = np.pi * R ** 2 * (2 * delta / R )
+    area = np.pi * delta * R
     return area
 
 def Elastography2withMax(s,grainstep = 30,scaledistance = 500,maxindentation=9999,mode=2):
