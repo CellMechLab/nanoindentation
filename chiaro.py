@@ -6,9 +6,6 @@ import Ui_Chiaro as view
 import engine
 import pickle
 import panels
-from matplotlib import pyplot as plt
-import matplotlib.cm as cm
-import csv
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
@@ -16,7 +13,6 @@ pg.setConfigOption('foreground', 'k')
 class curveWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         QtWidgets.QMainWindow.__init__(self, parent)
-        self.setWindowTitle('Chiaro2020')
 
         self.ui = view.Ui_MainWindow()
         self.ui.setupUi(self)
