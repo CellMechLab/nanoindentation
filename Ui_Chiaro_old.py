@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Chiaro.ui'
+# Form implementation generated from reading ui file 'nano.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
