@@ -20,11 +20,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1510473b-4d9a-482a-9ad2-1285dac38cf4" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/nano_view.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Chiaro.ui" beforeDir="false" afterPath="$PROJECT_DIR$/nano.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Ui_Chiaro_old.py" beforeDir="false" afterPath="$PROJECT_DIR$/Ui_Chiaro_old.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chiaro.py" beforeDir="false" afterPath="$PROJECT_DIR$/nano.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ui_Chiaro_old.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/nano.py" beforeDir="false" afterPath="$PROJECT_DIR$/nano.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nano.ui" beforeDir="false" afterPath="$PROJECT_DIR$/nano.ui" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/panels.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,6 +68,7 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
     <state x="740" y="275" key="FileChooserDialogImpl" timestamp="1586900269811">

@@ -1,24 +1,22 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-import sys, os
+import sys
+import os
 import pyqtgraph as pg
 import mvexperiment.experiment as experiment
-import Ui_Chiaro as view
+import nano_view as view
 import engine
 import pickle
-import panels
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
-class curveWindow(QtWidgets.QMainWindow):
+
+class NanoWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         QtWidgets.QMainWindow.__init__(self, parent)
 
         self.ui = view.Ui_MainWindow()
         self.ui.setupUi(self)
-
-        self.ui.b1_selectFolder.clicked.connect(self.b1SelectDir)
-        QtCore.QMetaObject.connectSlotsByName(self)
 
         self.redPen = pg.mkPen( pg.QtGui.QColor(255, 0, 0,30),width=1)
         self.blackPen = pg.mkPen( pg.QtGui.QColor(0, 0, 0,30),width=1)
@@ -26,69 +24,16 @@ class curveWindow(QtWidgets.QMainWindow):
         self.nonePen = pg.mkPen(None)
         self.workingdir = './'
 
-        self.b1 = {'phase':1,'forwardSegment':1,'exp':[]}
-        self.b2 = {'phase':2,'exp':[],'plit1a':None,'plit1b':None,'plit2':None}
-        self.b3 = {'phase':3,'exp':[],'plit1':None,'plit2a':None,'plit2b':None}
-        self.b4 = {'phase':4,'exp':[],'Manlio':None,'avcurve':None,'avstress':None}
-        self.segmentLength = 100
-        self.b2_index_invalid = []
-        self.MakeInvalidInvisible = False
+        # connect load and open, other connections after load/open
 
-        self.ui.switcher.setCurrentIndex(0)
-        self.ui.sl_load.clicked.connect(self.load_pickle)
-        self.ui.b1_generate.clicked.connect(self.generateFake)
+        self.ui.open_load.clicked.connect(self.load_pickle)
+        self.ui.open_selectFolder.clicked.connect(self.open_folder)
+
+        QtCore.QMetaObject.connectSlotsByName(self)
 
     ################################################
-    ############## SL actions ######################
+    ############## OPEN / LOAD #####################
     ################################################
-
-    def generateFake(self):
-        a = panels.Fakedata()
-        if a.exec() == 0:
-            return
-
-        mysegs = []
-        noise = float(a.noiselevel.value())/1000.0
-        E1 = float(a.E1.value())/1.0e9
-        R = 3000.0
-        N = int(a.length.value())
-        xbase = engine.np.linspace(0,N,N)
-
-        endrange = 100
-
-        for i in range(endrange):
-            mysegs.append(engine.bsegment())
-            mysegs[-1].R = R
-            mysegs[-1].indentation = xbase
-            if a.el_one.isChecked() is True:
-                Eact = engine.random.gauss(E1, noise * E1 / 10.0)
-                mysegs[-1].touch = engine.noisify(engine.standardHertz(xbase,Eact,R),noise)
-            else:                
-                E2 = float(a.E2.value())/1.0e9
-                h  = float(a.d0.value())
-                if a.modAli.isChecked() is True:
-                    mysegs[-1].touch = engine.noisify(engine.LayerStd(xbase,E1,E2,h,R),noise)
-                if a.modRos.isChecked() is True:
-                    R = 3200.0
-                    data = engine.np.loadtxt('alldata3.txt')
-                    x = data[:,0]*1e9
-                    y = data[:,1]*1e9
-                    mysegs[-1].indentation = x
-                    mysegs[-1].touch = engine.noisify(y,noise)
-                else:
-                    x = data[:,i*2]
-                    y = data[:,i*2+1]
-                    if x[1]<0.000001:
-                        x=x*1e9
-                    if y[1]<0.000001:
-                        y=y*1e12
-                    mysegs[-1].indentation = x
-                    mysegs[-1].touch = engine.noisify(y/1000.0,noise)
-                    #mysegs[-1].touch = engine.noisify(engine.LayerRoss(xbase,E1,E2,h,R),noise)
-
-        self.b3['exp']=mysegs
-        self.ui.switcher.setCurrentIndex(2)
-        self.b3Init()
 
     def load_pickle(self):
 
@@ -136,6 +81,58 @@ class curveWindow(QtWidgets.QMainWindow):
         #    self.b2Init()
         #elif phase == 3:
         #    self.b3Init()
+
+    def open_folder(self):
+        fname = QtWidgets.QFileDialog.getExistingDirectory(self,'Select the root dir','./')
+        if fname =='' or fname is None or fname[0] =='':
+            return
+        self.workingdir = fname
+        if self.ui.open_o11new.isChecked() is True:
+            self.b1['exp'] = experiment.Chiaro(fname)
+        elif self.ui.open_o11old.isChecked() is True:
+            self.b1['exp'] = experiment.ChiaroGenova(fname)
+        elif self.ui.open_nanosurf.isChecked() is True:
+            self.b1['exp'] = experiment.NanoSurf(fname)
+
+        self.b1['exp'].browse()
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        progress = QtWidgets.QProgressDialog("Opening files...", "Cancel opening", 0, len(self.b1['exp'].haystack))
+
+        self.ui.b1_mainList.clear()
+        def attach(node,parent):
+            myself = QtWidgets.QTreeWidgetItem(parent)
+            node.myTree = myself
+            myself.setText(0, node.basename)
+            myself.curve = node
+            myself.setFlags(myself.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
+            myself.setCheckState(0,QtCore.Qt.Unchecked)
+            for mychild in node:
+                attach(mychild,myself)
+        for node in self.b1['exp']:
+            attach(node,self.ui.b1_mainList)
+
+        for c in self.b1['exp'].haystack:
+            c.open()
+            progress.setValue(progress.value() + 1)
+            QtCore.QCoreApplication.processEvents()
+        self.ui.b1_forwardSegment.setMaximum( len(self.b1['exp'].haystack[0])-1 )
+        self.ui.b1_forwardSegment.setValue(1)
+        progress.setValue(len(self.b1['exp'].haystack))
+        QtWidgets.QApplication.restoreOverrideCursor()
+        self.b1Forward()
+        self.ui.b1_mainList.itemChanged.connect(self.b1Color)
+        self.ui.b1_mainList.itemClicked.connect(self.b1Color)
+        self.ui.b1_mainList.itemSelectionChanged.connect(self.b1Color)
+        self.ui.b1_yAlignButton.clicked.connect(self.b1yAlign)
+        self.ui.b1_forwardSegment.valueChanged.connect(self.b1Forward)
+        self.ui.b1_red.clicked.connect(self.b1Color)
+        self.ui.b1_black.clicked.connect(self.b1Color)
+        self.ui.b1_redblack.clicked.connect(self.b1Color)
+        self.ui.b1_Alpha.valueChanged.connect(self.b1Color)
+        self.ui.b1tob2.clicked.connect(self.b1tob2)
+        self.ui.b1_end.valueChanged.connect(self.b1xCut)
+        self.ui.b1_start.valueChanged.connect(self.b1xCut)
+        self.ui.b1_doInvalidate.clicked.connect(self.b1_invalid)
 
     
     ################################################
@@ -957,57 +954,7 @@ class curveWindow(QtWidgets.QMainWindow):
     ############## b1 actions ######################
     ################################################
 
-    def b1SelectDir(self):
-        fname = QtWidgets.QFileDialog.getExistingDirectory(self,'Select the root dir','./')
-        if fname =='' or fname is None or fname[0] =='':
-            return
-        self.workingdir = fname
-        if self.ui.open_o11new.isChecked() is True:
-            self.b1['exp'] = experiment.Chiaro(fname)
-        elif self.ui.open_o11old.isChecked() is True:
-            self.b1['exp'] = experiment.ChiaroGenova(fname)
-        elif self.ui.open_nanosurf.isChecked() is True:
-            self.b1['exp'] = experiment.NanoSurf(fname)
 
-        self.b1['exp'].browse()
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-        progress = QtWidgets.QProgressDialog("Opening files...", "Cancel opening", 0, len(self.b1['exp'].haystack))
-
-        self.ui.b1_mainList.clear()
-        def attach(node,parent):
-            myself = QtWidgets.QTreeWidgetItem(parent)
-            node.myTree = myself
-            myself.setText(0, node.basename)
-            myself.curve = node
-            myself.setFlags(myself.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
-            myself.setCheckState(0,QtCore.Qt.Unchecked)
-            for mychild in node:
-                attach(mychild,myself)
-        for node in self.b1['exp']:
-            attach(node,self.ui.b1_mainList)
-
-        for c in self.b1['exp'].haystack:
-            c.open()
-            progress.setValue(progress.value() + 1)
-            QtCore.QCoreApplication.processEvents()
-        self.ui.b1_forwardSegment.setMaximum( len(self.b1['exp'].haystack[0])-1 )
-        self.ui.b1_forwardSegment.setValue(1)
-        progress.setValue(len(self.b1['exp'].haystack))
-        QtWidgets.QApplication.restoreOverrideCursor()
-        self.b1Forward()
-        self.ui.b1_mainList.itemChanged.connect(self.b1Color)
-        self.ui.b1_mainList.itemClicked.connect(self.b1Color)
-        self.ui.b1_mainList.itemSelectionChanged.connect(self.b1Color)
-        self.ui.b1_yAlignButton.clicked.connect(self.b1yAlign)
-        self.ui.b1_forwardSegment.valueChanged.connect(self.b1Forward)
-        self.ui.b1_red.clicked.connect(self.b1Color)
-        self.ui.b1_black.clicked.connect(self.b1Color)
-        self.ui.b1_redblack.clicked.connect(self.b1Color)
-        self.ui.b1_Alpha.valueChanged.connect(self.b1Color)
-        self.ui.b1tob2.clicked.connect(self.b1tob2)
-        self.ui.b1_end.valueChanged.connect(self.b1xCut)
-        self.ui.b1_start.valueChanged.connect(self.b1xCut)
-        self.ui.b1_doInvalidate.clicked.connect(self.b1_invalid)
 
     def b1_invalid(self):
         threshold = float(self.ui.b1_minmax.value())
@@ -1140,7 +1087,7 @@ class curveWindow(QtWidgets.QMainWindow):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName('Nano2020')
-    chiaro = curveWindow()
+    chiaro = NanoWindow()
     chiaro.show()
     # QtCore.QObject.connect( app, QtCore.SIGNAL( 'lastWindowClosed()' ), app, QtCore.SLOT( 'quit()' ) )
     sys.exit(app.exec_())
