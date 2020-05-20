@@ -20,12 +20,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1510473b-4d9a-482a-9ad2-1285dac38cf4" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/nano_view.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Ui_Chiaro_old.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/nano.py" beforeDir="false" afterPath="$PROJECT_DIR$/nano.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nano.ui" beforeDir="false" afterPath="$PROJECT_DIR$/nano.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/panels.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/nano_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/nano_view.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,7 +41,51 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../nanomaps" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/nano.py" />
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="nanoindentation" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\mv68b\AppData\Local\Continuum\anaconda3\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/nano.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="nano" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="nanoindentation" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\mv68b\AppData\Local\Continuum\anaconda3\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/nano.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -71,9 +113,30 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="740" y="275" key="FileChooserDialogImpl" timestamp="1586900269811">
+    <state x="414" y="175" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1589882194820">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
+    <state x="414" y="175" key="#com.intellij.execution.impl.EditConfigurationsDialog/-1920.309.1280.693/0.0.1920.1040@0.0.1920.1040" timestamp="1589882194820" />
+    <state x="740" y="275" key="FileChooserDialogImpl" timestamp="1589882146281">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="740" y="275" key="FileChooserDialogImpl/-1920.309.1280.693/0.0.1920.1040@0.0.1920.1040" timestamp="1589882146281" />
     <state x="740" y="275" key="FileChooserDialogImpl/-1920.309.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1586900269811" />
+    <state width="1899" height="282" key="GridCell.Tab.0.bottom" timestamp="1589965702150">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1899" height="282" key="GridCell.Tab.0.bottom/-1920.309.1280.693/0.0.1920.1040@0.0.1920.1040" timestamp="1589965702150" />
+    <state width="1899" height="282" key="GridCell.Tab.0.center" timestamp="1589965702149">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1899" height="282" key="GridCell.Tab.0.center/-1920.309.1280.693/0.0.1920.1040@0.0.1920.1040" timestamp="1589965702149" />
+    <state width="1899" height="282" key="GridCell.Tab.0.left" timestamp="1589965702149">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1899" height="282" key="GridCell.Tab.0.left/-1920.309.1280.693/0.0.1920.1040@0.0.1920.1040" timestamp="1589965702149" />
+    <state width="1899" height="282" key="GridCell.Tab.0.right" timestamp="1589965702150">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1899" height="282" key="GridCell.Tab.0.right/-1920.309.1280.693/0.0.1920.1040@0.0.1920.1040" timestamp="1589965702150" />
   </component>
 </project>

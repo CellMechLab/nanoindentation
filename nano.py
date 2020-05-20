@@ -18,16 +18,17 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui = view.Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.redPen = pg.mkPen( pg.QtGui.QColor(255, 0, 0,30),width=1)
-        self.blackPen = pg.mkPen( pg.QtGui.QColor(0, 0, 0,30),width=1)
-        self.greenPen = pg.mkPen( pg.QtGui.QColor(0, 255, 0,255),width=2)
-        self.nonePen = pg.mkPen(None)
+        #self.redPen = pg.mkPen( pg.QtGui.QColor(255, 0, 0,30),width=1)
+        #self.blackPen = pg.mkPen( pg.QtGui.QColor(0, 0, 0,30),width=1)
+        #self.greenPen = pg.mkPen( pg.QtGui.QColor(0, 255, 0,255),width=2)
+        #self.nonePen = pg.mkPen(None)
+
         self.workingdir = './'
 
         # connect load and open, other connections after load/open
 
         self.ui.open_load.clicked.connect(self.load_pickle)
-        self.ui.open_selectFolder.clicked.connect(self.open_folder)
+        self.ui.open_selectfolder.clicked.connect(self.open_folder)
 
         QtCore.QMetaObject.connectSlotsByName(self)
 
