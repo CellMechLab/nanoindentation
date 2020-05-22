@@ -5,6 +5,7 @@ import pyqtgraph as pg
 import mvexperiment.experiment as experiment
 import nano_view as view
 import motor
+import numpy as np
 import pickle
 
 pg.setConfigOption('background', 'w')
@@ -24,6 +25,9 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.curve_single = pg.PlotCurveItem(clickable=False)
         self.curve_single.setPen(pg.mkPen(pg.QtGui.QColor(0, 0, 0, 200), width=1))
         self.ui.g_single.plotItem.addItem(self.curve_single)
+        self.curve_fit = pg.PlotCurveItem(clickable=False)
+        self.curve_fit.setPen(pg.mkPen(pg.QtGui.QColor(255, 0, 0, 150), width=2, style=QtCore.Qt.DashLine ))
+        self.ui.g_single.plotItem.addItem(self.curve_fit)
 
         self.workingdir = './'
         self.collection = []
@@ -40,6 +44,8 @@ class NanoWindow(QtWidgets.QMainWindow):
     ################################################
 
     def clear(self):
+        self.collection = []
+        self.experiment = None
         self.ui.mainlist.clear()
         self.ui.g_fdistance.plotItem.clear()
         self.ui.g_indentation.plotItem.clear()
@@ -74,6 +80,24 @@ class NanoWindow(QtWidgets.QMainWindow):
         for chan in vch:
             slots.append(chan.valueChanged)
             handlers.append(self.filter_changed)
+
+        slots.append(self.ui.contact_threshold.valueChanged)
+        handlers.append(self.cpoint_changed)
+        slots.append(self.ui.contact_window.valueChanged)
+        handlers.append(self.cpoint_changed)
+
+        slots.append(self.ui.fit_indentation.valueChanged)
+        handlers.append(self.redostat)
+
+        cli = [self.ui.view_active, self.ui.view_included, self.ui.view_all]
+        for click in cli:
+            slots.append(click.clicked)
+            handlers.append(self.refresh)
+
+        cli = [self.ui.toggle_activated, self.ui.toggle_excluded, self.ui.toggle_included]
+        for click in cli:
+            slots.append(click.clicked)
+            handlers.append(self.toggle)
 
         for i in range(len(slots)):
             if connect is True:
@@ -136,20 +160,21 @@ class NanoWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
         self.workingdir = fname
         if self.ui.open_o11new.isChecked() is True:
-            self.experiment = experiment.Chiaro(fname)
+            exp = experiment.Chiaro(fname)
         elif self.ui.open_o11old.isChecked() is True:
-            self.experiment = experiment.ChiaroGenova(fname)
+            exp = experiment.ChiaroGenova(fname)
         elif self.ui.open_nanosurf.isChecked() is True:
-            self.experiment = experiment.NanoSurf(fname)
+            exp = experiment.NanoSurf(fname)
 
-        self.experiment.browse()
-        if len(self.experiment) == 0:
+        exp.browse()
+        if len(exp) == 0:
             QtWidgets.QApplication.restoreOverrideCursor()
             QtWidgets.QMessageBox.information(self,'Empty folder','I did not find any valid file in the folder, please check file format and folder')
             return
 
         self.disconnect_all()
         self.clear()
+        self.experiment = exp
 
         progress = QtWidgets.QProgressDialog("Opening files...", "Cancel opening", 0, len(self.experiment.haystack))
 
@@ -185,16 +210,71 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.connect_all()
         if len(self.experiment.haystack[0])>1:
             self.ui.slid_curve.setValue(1)
-            #self.ui.curve_segment.setValue(1)
-        else:
-            self.refill()
+            self.ui.curve_segment.setValue(1)
+        #else:
+        #    self.refill()
         self.refill()
+
+    def redostat(self):
+        for c in self.collection:
+            c.reset_E()
+        self.refresh()
+
+    def refresh(self):
+        for c in self.collection:
+            c.update_view()
+        self.count()
+
+    def toggle(self):
+        current = 0
+        for i in range(len(self.collection)):
+            if self.collection[i].selected is True:
+                current = i
+                break
+        if self.ui.toggle_activated.isChecked() is True:
+            self.collection[current].active = True
+        else:
+            if self.ui.toggle_excluded.isChecked() is True:
+                self.collection[current].included = False
+            else:
+                self.collection[current].active = False
+        self.count()
 
     def refill(self):
         indicator = int(self.ui.curve_segment.value())
         for i in range(len(self.collection)):
             c = self.experiment.haystack[i]
-            self.collection[i].set_XY(c[indicator].z,c[indicator].f)
+            try:
+                self.collection[i].set_XY(c[indicator].z,c[indicator].f)
+            except IndexError:
+                QtWidgets.QMessageBox.information(self, 'Empty curve','Problem detected with curve {}, not populated'.format(c.basename))
+        self.filter_changed()
+
+    def numbers(self):
+        E_array=[]
+        for c in self.collection:
+            if c.active is True and c.E is not None:
+                E_array.append(c.E)
+        eall = np.array(E_array)
+        self.ui.data_average.setText( str(int(np.average(eall)/10)/100.0) )
+        self.ui.data_std.setText(str(int(np.std(eall) / 10) / 100.0))
+
+    def count(self):
+        Ne = 0
+        Na = 0
+        Ni = 0
+        for c in self.collection:
+            if c.active is True:
+                Na += 1
+            elif c.included is False:
+                Ne += 1
+            else:
+                Ni += 1
+        self.ui.stats_ne.setText(str(Ne))
+        self.ui.stats_ni.setText(str(Ni))
+        self.ui.stats_na.setText(str(Na))
+
+        self.numbers()
 
     def data_changed(self,item):
         included = item.checkState(0) == QtCore.Qt.Checked
@@ -202,6 +282,7 @@ class NanoWindow(QtWidgets.QMainWindow):
             item.nano.included = included
         except AttributeError:
             pass
+        self.count()
 
     def curve_clicked(self, curve):
         for c in self.collection:
@@ -221,25 +302,19 @@ class NanoWindow(QtWidgets.QMainWindow):
         for c in self.collection:
             c.alpha = num
 
+    def cpoint_changed(self):
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        for c in self.collection:
+            c.calculate_contactpoint()
+        QtWidgets.QApplication.restoreOverrideCursor()
+        self.count()
+
     def filter_changed(self):
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
         for c in self.collection:
-            c.rewind_data()
-        if self.ui.prominency.isChecked() is True:
-            for c in self.collection:
-                pro = float(self.ui.prominency_prominency.value())/100.0
-                winperc = int( self.ui.prominency_band.value() )
-                threshold = int( self.ui.prominency_minfreq.value() )
-                c.filter_prominence(pro, winperc, threshold)
-        if self.ui.fsmooth.isChecked() is True:
-            for c in self.collection:
-                win = int(self.ui.fsmooth_window.value())
-                method = 'SG'
-                if self.ui.fsmooth_median.isChecked() is True:
-                    method = 'MM'
-                c.filter_fsmooth(win, method)
+            c.filter_all()
         QtWidgets.QApplication.restoreOverrideCursor()
-
+        self.count()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

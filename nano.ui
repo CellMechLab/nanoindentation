@@ -517,7 +517,7 @@
              <item>
               <widget class="QSpinBox" name="fsmooth_window">
                <property name="minimum">
-                <number>3</number>
+                <number>5</number>
                </property>
                <property name="maximum">
                 <number>999</number>
@@ -560,12 +560,15 @@
               <number>2</number>
              </property>
              <property name="value">
-              <number>50</number>
+              <number>100</number>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
             <widget class="QLabel" name="label_7">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Offset</string>
              </property>
@@ -573,6 +576,9 @@
            </item>
            <item row="1" column="1">
             <widget class="QDoubleSpinBox" name="contact_offset">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="minimum">
               <double>-999.990000000000009</double>
              </property>
@@ -580,7 +586,7 @@
               <double>999.990000000000009</double>
              </property>
              <property name="value">
-              <double>1.500000000000000</double>
+              <double>10.000000000000000</double>
              </property>
             </widget>
            </item>
@@ -600,7 +606,7 @@
               <double>999.990000000000009</double>
              </property>
              <property name="value">
-              <double>10.000000000000000</double>
+              <double>20.000000000000000</double>
              </property>
             </widget>
            </item>
