@@ -1,12 +1,10 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
-import os
 import pyqtgraph as pg
 import mvexperiment.experiment as experiment
 import nano_view as view
 import motor
 import numpy as np
-import pickle
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
