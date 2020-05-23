@@ -141,6 +141,9 @@ class NanoWindow(QtWidgets.QMainWindow):
         slots.append(self.ui.reset_all.clicked)
         handlers.append(self.include_exclude_all)
 
+        slots.append(self.ui.analysis.clicked)
+        handlers.append(self.filter_changed)
+
         for i in range(len(slots)):
             if connect is True:
                 slots[i].connect(handlers[i])

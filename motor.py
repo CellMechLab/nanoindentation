@@ -40,7 +40,7 @@ def calc_hertz(E,R,k,maxvalue):
 def gauss_fit(x,y):
     if len(x)==len(y)+1:
         x = (x[1:]+x[:-1])/2.0
-    popt, pcov = curve_fit(Gauss, x,y , p0=[x[np.argmax(y)],(np.max(x)-np.min(x))/10.0,np.max(y)], maxfev=100000)
+    popt, pcov = curve_fit(Gauss, x,y , p0=[x[np.argmax(y)],(np.max(x)-np.min(x))/10.0,np.max(y)], maxfev=1000)
     nx = np.linspace(np.min(x),np.max(x),100)
     x0,w,A = popt
     return x0,w,A,nx,Gauss(nx,*popt)
@@ -198,6 +198,8 @@ class Nanoment(object):
         return pen
 
     def set_indentation(self):
+        if self._ui.analysis.isChecked() is False:
+            return
         if self.k is None:
             return
         if self. active is False:
@@ -339,6 +341,8 @@ class Nanoment(object):
         self.update_view()
 
     def getFitted(self):
+        if self._ui.analysis.isChecked() is False:
+            return
         x = np.linspace(0,float(self._ui.fit_indentation.value()),int(self._ui.fit_indentation.value()))
         y = hertz(x,self.E/1e9,self.R)
 
@@ -347,6 +351,8 @@ class Nanoment(object):
         return x,y
 
     def fitHertz(self):
+        if self._ui.analysis.isChecked() is False:
+            return
         if self.ind is None or self.touch is None or (len(self.ind) != len(self.touch)):
             return
         seeds = [1000.0 / 1e9]
