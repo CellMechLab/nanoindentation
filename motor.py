@@ -26,6 +26,25 @@ def hertz (x, E, R, poisson=0.5):
     return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
 
 
+def Gauss(x,x0,w,A):
+    return A*np.exp( -((x-x0)/w)**2 )
+
+
+def calc_hertz(E,R,k,maxvalue):
+    x = np.linspace(0,maxvalue,int(maxvalue))
+    y = hertz(x,E/1e9,R)
+    z = x + y/k
+    return x,y,z
+
+
+def gauss_fit(x,y):
+    if len(x)==len(y)+1:
+        x = (x[1:]+x[:-1])/2.0
+    popt, pcov = curve_fit(Gauss, x,y , p0=[x[np.argmax(y)],(np.max(x)-np.min(x))/10.0,np.max(y)], maxfev=100000)
+    nx = np.linspace(np.min(x),np.max(x),100)
+    x0,w,A = popt
+    return x0,w,A,nx,Gauss(nx,*popt)
+
 class Nanoment(object):
     def __init__(self,curve = None):
         self.basename = None

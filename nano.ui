@@ -560,7 +560,7 @@
               <number>2</number>
              </property>
              <property name="value">
-              <number>100</number>
+              <number>200</number>
              </property>
             </widget>
            </item>
@@ -760,7 +760,7 @@
        <widget class="PlotWidget" name="g_indentation"/>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox_8">
+       <widget class="QGroupBox" name="histogram">
         <property name="title">
          <string>Histogram</string>
         </property>
@@ -820,7 +820,7 @@
             <number>1000</number>
            </property>
            <property name="value">
-            <number>50000</number>
+            <number>0</number>
            </property>
           </widget>
          </item>
