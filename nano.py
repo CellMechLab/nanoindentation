@@ -35,12 +35,35 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.histo_fit.setPen(pg.mkPen(pg.QtGui.QColor(255, 0, 0, 150), width=2, style=QtCore.Qt.DashLine))
         self.ui.g_histo.plotItem.addItem(self.histo_fit)
 
+        def title_style(lab):
+            return '<span style="font-weight:bold; font-size: 8pt;">{}</span>'.format(lab)
+
+        def lab_style(lab):
+            return '<span style="">{}</span>'.format(lab)
+
+        self.ui.g_fdistance.plotItem.setTitle(title_style('Raw curves'))
+        self.ui.g_indentation.plotItem.setTitle(title_style('Indentation curves'))
+        self.ui.g_scatter.plotItem.setTitle(title_style('Elasticity values'))
+        self.ui.g_single.plotItem.setTitle(title_style('Current curve'))
+        self.ui.g_histo.plotItem.setTitle(title_style('Elasticity stats'))
+
+        self.ui.g_fdistance.plotItem.setLabel('left',lab_style('Force [pN]'))
+        self.ui.g_single.plotItem.setLabel('left', lab_style('Force [pN]'))
+        self.ui.g_indentation.plotItem.setLabel('left', lab_style('Force [pN]'))
+        self.ui.g_scatter.plotItem.setLabel('left', lab_style('Young\'s modulus [Pa]'))
+        self.ui.g_histo.plotItem.setLabel('left', lab_style('Probability density'))
+
+        self.ui.g_fdistance.plotItem.setLabel('bottom', lab_style('Displacement [nm]'))
+        self.ui.g_single.plotItem.setLabel('bottom', lab_style('Displacement [nm]'))
+        self.ui.g_indentation.plotItem.setLabel('bottom', lab_style('Indentation [nm]'))
+        self.ui.g_scatter.plotItem.setLabel('bottom', lab_style('Curve #'))
+        self.ui.g_histo.plotItem.setLabel('bottom', lab_style('Young\'s modulus [Pa]'))
+
         self.workingdir = './'
         self.collection = []
         self.experiment = None
 
         # connect load and open, other connections after load/open
-        self.ui.open_load.clicked.connect(self.load_pickle)
         self.ui.open_selectfolder.clicked.connect(self.open_folder)
 
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -55,12 +78,13 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.mainlist.clear()
         self.ui.g_fdistance.plotItem.clear()
         self.ui.g_indentation.plotItem.clear()
+        self.ui.g_scatter.plotItem.clear()
         self.histo_fit.setData(None)
         self.histo_data.setData([0,0],[0])
         self.curve_raw.setData(None)
         self.curve_single.setData(None)
         self.curve_fit.setData(None)
-
+        self.experiment = None
         self.collection = []
 
     def connect_all(self,connect=True):
@@ -113,6 +137,12 @@ class NanoWindow(QtWidgets.QMainWindow):
         slots.append(self.ui.histogram.clicked)
         handlers.append(self.count)
 
+        slots.append(self.ui.save_data.clicked)
+        handlers.append(self.save_data)
+
+        slots.append(self.ui.reset_all.clicked)
+        handlers.append(self.include_exclude_all)
+
         for i in range(len(slots)):
             if connect is True:
                 slots[i].connect(handlers[i])
@@ -125,47 +155,6 @@ class NanoWindow(QtWidgets.QMainWindow):
     def disconnect_all(self):
         self.connect_all(False)
 
-    def load_pickle(self):
-
-        fname = QtWidgets.QFileDialog.getOpenFileName(self,'Select the file to load your processing',self.workingdir,"Python object serialization (*.pickle)")
-        if fname[0] =='':
-            return
-
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))        
-        with open(fname[0], 'rb') as f:
-            data = pickle.load(f)
-        QtWidgets.QApplication.restoreOverrideCursor()
-
-        if data[0].phase == 2:
-            self.b2['exp']=data
-            self.b2Init()
-        elif data[0].phase == 3:
-            self.b3['exp']=data
-            self.b3Init()
-        elif data[0].phase == 4:
-            self.b4['exp']=data
-            self.b4Init()
-
-    def save_pickle(self):
-        phase = self.ui.switcher.currentIndex()+1
-        if phase == 2:
-            data = self.b2['exp'].copy()
-        elif phase == 3:
-            data = self.b3['exp'].copy()
-        elif phase == 4:
-            data = self.b4['exp'].copy()
-        for s in data:
-            s.plit = None
-            s.elit = None
-        
-        fname = QtWidgets.QFileDialog.getSaveFileName(self,'Select the file to save your processing',self.workingdir,"Python object serialization (*.pickle)")
-        if fname[0] =='':
-            return
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))        
-        with open(fname[0], 'wb') as f:
-            pickle.dump(data, f)
-        QtWidgets.QApplication.restoreOverrideCursor()
-
     def open_folder(self):
         fname = QtWidgets.QFileDialog.getExistingDirectory(self,'Select the root dir','./')
         if fname =='' or fname is None or fname[0] =='':
@@ -173,6 +162,8 @@ class NanoWindow(QtWidgets.QMainWindow):
 
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
         self.workingdir = fname
+
+        exp = None
         if self.ui.open_o11new.isChecked() is True:
             exp = experiment.Chiaro(fname)
         elif self.ui.open_o11old.isChecked() is True:
@@ -224,17 +215,19 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.indentation_fit.setPen(pg.mkPen(pg.QtGui.QColor(255, 0, 0, 150), width=2, style=QtCore.Qt.DashLine))
         self.ui.g_indentation.plotItem.addItem(self.indentation_fit)
 
-        self.ui.slid_curve.setValue(0)
-        self.ui.slid_curve.setMaximum(len(self.collection)-1)
-        self.ui.slid_curve.setValue(0)
         self.ui.curve_segment.setMaximum(len(self.experiment.haystack[0])-1)
-        self.connect_all()
         if len(self.experiment.haystack[0])>1:
-            self.ui.slid_curve.setValue(1)
             self.ui.curve_segment.setValue(1)
-        #else:
-        #    self.refill()
+        self.connect_all()
         self.refill()
+
+    def include_exclude_all(self):
+        if self.ui.reset_activate.isChecked() is True:
+            for c in self.collection:
+                c.active = True
+        else:
+            for c in self.collection:
+                c.included = False
 
     def redostat(self):
         for c in self.collection:
@@ -276,6 +269,17 @@ class NanoWindow(QtWidgets.QMainWindow):
         for c in self.collection:
             if c.active is True and c.E is not None:
                 E_array.append(c.E)
+        if len(E_array) < 2:
+            self.ui.data_average.setText('0.00')
+            self.ui.data_std.setText('0.00')
+            self.histo_data.setData([0,0], [0])
+            self.ui.fit_center.setText('0.00')
+            self.ui.fit_std.setText('0.00')
+            self.histo_fit.setData(None)
+            self.indentation_fit.setData(None)
+            self.fdistance_fit.setData(None)
+            return
+
         eall = np.array(E_array)
         self.ui.data_average.setText( str(int(np.average(eall)/10)/100.0) )
         self.ui.data_std.setText(str(int(np.std(eall) / 10) / 100.0))
@@ -315,6 +319,29 @@ class NanoWindow(QtWidgets.QMainWindow):
                 self.fdistance_fit.setData(None)
                 pass
 
+    def save_data(self):
+        E_array = []
+        for c in self.collection:
+            if c.active is True and c.E is not None:
+                E_array.append(c.E)
+
+        fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Select the file to export your E data',self.workingdir, "Tab Separated Values (*.tsv)")
+        if fname[0] == '':
+            return
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        with open(fname[0], 'w') as f:
+            f.write('# Data exported from Nanoindentation Analysis Software\n')
+            f.write('# Repository GitHub Project nanoindentation Branch HertzOnly\n')
+            f.write('# \n')
+            f.write('# Working folder {}\n'.format(self.workingdir))
+            f.write('# Tip radius {} nm\n'.format(self.collection[0].R))
+            f.write('# Elastic constant {} N/m\n'.format(self.collection[0].k))
+            f.write('# \n')
+            f.write('# Young\'s Modulus [Pa]\n')
+            for e in E_array:
+                f.write('{}\n'.format(e))
+        f.close()
+        QtWidgets.QApplication.restoreOverrideCursor()
 
     def count(self):
         Ne = 0
