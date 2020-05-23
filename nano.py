@@ -299,18 +299,21 @@ class NanoWindow(QtWidgets.QMainWindow):
             self.ui.fit_center.setText('0.00')
             self.ui.fit_std.setText('0.00')
 
-            #try:
-            x0, w, A, nx, ny = motor.gauss_fit(x, y)
-            self.histo_fit.setData(nx,ny)
-            self.ui.fit_center.setText(str(int(np.average(x0)/10)/100.0))
-            self.ui.fit_std.setText(str(int(np.average(w)/10)/100.0))
+            try:
+                x0, w, A, nx, ny = motor.gauss_fit(x, y)
+                self.histo_fit.setData(nx,ny)
+                self.ui.fit_center.setText(str(int(np.average(x0)/10)/100.0))
+                self.ui.fit_std.setText(str(int(np.average(w)/10)/100.0))
 
-            x,y,z = motor.calc_hertz(x0,self.collection[0].R,self.collection[0].k,float(self.ui.fit_indentation.value()))
-            self.indentation_fit.setData(x,y)
-            self.fdistance_fit.setData(z,y)
+                x,y,z = motor.calc_hertz(x0,self.collection[0].R,self.collection[0].k,float(self.ui.fit_indentation.value()))
+                self.indentation_fit.setData(x,y)
+                self.fdistance_fit.setData(z,y)
 
-            #except:
-            #    pass
+            except:
+                self.histo_fit.setData(None)
+                self.indentation_fit.setData(None)
+                self.fdistance_fit.setData(None)
+                pass
 
 
     def count(self):
