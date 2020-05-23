@@ -15,3 +15,9 @@ This program is in a very early alpha, so no installer is provided. It requires 
 following packages:
 * PyQt5, numpy, scipy
 * pyqtgraph
+
+## DOC
+Run the nano file to access the UI
+```bash
+python nano.py
+```
