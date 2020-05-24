@@ -144,6 +144,9 @@ class NanoWindow(QtWidgets.QMainWindow):
         slots.append(self.ui.analysis.clicked)
         handlers.append(self.filter_changed)
 
+        slots.append(self.ui.crop.clicked)
+        handlers.append(self.crop)
+
         for i in range(len(slots)):
             if connect is True:
                 slots[i].connect(handlers[i])
@@ -254,6 +257,29 @@ class NanoWindow(QtWidgets.QMainWindow):
             else:
                 self.collection[current].active = False
         self.count()
+
+    def crop(self):
+        left = self.ui.crop_left.isChecked()
+        right = self.ui.crop_right.isChecked()
+        if left is True or right is True:
+            indicator = int(self.ui.curve_segment.value())
+            for i in range(len(self.collection)):
+                c = self.collection[i]
+                try:
+                    x = c._z_raw
+                    y = c._f_raw
+                    jleft = 0
+                    jright = len(x)
+                    if left is True:
+                        jleft = np.argmin( (x-(np.min(x)+50))**2 )
+                    if right is True:
+                        jright = np.argmin( (x-(np.max(x)-50))**2 )+1
+                    self.collection[i].set_XY(x[jleft:jright],y[jleft:jright])
+                except IndexError:
+                    QtWidgets.QMessageBox.information(self, 'Empty curve', 'Problem detected with curve {}, not populated'.format(c.basename))
+            self.filter_changed()
+        else:
+            return
 
     def refill(self):
         indicator = int(self.ui.curve_segment.value())

@@ -343,7 +343,9 @@ class Nanoment(object):
     def getFitted(self):
         if self._ui.analysis.isChecked() is False:
             return
-        x = np.linspace(0,float(self._ui.fit_indentation.value()),int(self._ui.fit_indentation.value()))
+
+        upto = np.min([float(self._ui.fit_indentation.value()),np.max(self.ind)])
+        x = np.linspace(0,upto,int(upto))
         y = hertz(x,self.E/1e9,self.R)
 
         x = x + y/self.k
