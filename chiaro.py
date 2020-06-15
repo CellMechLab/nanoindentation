@@ -658,7 +658,6 @@ class curveWindow(QtWidgets.QMainWindow):
         E0h = []
         Ebh = []
         d0h = []
-
         for s in self.b2['exp']:
             if s.invalid is False:
                 s.indentation, s.touch = engine.calculateIndentation(s)
@@ -679,7 +678,10 @@ class curveWindow(QtWidgets.QMainWindow):
                 if cdown == 0:
                     QtCore.QCoreApplication.processEvents()
                     cdown = 10
-
+                pars, std = engine. fitExpSimple(Ex, Ey, s.R)
+                if pars is not None:
+                    s.E0 = pars[0]
+                    s.Eb = pars[1]
                 s.ElaInvalid, s.filEla =engine.InvalidCurvesFromElasticityRise(s,win=filwin, scaledistance=int(scaledistance), threshold_oscillation=thresh_osc)
                 if s.ElaInvalid == True:
                     s.invalid=True

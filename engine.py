@@ -322,9 +322,10 @@ def getEEE(s,win,threshold):
         win+=1
     try:
         pdot = savgol_filter(s.ffil,polyorder=1,deriv=1,window_length=win)
+        s.xdot=pdot*s.k/(1-pdot/s.k)
     except:
         return 0,0
-    return pdot/(1-pdot/s.k)
+    return s.xdot #pdot/(1-pdot/s.k)
     
 def eeffOffset(s,win,threshold):
     quot = getEEE(s,win,threshold)
@@ -555,10 +556,16 @@ def InvalidCurvesFromElasticityRise(s, win=301, scaledistance=500, threshold_osc
     return ElaInvalid, filEla
 
 
-def getHertz(E,R,threshold,indentation=True):
+def getHertz(indent, E,R,threshold,indentation=True):
     poisson = 0.5
+    ind_threshold=np.where(indent==threshold)
+    print(ind_threshold)
     if indentation is True:
-        x = np.linspace(0,threshold,200)
+        try:
+            x=indent[:int(ind_threshold[0])]
+        except:
+            x=indent
+        #x = np.linspace(0,threshold,200)
     else:
         xmax = (((3.0/4.0) * ((1 - poisson ** 2)/E)  * threshold)**2/R ) **(1/3)
         x = np.linspace(0,xmax,200)
@@ -619,7 +626,7 @@ def area(x,R):
     return np.sqrt(R*x)
 
 def ExpDecay(x,E0,Eb,d0,R):
-    x[x<0]=0    
+    x[x<0]=0
     #exp = Eb+(E0-Eb)*np.exp(-lamb()*a/d0)
     a=area(x,R)
     weight = np.exp(-lamb()*a/d0)
@@ -655,7 +662,7 @@ def fitExpSimple(x,y, R, sigma=None):
         return popt1, stds1
     except:
         print('Exp fit failed!')
-        return None
+        return None, None
 
 def fitExpDecay(x,y,R,sigma=None):
     seeds=[10000/1e9,1000/1e9,200]

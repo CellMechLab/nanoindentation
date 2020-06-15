@@ -162,9 +162,9 @@ class curveWindow():
         R = self.R
         E = engine.np.average(Earray) / 1e9
         if mode==0:
-            x, y = engine.getHertz(E, R, threshold, indentation=True)
+            x, y = engine.getHertz(s.indentation, E, R, threshold, indentation=True)
         if mode==1:
-            x, y = engine.getHertz(E, R, threshold, indentation=False)
+            x, y = engine.getHertz(s.indentation, E, R, threshold, indentation=False)
         self.HertzFit_x=x
         self.HertzFit_y=y
         return Earray
@@ -202,10 +202,10 @@ class curveWindow():
             # self.fyerr=None
         else:
             self.fxmed, self.fymed, self.fyerr = engine.getMedCurve(xx, yy, loose=True, error=True)
-            print(self.fxmed)
-            print(self.fymed)
             self.Y, self.Y_std=engine.fitHertz(self, self.fxmed, self.fymed, error=self.fyerr)
-        self.avhertzfitx, self.avhertzfity = engine.getHertz(self.Y, self.R, threshold, indentation=True)
+        self.avhertzfitx, self.avhertzfity = engine.getHertz(self.fxmed, self.Y, self.R, threshold, indentation=True)
+        self.diff_hertz = (s.touch[:len(self.avhertzfity)] - self.avhertzfity) / s.touch[:len(self.avhertzfity)] * 100
+
 
     def b3_Alistography(self, params=[30, 500, 2000, 15000, 'yeserror']):
         grainstep = int( params[0] )
@@ -224,6 +224,7 @@ class curveWindow():
         d0h_std=[]
         self.d01 = []
         self.std_d01 = []
+        print(">>>> Singles<<<<<")
         for s in self.b3['exp']:
             Ex,Ey = engine.Elastography2withMax( s,grainstep,scaledistance,maxind)
             if Ex is None:
@@ -247,16 +248,20 @@ class curveWindow():
             yy.append(Ey)
             Rs.append(s.R)
         self.R=engine.np.mean(Rs)
+        print(">>>>>all<<<<<")
         if mode=='noerror':
             xmed= engine.np.asarray(Ex)
             ymed= engine.np.asarray(Ey)
             yerr= None
             pars1, covs1 = engine.fitExpSimple(xmed, ymed, self.R)#engine.np.asarray(Ex), engine.np.asarray(Ey), self.R)
-            self.fit1 = engine.ExpDecay(xmed, *pars1, self.R)
+            self.xmed_fit = engine.np.asarray(list(range(int(xmed[0]))) + list(xmed))
+            self.fit1 = engine.ExpDecay(self.xmed_fit, *pars1, self.R)
         else:
             xmed, ymed, yerr = engine.getMedCurve(xx, yy, loose=True, error=True)
             pars1, covs1 = engine.fitExpSimple(xmed, ymed, self.R, sigma=yerr)
-            self.fit1 = engine.ExpDecay(xmed, *pars1, self.R)
+            #self.xmed_fit=xmed
+            self.xmed_fit = engine.np.asarray(list(range(int(xmed[0]))) + list(xmed))
+            self.fit1 = engine.ExpDecay(self.xmed_fit, *pars1, self.R)
         self.E0=pars1[0]
         self.Eb=pars1[1]
         self.d0=pars1[2]
@@ -412,6 +417,8 @@ class curveWindow():
             data1ig = ['fit1y'] + list(self.avhertzfity)
             data1ih = ['HertzFit_average'] + [self.Y*1e9]
             data1ii = ['HertzFit_averagestd'] + [self.Y_std*1e9]
+            data1ij = ['Difference_DataVsHertzFit_d'] + list(self.avhertzfitx[1:])
+            data1ik = ['Difference_DataVsHertzFit_F'] + list(self.diff_hertz[1:])
         data3a = ['xmed'] + list(self.xmed)
         data3b = ['ymed'] + list(self.ymed*1e9)
         if settings[7]=='noerror':
@@ -423,7 +430,7 @@ class curveWindow():
             data3d = ['y+err'] + list((self.ymed + self.yerr)*1e9)
             data3e = ['y-err'] + list((self.ymed - self.yerr)*1e9)
         if settings[6]=='bilayer':
-            data3f = ['fit1x'] + list(self.xmed)
+            data3f = ['fit1x'] + list(self.xmed_fit)
             data3g = ['fit1y'] + list(self.fit1*1e9)
         if settings[6]=='single':
             data3f = ['fitlinx'] + list(self.medlinex)
@@ -474,6 +481,11 @@ class curveWindow():
                 for i in range(len(data1a)):
                     w.writerow(data1a[i])
                     w.writerow(data1b[i])
+                try:
+                    w.writerow(data1e)
+                    w.writerow(data1f)
+                except:
+                    pass
         if settings[1] is True:
             with open(fnames[1], mode='w', newline='') as f: #fname_ElastoAllData
                 w = csv.writer(f)
@@ -530,6 +542,8 @@ class curveWindow():
                 w.writerow(data1ig)
                 w.writerow(data1ih)
                 w.writerow(data1ii)
+                w.writerow(data1ij)
+                w.writerow(data1ik)
 
 
     def b3_ShiftAllCurves(self, shift=None):
