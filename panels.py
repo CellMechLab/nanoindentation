@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui
 from scipy.signal import savgol_filter
 import numpy as np
+import pyqtgraph as pg
 
 ALL = []
 
@@ -107,6 +108,15 @@ class ContactPoint(object):
     def create(self):
         pass
 
+    def quickTest(self,c):
+        all = self.getWeight(c)
+        if all is None or all[0] is None:
+            return
+        pg.plot(all[0],all[1])
+
+    def getWeight(self, c):
+        return [1,2,3],[2,6,4]
+
     def calculate(self,c):
         pass
 
@@ -137,11 +147,8 @@ class PrimeContactPoint(ContactPoint):
         self.addParameter( self.window )
         self.addParameter( self.threshold )
 
-    def calculate(self,c):
-
+    def getWeight(self,c):
         win = self.window.getValue()
-        threshold = self.threshold.getValue()
-
         xprime = None
         if win % 2 == 0:
             win += 1
@@ -150,69 +157,16 @@ class PrimeContactPoint(ContactPoint):
         except:
             return None
 
-        quot = xprime / (1 - xprime)
-        jj = np.argmax(np.abs(quot))
-
-        if (jj == 0) or (jj == len(quot) - 1):
-            return None
-        if c._f[jj]<threshold:
-            return [c._z[jj],c._f[jj]]
-
-        for jk in range(jj,1,-1):
-            if c._f[jk]>threshold and c._f[jk-1]<threshold:
-                break
-        if jk<4:
-            return [c._z[jj], c._f[jj]]
-        return [c._z[jk], c._f[jk]]
-
-
-class PrimeRov(ContactPoint):
-    def create(self):
-        self.window = CPPInt('Window P')
-        self.window.setValue(20)
-        self.Xrange = CPPFloat('X Range')
-        self.Xrange.setValue(200.0)
-        self.windowr = CPPInt('Window R')
-        self.windowr.setValue(20)
-        self.addParameter( self.window )
-        self.addParameter( self.Xrange )
-        self.addParameter(self.windowr)
+        return c._z,xprime / (1 - xprime)
 
     def calculate(self,c):
-
-        win = self.window.getValue()
-        xra = self.Xrange.getValue()
-        winr = self.windowr.getValue()
-
-        if win % 2 == 0:
-            win += 1
-        try:
-            xprime = savgol_filter(c._f/c.k, polyorder=1, deriv=1, window_length=win)
-        except:
-            return None
-
-        quot = xprime / (1 - xprime)
-        x = c._z
-        y = c._f
-
-        jmax = np.argmax(np.abs(quot))
-        jmin = np.argmin((x - (x[jmax] - xra)) ** 2)
-
-        #import matplotlib.pyplot as plt
-        #plt.plot(x,y,'k-')
-        #plt.plot(x[jmin:jmax], y[jmin:jmax],'r-')
-        #return None
-
-        if (len(y)-jmax)<winr+1:
-            return None
-        if (jmin)<winr+1:
-            return None
-        rov = []
-        for j in range(jmin,jmax+1):
-            rov.append(np.var(y[j+1:j+winr+1]/np.var(y[j-winr:j])))
-        jrov = np.argmax(rov) + jmin
-
-        return [x[jrov],y[jrov]]
+        x,quot = self.getWeight(c)
+        threshold = self.threshold.getValue()
+        jk = np.argmin(np.abs(quot-threshold))
+        for jj in range(jk,1,-1):
+            if quot[jk]>threshold and quot[jk-1]<threshold:
+                break
+        return [c._z[jj], c._f[jj]]
 
 
 class ThRov(ContactPoint):
@@ -227,25 +181,36 @@ class ThRov(ContactPoint):
         self.addParameter( self.Xrange )
         self.addParameter(self.windowr)
 
-    def calculate(self,c):
-
-        x = c._z
-        y = c._f
-
-
-        yth = self.Fthreshold.getValue()
-        x = c._z
-        y = c._f
-        jmax = np.argmin((y - yth) ** 2)
-
-        xra = self.Xrange.getValue()
-        jmin = np.argmin((x - (x[jmax] - xra)) ** 2)
-
+    def getWeight(self, c):
+        jmin, jmax = self.getRange(c)
         winr = self.windowr.getValue()
-        if (len(y)-jmax)<winr+1:
-            return None
-        if (jmin)<winr+1:
-            return None
+        x = c._z
+        y = c._f
+        if (len(y) - jmax) < winr + 1:
+            return None, None
+        if (jmin) < winr + 1:
+            return None, None
+        rov = []
+        for j in range(jmin, jmax + 1):
+            rov.append(np.var(y[j + 1:j + winr + 1] / np.var(y[j - winr:j])))
+        return x[jmin:jmax+1],rov
+
+    def getRange(self,c):
+        x = c._z
+        y = c._f
+        jmax = np.argmin((y - self.Fthreshold.getValue()) ** 2)
+        jmin = np.argmin((x - (x[jmax] - self.Xrange.getValue())) ** 2)
+        return jmin,jmax
+
+    def calculate(self,c):
+        jmin,jmax = self.getRange(c)
+        winr = self.windowr.getValue()
+        x = c._z
+        y = c._f
+        if (len(y) - jmax) < winr + 1:
+            return None, None
+        if (jmin) < winr + 1:
+            return None, None
         rov = []
         for j in range(jmin,jmax+1):
             rov.append(np.var(y[j+1:j+winr+1]/np.var(y[j-winr:j])))
@@ -260,31 +225,41 @@ class DDer(ContactPoint):
         self.window.setValue(20)
         self.Xrange = CPPFloat('X Range')
         self.Xrange.setValue(200.0)
+        self.Fthreshold = CPPFloat('Safe Threshold')
+        self.Fthreshold.setValue(10.0)
         self.addParameter(self.window)
         self.addParameter(self.Xrange)
+        self.addParameter(self.Fthreshold)
 
-    def calculate(self, c):
-        win = self.window.getValue()
-        xra = self.Xrange.getValue()
-
-        if win % 2 == 0:
-            win += 1
-        try:
-            xprime = savgol_filter(c._f / c.k, polyorder=1, deriv=1, window_length=win)
-        except:
-            return None
-
-        quot = xprime / (1 - xprime)
+    def getRange(self, c):
         x = c._z
         y = c._f
+        jmax = np.argmin((y - self.Fthreshold.getValue()) ** 2)
+        jmin = np.argmin((x - (x[jmax] - self.Xrange.getValue())) ** 2)
+        return jmin, jmax
 
-        jmax = np.argmax(np.abs(quot))
-        jmin = np.argmin((x - (x[jmax] - xra)) ** 2)
+    def getWeight(self, c):
+        jmin, jmax = self.getRange(c)
+        if jmin is None:
+            return None
 
+        win = self.window.getValue()
+        if win % 2 == 0:
+            win += 1
+        xsecond = savgol_filter(c._f / c.k, polyorder=4, deriv=2, window_length=win)
+        return(c._z[jmin:jmax],xsecond[jmin:jmax])
+
+    def calculate(self, c):
+        jmin, jmax = self.getRange(c)
+        if jmin is None:
+            return None
+
+        win = self.window.getValue()
+        if win % 2 == 0:
+            win += 1
         xsecond = savgol_filter(c._f / c.k, polyorder=4, deriv=2, window_length=win)
         jrov = np.argmax(np.abs(xsecond[jmin:jmax])) + jmin
-
-        return [x[jrov], y[jrov]]
+        return [c._z[jrov], c._f[jrov]]
 
 class Threshold(ContactPoint):
     def create(self):
@@ -303,5 +278,4 @@ class Threshold(ContactPoint):
 ALL.append( { 'label':'Prime function', 'method':PrimeContactPoint} )
 ALL.append( { 'label':'Threshold', 'method':Threshold} )
 ALL.append( { 'label':'Ratio of Variances', 'method':ThRov} )
-ALL.append( { 'label':'Prime Ratio of Variances', 'method':PrimeRov} )
 ALL.append( { 'label':'Second derivative', 'method':DDer} )
