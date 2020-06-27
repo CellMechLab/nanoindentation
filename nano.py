@@ -420,17 +420,22 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.es_averageZoom.setData(x[:jmax], y[:jmax]*1e9)
         all = motor.fitExpSimple(x[:jmax],y[:jmax],er[:jmax])
         if all is not None:
-            print (all)
-            self.es_averageFit.setData(x[:jmax], motor.TheExp(x[:jmax],*all[0])*1e9)
-            val = str(int((all[0][0]*1e9) / 10) / 100.0)
-            err = str(int((all[1][0]*1e9) / 10) / 100.0)
-            self.ui.decay_e0.setText('<span>{}&plusmn;{}</span>'.format(val, err))
-            val = str(int((all[0][1]*1e9)))
-            err = str(int((all[1][1]*1e9)))
-            self.ui.decay_eb.setText('<span>{}&plusmn;{}</span>'.format(val, err))
-            val = str(int((all[0][2])))
-            err = str(int((all[1][2])))
-            self.ui.decay_d0.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+            try:
+                self.es_averageFit.setData(x[:jmax], motor.TheExp(x[:jmax],*all[0])*1e9)
+                val = str(int((all[0][0]*1e9) / 10) / 100.0)
+                err = str(int((all[1][0]*1e9) / 10) / 100.0)
+                self.ui.decay_e0.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+                val = str(int((all[0][1]*1e9)))
+                err = str(int((all[1][1]*1e9)))
+                self.ui.decay_eb.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+                val = str(int((all[0][2])))
+                err = str(int((all[1][2])))
+                self.ui.decay_d0.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+            except:
+                self.es_averageFit.setData(None)
+                self.ui.decay_e0.setText('0')
+                self.ui.decay_eb.setText('0')
+                self.ui.decay_d0.setText('0')
 
         eall = y[:jmax]
         val = str(int(np.average(eall*1e9) / 10) / 100.0)
