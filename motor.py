@@ -58,6 +58,8 @@ class Nanoment(object):
         self.R = None
         self.k = None
         self._E = 5
+        self._ex = None
+        self._ey = None
         self._curve_single = None
         self._curve_raw = None
         self._curve_fit = None
@@ -70,6 +72,7 @@ class Nanoment(object):
         self._tree = None
         self._ui = None
         self._Eindex = 0
+        self._cpfunction = None
         if curve is not None:
             self.R = curve.tip_radius
             self.k = curve.cantilever_k
@@ -87,6 +90,11 @@ class Nanoment(object):
         nanowin.ui.g_indentation.plotItem.addItem(self._g_indentation)
         self._g_indentation.sigClicked.connect(nanowin.curve_clicked)
         self._g_indentation.nano = self
+        # Plot E(delta)
+        self._g_es = pg.PlotCurveItem(clickable=True)
+        nanowin.ui.g_es.plotItem.addItem(self._g_es)
+        self._g_es.sigClicked.connect(nanowin.curve_clicked)
+        self._g_es.nano = self
         # Plot E
         self._g_scatter = pg.PlotDataItem(clickable=True,pen=None,symbol='o',symbolPen=None,symbolBrush=None)
         self._Eindex = len(nanowin.ui.g_scatter.plotItem.items)
@@ -113,11 +121,15 @@ class Nanoment(object):
         self._g_fdistance = None
         self._g_indentation = None
         self._g_scatter = None
+
+        self._g_es = None
+
         self._tree = None
         self._ui = None
         self._curve_single = None
         self._curve_raw = None
         self._curve_fit = None
+        self._cpfunction = None
 
     def update_view(self):
         if self._g_fdistance is not None:
@@ -139,6 +151,12 @@ class Nanoment(object):
                 if len(self.ind) == len(self.touch):
                     self._g_indentation.setData(self.ind, self.touch)
             self._g_indentation.setPen(self.getPen('ind'))
+
+        if self._g_es is not None:
+            if self.Ex is not None and self.Ey is not None:
+                if len(self.Ex) == len(self.Ey):
+                    self._g_es.setData(self.Ex, self.Ey*1e9)
+            self._g_es.setPen(self.getPen('es'))
 
         if self._g_scatter is not None:
             if self.active is True and self.E is not None:
@@ -174,6 +192,14 @@ class Nanoment(object):
             if self.active is False:
                 return None
             pen = PEN_BLACK
+        elif curve == 'es':
+            if self.Ex is None or self.Ey is None:
+                return None
+            if len(self.Ex) != len(self.Ey):
+                return None
+            if self.active is False:
+                return None
+            pen = PEN_BLACK
         else:
             if self.z is None or self.force is None:
                 return None
@@ -197,6 +223,57 @@ class Nanoment(object):
             pen = PEN_GREEN
         return pen
 
+    def setCPFunction(self,cf):
+        self._cpfunction=cf
+
+    def set_elasticityspectra(self):
+        if self._ui.analysis.isChecked() is False:
+            return
+        if self.k is None:
+            return
+        if self. active is False:
+            return
+        if self.ind is None or self.touch is None:
+            return
+        if len(self.ind) != len(self.touch):
+            return
+
+        x = self.ind
+        y = self.touch
+
+        if(len(x))<1:
+            return
+
+        yi = interp1d(x, y)
+        max_x = np.max(x)
+        min_x = 1
+        if np.min(x) > 1:
+            min_x = np.min(x)
+        xx = np.arange(min_x, max_x, 1.0)
+        yy = yi(xx)
+
+        area = np.pi * xx * self.R
+        contactradius = np.sqrt(xx * self.R)
+        coeff = 3 * np.sqrt(np.pi) / 8 / np.sqrt(area)
+
+        win = int( self._ui.es_win.value() )
+
+        if win % 2 == 0:
+            win += 1
+        if len(yy) <= win:
+            return None, None
+
+        order = int( self._ui.es_order.value() )
+
+        deriv = savgol_filter(yy, win, order, delta=1.0, deriv=1)
+        Ey = coeff * deriv
+        dwin = int(win - 1)  # int((win-1)/2)
+        Ex = contactradius[dwin:-dwin]
+        Ey = Ey[dwin:-dwin]
+
+        self.Ex = np.array(Ex)
+        self.Ey = np.array(Ey)
+
     def set_indentation(self):
         if self._ui.analysis.isChecked() is False:
             return
@@ -212,6 +289,8 @@ class Nanoment(object):
         Xf = z[iContact:]
         self.ind = Xf - Yf / self.k
         self.touch = Yf
+
+        self.set_elasticityspectra()
 
     def reset_E(self):
         self._E = None
@@ -305,38 +384,15 @@ class Nanoment(object):
         self.reset_contactpoint()
         if self.included is False:
             return
-        off = float(self._ui.contact_offset.value())
-        win = int(self._ui.contact_window.value())
-        threshold = float(self._ui.contact_threshold.value())/ 1000.0
         if self.z is None or self.force is None or (len(self.z) != len(self.force)):
             return
         self._state = ST_BLK
-        xprime = None
-        if win % 2 == 0:
-            win += 1
-        try:
-            xprime = savgol_filter(self._f, polyorder=1, deriv=1, window_length=win)
-        except:
+
+        res = self._cpfunction(self)
+        if res is None:
             self.active = False
             return
-        quot = xprime / (1 - xprime)
-        jj = 0
-        for j in range(len(quot) - 1, 1, -1):
-            if quot[j] > threshold and quot[j - 1] < threshold:
-                jj = j
-                break
-        if (jj==0) or (jj==len(quot) - 1):
-            self.active = False
-            return
-        oX = self._z[jj]
-        oY = self._f[jj]
-        if jj > 4 and jj < len(self._z) - 4:
-            oX = np.average(self._z[jj - 4:jj + 4])
-            oY = np.average(self._f[jj - 4:jj + 4])  # it might be extended to use a little average of F around point jj
-        if oX is None or oY is None:
-            self.active = False
-            return
-        self._contactpoint = [oX,oY]
+        self._contactpoint = res
         self.set_indentation()
         self.update_view()
 
@@ -531,6 +587,30 @@ class Nanoment(object):
             self.filter_all()
 
     @property
+    def Ex(self):
+        return self._ex
+
+    @Ex.setter
+    def Ex(self, x):
+        if sames(self._ex, x) is False:
+            if x is not None:
+                x = np.array(x)
+            self._ex = x
+            self.update_view()
+
+    @property
+    def Ey(self):
+        return self._ey
+
+    @Ey.setter
+    def Ey(self, x):
+        if sames(self._ey, x) is False:
+            if x is not None:
+                x = np.array(x)
+            self._ey = x
+            self.update_view()
+
+    @property
     def ind(self):
         return self._ind
 
@@ -553,3 +633,81 @@ class Nanoment(object):
                 x = np.array(x)
             self._touch = x
             self.update_view()
+
+def getMedCurve(xar,yar,loose = True,threshold=3, error=False):
+    if loose is False:
+        xmin = -np.inf
+        xmax = np.inf
+        deltax = 0
+        for x in xar:
+            xmin = np.max([xmin,np.min(x)])
+            xmax = np.min([xmax,np.max(x)])
+            deltax += ((np.max(x)-np.min(x))/(len(x)-1))
+        deltax /= len(xar)
+        xnew = np.linspace(xmin,xmax,int( (xmax-xmin)/(deltax)) )
+        ynew = np.zeros(len(xnew))
+        for i in range(len(xar)):
+            ycur = np.interp(xnew, xar[i], yar[i])
+            ynew += ycur
+        ynew/=len(xar)
+    else:
+        xmin = np.inf
+        xmax = -np.inf
+        deltax = 0
+        for x in xar:
+            xmin = np.min([xmin, np.min(x)])
+            xmax = np.max([xmax, np.max(x)])
+            deltax += ((np.max(x) - np.min(x)) / (len(x) - 1))
+        deltax /= len(xar)
+        xnewall = np.linspace(xmin, xmax, int((xmax - xmin) / deltax))
+        ynewall = np.zeros(len(xnewall))
+        count = np.zeros(len(xnewall))
+        ys = np.zeros([len(xnewall), len(xar)])
+        for i in range(len(xar)):
+            imin = np.argmin((xnewall - np.min(xar[i])) ** 2)  # +1
+            imax = np.argmin((xnewall - np.max(xar[i])) ** 2)  # -1
+            ycur = np.interp(xnewall[imin:imax], xar[i], yar[i])
+            ynewall[imin:imax] += ycur
+            count[imin:imax] += 1
+            for j in range(imin, imax):
+                ys[j][i] = ycur[j-imin]
+        cc = count >= threshold
+        xnew = xnewall[cc]
+        ynew = ynewall[cc] / count[cc]
+        yerrs_new = ys[cc]
+        yerr = []
+        for j in range(len(yerrs_new)):
+            squr_sum = 0
+            num = 0
+            std = 0
+            for i in range(0, len(yerrs_new[j])):
+                if yerrs_new[j][i] != 0:
+                    squr_sum += (yerrs_new[j][i] - ynew[j]) ** 2
+                    num += 1
+            if num > 0:
+                std = np.sqrt(squr_sum / num)
+            yerr.append(std)
+        yerr = np.asarray(yerr)
+    if error == False:
+        return xnew[:-1], ynew[:-1]
+    elif error == True:
+        return xnew[:-1], ynew[:-1], yerr[:-1]
+
+LAMBD = 1.74
+def TheExp(a, E0, Eb, d0):
+    weight = np.exp(-LAMBD * a / d0)
+    return Eb + (E0 - Eb) * weight
+
+def fitExpSimple(a,y, sigma=None):
+    seeds=[10000*1e-9,1000*1e-9,200]
+    a=np.asarray(a)
+    try:
+        if sigma is None or any(sigma)==0:
+            popt1, pcov1 = curve_fit(TheExp, a[:-1],y[:-1], p0=seeds, maxfev=10000)
+        else:
+            popt1, pcov1 = curve_fit(TheExp, a[:-1], y[:-1], sigma=sigma[:-1], p0=seeds, maxfev=10000)#sigma=sigma[:-1],
+        stds1=[np.sqrt(pcov1[0][0]), np.sqrt(pcov1[1][1]), np.sqrt(pcov1[2][2])]
+        return popt1, stds1
+    except:
+        print('Exp fit failed!')
+        return None
