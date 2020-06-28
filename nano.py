@@ -20,6 +20,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.collection = None
         self.curve_raw = pg.PlotCurveItem(clickable=False)
         self.curve_raw.setPen(pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2))
+        self.ui.g_single.plotItem.showGrid(True,True)
         self.ui.g_single.plotItem.addItem(self.curve_raw)
         self.curve_single = pg.PlotCurveItem(clickable=False)
         self.curve_single.setPen(pg.mkPen(pg.QtGui.QColor(0, 0, 0, 200), width=1))

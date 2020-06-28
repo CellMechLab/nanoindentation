@@ -163,6 +163,8 @@ class PrimeContactPoint(ContactPoint):
         x,quot = self.getWeight(c)
         threshold = self.threshold.getValue()
         jk = np.argmin(np.abs(quot-threshold))
+        if jk < 2:
+            return None
         for jj in range(jk,1,-1):
             if quot[jk]>threshold and quot[jk-1]<threshold:
                 break
