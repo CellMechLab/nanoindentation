@@ -429,7 +429,6 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.es_averageZoom.setData(x[:jmax], y[:jmax]*1e9)
         all = motor.fitExpSimple(x[:jmax],y[:jmax],er[:jmax])
         if all is not None:
-            print (all)
             self.es_averageFit.setData(x[:jmax], motor.TheExp(x[:jmax],*all[0])*1e9)
             val = str(int((all[0][0]*1e9) / 10) / 100.0)
             err = str(int((all[1][0]*1e9) / 10) / 100.0)
