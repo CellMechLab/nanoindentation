@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets, QtGui
 from scipy.signal import savgol_filter
 import numpy as np
 import pyqtgraph as pg
+import popup
 
 ALL = []
 
@@ -109,10 +110,7 @@ class ContactPoint(object):
         pass
 
     def quickTest(self,c):
-        all = self.getWeight(c)
-        if all is None or all[0] is None:
-            return
-        pg.plot(all[0],all[1])
+        return self.getWeight(c)
 
     def getWeight(self, c):
         return [1,2,3],[2,6,4]

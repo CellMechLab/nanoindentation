@@ -6,6 +6,7 @@ import nano_view as view
 import motor
 import numpy as np
 import panels
+import popup
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
@@ -274,7 +275,13 @@ class NanoWindow(QtWidgets.QMainWindow):
     def quickCP(self):
         for c in self.collection:
             if c.selected is True:
-                self.contactPoint.quickTest(c)
+                x0,y0 = None,None
+                all =  self.contactPoint.calculate(c)
+                if all is not None:
+                    x0,y0 = all
+                a = popup.uiPanel()
+                a.setPlots(c._z,c._f,*self.contactPoint.quickTest(c),x0,y0)
+                a.exec()
 
     def changeCP(self,index):
         if self.contactPoint is not None:
