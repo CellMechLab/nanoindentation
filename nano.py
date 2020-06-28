@@ -146,6 +146,9 @@ class NanoWindow(QtWidgets.QMainWindow):
         slots.append(self.ui.mainlist.itemChanged)
         handlers.append(self.data_changed)
 
+        slots.append(self.ui.quickView.clicked)
+        handlers.append(self.quickCP)
+
         cli = [self.ui.prominency,self.ui.fsmooth,self.ui.fsmooth_savitzky,self.ui.fsmooth_median]
         vch = [self.ui.prominency_minfreq,self.ui.prominency_band,self.ui.prominency_prominency,self.ui.fsmooth_window  ]
         for click in cli:
@@ -266,6 +269,11 @@ class NanoWindow(QtWidgets.QMainWindow):
             self.ui.curve_segment.setValue(1)
         self.connect_all()
         self.refill()
+
+    def quickCP(self):
+        for c in self.collection:
+            if c.selected is True:
+                self.contactPoint.quickTest(c)
 
     def changeCP(self,index):
         if self.contactPoint is not None:

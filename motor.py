@@ -556,7 +556,7 @@ class Nanoment(object):
 
     @property
     def z(self):
-        if self._z is None:
+        if self._z is None or self.x_contact_point is None:
             return None
         delta = self._z - self.x_contact_point
         return delta
@@ -573,7 +573,7 @@ class Nanoment(object):
 
     @property
     def force(self):
-        if self._f is None:
+        if self._f is None or self.y_contact_point is None:
             return None
         return self._f - self.y_contact_point
 
