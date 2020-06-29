@@ -82,7 +82,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_fdistance.plotItem.setLabel('bottom', lab_style('Displacement [nm]'))
         self.ui.g_single.plotItem.setLabel('bottom', lab_style('Displacement [nm]'))
         self.ui.g_indentation.plotItem.setLabel('bottom', lab_style('Indentation [nm]'))
-        self.ui.g_es.plotItem.setLabel('bottom', lab_style('Contact radius [nm]'))
+        self.ui.g_es.plotItem.setLabel('bottom', lab_style('Equivalent indentation [nm]'))
         self.ui.g_scatter.plotItem.setLabel('bottom', lab_style('Curve #'))
         self.ui.g_histo.plotItem.setLabel('bottom', lab_style('Young\'s modulus [Pa]'))
         self.ui.g_decay.plotItem.setLabel('bottom', lab_style('Contact radius [nm]'))
@@ -166,6 +166,8 @@ class NanoWindow(QtWidgets.QMainWindow):
         slots.append(self.ui.es_win.valueChanged)
         handlers.append(self.es_changed)
         slots.append(self.ui.es_order.valueChanged)
+        handlers.append(self.es_changed)
+        slots.append(self.ui.es_interpolate.clicked)
         handlers.append(self.es_changed)
 
         cli = [self.ui.view_active, self.ui.view_included, self.ui.view_all]
@@ -388,7 +390,10 @@ class NanoWindow(QtWidgets.QMainWindow):
 
         eall = np.array(E_array)
         val = str(int(np.average(eall)/10)/100.0)
-        err = str(int(np.std(eall) / 10) / 100.0)
+        try:
+            err = str(int(np.std(eall) / 10) / 100.0)
+        except:
+            err = 0
         self.ui.data_average.setText('<span>{}&plusmn;{}</span>'.format(val, err))
         bins = 'auto'
         y,x = np.histogram(eall, bins=bins, density=True)
@@ -401,7 +406,10 @@ class NanoWindow(QtWidgets.QMainWindow):
                 x0, w, A, nx, ny = motor.gauss_fit(x, y)
                 self.histo_fit.setData(nx,ny)
                 val = str(int(np.average(x0)/10)/100.0)
-                err = str(int(np.average(w)/10)/100.0)
+                try:
+                    err = str(int(np.average(w)/10)/100.0)
+                except :
+                    err = 0
                 self.ui.fit_center.setText('<span>{}&plusmn;{}</span>'.format(val,err))
                 #self.ui.fit_std.setText()
 
@@ -425,7 +433,7 @@ class NanoWindow(QtWidgets.QMainWindow):
                 E_data_y.append(c.Ey)
         x,y,er = motor.getMedCurve(E_data_x,E_data_y,error=True)
 
-        self.es_average.setData(x, y*1e9)
+        self.es_average.setData(   x**2/np.average(Radius), y*1e9)
 
         indmax = float(self.ui.fit_indentation.value())
         rmax = np.sqrt( indmax * np.average(Radius))
@@ -438,14 +446,26 @@ class NanoWindow(QtWidgets.QMainWindow):
         if all is not None:
             self.es_averageFit.setData(x[:jmax], motor.TheExp(x[:jmax],*all[0])*1e9)
             val = str(int((all[0][0]*1e9) / 10) / 100.0)
-            err = str(int((all[1][0]*1e9) / 10) / 100.0)
-            self.ui.decay_e0.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+            try:
+                err = str(int((all[1][0]*1e9) / 10) / 100.0)
+                self.ui.decay_e0.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+            except OverflowError:
+                err=0
+                self.ui.decay_e0.setText('<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
             val = str(int((all[0][1]*1e9)))
-            err = str(int((all[1][1]*1e9)))
-            self.ui.decay_eb.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+            try:
+                err = str(int((all[1][1]*1e9)))
+                self.ui.decay_eb.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+            except OverflowError:
+                err=0
+                self.ui.decay_eb.setText('<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
             val = str(int((all[0][2])))
-            err = str(int((all[1][2])))
-            self.ui.decay_d0.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+            try:
+                err = str(int((all[1][2])))
+                self.ui.decay_d0.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+            except OverflowError:
+                self.ui.decay_d0.setText('<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
+
 
         eall = y[:jmax]
         val = str(int(np.average(eall*1e9) / 10) / 100.0)
