@@ -511,6 +511,8 @@ class Nanoment(object):
 
     @property
     def x_contact_point(self):
+        if self._contactpoint is None:
+            return None
         return self._contactpoint[0]
 
     @x_contact_point.setter
@@ -522,6 +524,8 @@ class Nanoment(object):
 
     @property
     def y_contact_point(self):
+        if self._contactpoint is None:
+            return None
         return self._contactpoint[1]
 
     @y_contact_point.setter
@@ -642,17 +646,22 @@ def getMedCurve(xar,yar,loose = True,threshold=3, error=False):
         xmin = -np.inf
         xmax = np.inf
         deltax = 0
+        nonecount = 0
         for x in xar:
-            xmin = np.max([xmin,np.min(x)])
-            xmax = np.min([xmax,np.max(x)])
-            deltax += ((np.max(x)-np.min(x))/(len(x)-1))
-        deltax /= len(xar)
+            if x is not None and np.min(x) is not None:
+                xmin = np.max([xmin,np.min(x)])
+                xmax = np.min([xmax,np.max(x)])
+                deltax += ((np.max(x)-np.min(x))/(len(x)-1))
+            else:
+                nonecount +=1
+        deltax /= (len(xar)-nonecount)
         xnew = np.linspace(xmin,xmax,int( (xmax-xmin)/(deltax)) )
         ynew = np.zeros(len(xnew))
         for i in range(len(xar)):
-            ycur = np.interp(xnew, xar[i], yar[i])
-            ynew += ycur
-        ynew/=len(xar)
+            if xar[i] is not None and np.min(xar[i]) is not None:
+                ycur = np.interp(xnew, xar[i], yar[i])
+                ynew += ycur
+        ynew/=(len(xar)-nonecount)
     else:
         xmin = np.inf
         xmax = -np.inf

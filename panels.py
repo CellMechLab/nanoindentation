@@ -198,12 +198,17 @@ class ThRov(ContactPoint):
     def getRange(self,c):
         x = c._z
         y = c._f
-        jmax = np.argmin((y - self.Fthreshold.getValue()) ** 2)
-        jmin = np.argmin((x - (x[jmax] - self.Xrange.getValue())) ** 2)
+        try:
+            jmax = np.argmin((y - self.Fthreshold.getValue()) ** 2)
+            jmin = np.argmin((x - (x[jmax] - self.Xrange.getValue())) ** 2)
+        except ValueError:
+            return False,False
         return jmin,jmax
 
     def calculate(self,c):
         jmin,jmax = self.getRange(c)
+        if jmin is False:
+            return False
         winr = self.windowr.getValue()
         x = c._z
         y = c._f
