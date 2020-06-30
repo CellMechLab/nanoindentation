@@ -155,7 +155,7 @@ class Nanoment(object):
         if self._g_es is not None:
             if self.Ex is not None and self.Ey is not None:
                 if len(self.Ex) == len(self.Ey):
-                    self._g_es.setData(self.Ex, self.Ey*1e9)
+                    self._g_es.setData(self.Ex**2/self.R, self.Ey*1e9)
             self._g_es.setPen(self.getPen('es'))
 
         if self._g_scatter is not None:
@@ -244,28 +244,31 @@ class Nanoment(object):
         if(len(x))<1:
             return
 
-        yi = interp1d(x, y)
-        max_x = np.max(x)
-        min_x = 1
-        if np.min(x) > 1:
-            min_x = np.min(x)
-        xx = np.arange(min_x, max_x, 1.0)
-        yy = yi(xx)
+        interp = self._ui.es_interpolate.isChecked()
+        if interp is True:
+            yi = interp1d(x, y)
+            max_x = np.max(x)
+            min_x = 1
+            if np.min(x) > 1:
+                min_x = np.min(x)
+            xx = np.arange(min_x, max_x, 1.0)
+            yy = yi(xx)
+            ddt = 1.0
+        else:
+            xx = x[1:]
+            yy = y[1:]
+            ddt = (x[-1]-x[1])/(len(x)-2)
 
         area = np.pi * xx * self.R
         contactradius = np.sqrt(xx * self.R)
         coeff = 3 * np.sqrt(np.pi) / 8 / np.sqrt(area)
-
         win = int( self._ui.es_win.value() )
-
         if win % 2 == 0:
             win += 1
         if len(yy) <= win:
             return None, None
-
         order = int( self._ui.es_order.value() )
-
-        deriv = savgol_filter(yy, win, order, delta=1.0, deriv=1)
+        deriv = savgol_filter(yy, win, order, delta=ddt, deriv=1)
         Ey = coeff * deriv
         dwin = int(win - 1)  # int((win-1)/2)
         Ex = contactradius[dwin:-dwin]
