@@ -118,6 +118,12 @@ class ContactPoint(object):
     def calculate(self,c):
         pass
 
+    def invalidate(self, c, invalid_thresh, j_cp):
+        y = c._f
+        for i in y[:j_cp]:
+            if i-y[j_cp] <= invalid_thresh:
+                return True
+
     def disconnect(self):
         for p in self._parameters:
             p.triggered.disconnect()
@@ -141,9 +147,12 @@ class PrimeContactPoint(ContactPoint):
         self.window = CPPInt('Window')
         self.window.setValue(200)
         self.threshold = CPPFloat('Threshold')
-        self.threshold.setValue(0.0)
+        self.threshold.setValue(0.0005)
         self.addParameter( self.window )
         self.addParameter( self.threshold )
+        self.Invalid_thresh = CPPFloat('Invalid Threshold')
+        self.Invalid_thresh.setValue(-2)
+        self.addParameter(self.Invalid_thresh)
 
     def getWeight(self,c):
         win = self.window.getValue()
@@ -158,14 +167,22 @@ class PrimeContactPoint(ContactPoint):
         return c._z,xprime / (1 - xprime)
 
     def calculate(self,c):
+        win = self.window.getValue()
         x,quot = self.getWeight(c)
         threshold = self.threshold.getValue()
         jk = np.argmin(np.abs(quot-threshold))
-        if jk < 2:
+        if jk < win:
             return None
-        for jj in range(jk,1,-1):
-            if quot[jk]>threshold and quot[jk-1]<threshold:
+        for jj in range(jk+5,1,-1):
+            if quot[jj]>threshold/2 and quot[jj-1]<threshold/2:
                 break
+        if jj < win:
+            return None
+        invalid_thresh = self.Invalid_thresh.getValue()
+        invalid = self.invalidate(c, invalid_thresh, jj)
+        if invalid == True:
+            return None
+
         return [c._z[jj], c._f[jj]]
 
 
@@ -174,9 +191,12 @@ class ThRov(ContactPoint):
         self.Fthreshold = CPPFloat('Safe Threshold')
         self.Fthreshold.setValue(10.0)
         self.Xrange = CPPFloat('X Range')
-        self.Xrange.setValue(2000.0)
+        self.Xrange.setValue(6000.0)
         self.windowr = CPPInt('Window R')
         self.windowr.setValue(200)
+        self.Invalid_thresh = CPPFloat('Invalid Threshold')
+        self.Invalid_thresh.setValue(-2)
+        self.addParameter(self.Invalid_thresh)
         self.addParameter( self.Fthreshold )
         self.addParameter( self.Xrange )
         self.addParameter(self.windowr)
@@ -216,6 +236,79 @@ class ThRov(ContactPoint):
             rov.append(np.var(y[j+1:j+winr+1]/np.var(y[j-winr:j])))
         jrov = np.argmax(rov) + jmin
 
+        invalid_thresh = self.Invalid_thresh.getValue()
+        invalid = self.invalidate(c, invalid_thresh, jrov)
+        if invalid == True:
+            return None
+
+        return [x[jrov],y[jrov]]
+
+
+class ThRovFirst(ContactPoint):
+    def create(self):
+        self.Fthreshold = CPPFloat('Safe Threshold')
+        self.Fthreshold.setValue(10.0)
+        self.Xrange = CPPFloat('X Range')
+        self.Xrange.setValue(6000.0)
+        self.windowr = CPPInt('Window R')
+        self.windowr.setValue(200)
+        self.Rov_thresh = CPPFloat('RoV Threshold')
+        self.Rov_thresh.setValue(1000)
+        self.Invalid_thresh = CPPFloat('Invalid Threshold')
+        self.Invalid_thresh.setValue(-2)
+        self.addParameter( self.Fthreshold )
+        self.addParameter( self.Xrange )
+        self.addParameter(self.windowr)
+        self.addParameter(self.Rov_thresh)
+        self.addParameter(self.Invalid_thresh)
+
+
+    def getWeight(self, c):
+        jmin, jmax = self.getRange(c)
+        winr = self.windowr.getValue()
+        x = c._z
+        y = c._f
+        if (len(y) - jmax) < int(winr/2) + 1:
+            return None
+        if (jmin) < int(winr/2) + 1:
+            return None
+        rov = []
+        for j in range(jmin, jmax + 1):
+            rov.append(np.var(y[j + 1:j + winr + 1] / np.var(y[j - winr:j])))
+        return x[jmin:jmax+1],rov
+
+    def getRange(self,c):
+        x = c._z
+        y = c._f
+        jmax = np.argmin((y - self.Fthreshold.getValue()) ** 2)
+        jmin = np.argmin((x - (x[jmax] - self.Xrange.getValue())) ** 2)
+        return jmin,jmax
+
+    def calculate(self,c):
+        jmin,jmax = self.getRange(c)
+        winr = self.windowr.getValue()
+        rov_thresh= self.Rov_thresh.getValue()
+        x = c._z
+        y = c._f
+        if (len(y) - jmax) < winr + 1:
+            return None
+        if (jmin) < winr + 1:
+            return None
+
+        jrov=None
+        for j in reversed(range(jmin, jmax+1)):
+            rov=np.var(y[j+1:j+winr+1]/np.var(y[j-winr:j]))
+            if rov>=rov_thresh:
+                jrov=j
+                break
+        if jrov==None:
+            return None
+
+        invalid_thresh = self.Invalid_thresh.getValue()
+        invalid = self.invalidate(c, invalid_thresh, jrov)
+        if invalid == True:
+            return None
+
         return [x[jrov],y[jrov]]
 
 
@@ -230,6 +323,9 @@ class DDer(ContactPoint):
         self.addParameter(self.window)
         self.addParameter(self.Xrange)
         self.addParameter(self.Fthreshold)
+        self.Invalid_thresh = CPPFloat('Invalid Threshold')
+        self.Invalid_thresh.setValue(-2)
+        self.addParameter(self.Invalid_thresh)
 
     def getRange(self, c):
         x = c._z
@@ -259,6 +355,12 @@ class DDer(ContactPoint):
             win += 1
         xsecond = savgol_filter(c._f / c.k, polyorder=4, deriv=2, window_length=win)
         jrov = np.argmax(np.abs(xsecond[jmin:jmax])) + jmin
+
+        invalid_thresh = self.Invalid_thresh.getValue()
+        invalid = self.invalidate(c, invalid_thresh, jrov)
+        if invalid == True:
+            return None
+
         return [c._z[jrov], c._f[jrov]]
 
 class Threshold(ContactPoint):
@@ -266,6 +368,9 @@ class Threshold(ContactPoint):
         self.Fthreshold = CPPFloat('Threshold')
         self.Fthreshold.setValue(1.0)
         self.addParameter( self.Fthreshold )
+        self.Invalid_thresh = CPPFloat('Invalid Threshold')
+        self.Invalid_thresh.setValue(-2)
+        self.addParameter(self.Invalid_thresh)
 
     def calculate(self,c):
         yth = self.Fthreshold.getValue()
@@ -273,8 +378,14 @@ class Threshold(ContactPoint):
         y = c._f
         jrov = np.argmin( (y-yth)**2 )
 
+        invalid_thresh = self.Invalid_thresh.getValue()
+        invalid = self.invalidate(c, invalid_thresh, jrov)
+        if invalid == True:
+            return None
+
         return [x[jrov],y[jrov]]
 
+ALL.append( { 'label':'Ratio of Variances - First Peak', 'method':ThRovFirst} )
 ALL.append( { 'label':'Prime function', 'method':PrimeContactPoint} )
 ALL.append( { 'label':'Threshold', 'method':Threshold} )
 ALL.append( { 'label':'Ratio of Variances', 'method':ThRov} )

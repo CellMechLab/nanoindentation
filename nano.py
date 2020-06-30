@@ -178,8 +178,11 @@ class NanoWindow(QtWidgets.QMainWindow):
             slots.append(click.clicked)
             handlers.append(self.toggle)
 
-        slots.append(self.ui.save_data.clicked)
-        handlers.append(self.save_data)
+        slots.append(self.ui.save_dataHertz.clicked)
+        handlers.append(self.save_dataHertz)
+
+        slots.append(self.ui.save_dataES.clicked)
+        handlers.append(self.save_dataES)
 
         slots.append(self.ui.reset_all.clicked)
         handlers.append(self.include_exclude_all)
@@ -390,6 +393,8 @@ class NanoWindow(QtWidgets.QMainWindow):
         val = str(int(np.average(eall)/10)/100.0)
         err = str(int(np.std(eall) / 10) / 100.0)
         self.ui.data_average.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+        self.Yav=str(int(np.average(eall)))
+        self.Yav_std=str(int(np.std(eall)))
         bins = 'auto'
         y,x = np.histogram(eall, bins=bins, density=True)
         if len(y)>=3:
@@ -403,6 +408,8 @@ class NanoWindow(QtWidgets.QMainWindow):
                 val = str(int(np.average(x0)/10)/100.0)
                 err = str(int(np.average(w)/10)/100.0)
                 self.ui.fit_center.setText('<span>{}&plusmn;{}</span>'.format(val,err))
+                self.Ygau=str(int(np.average(x0)))
+                self.Ygau_std=str(int(np.average(w)))
                 #self.ui.fit_std.setText()
 
                 x,y,z = motor.calc_hertz(x0,self.collection[0].R,self.collection[0].k,float(self.ui.fit_indentation.value()))
@@ -426,6 +433,8 @@ class NanoWindow(QtWidgets.QMainWindow):
         x,y,er = motor.getMedCurve(E_data_x,E_data_y,error=True)
 
         self.es_average.setData(x, y*1e9)
+        self.ES_array_x=x
+        self.ES_array_y=y*1e9
 
         indmax = float(self.ui.fit_indentation.value())
         rmax = np.sqrt( indmax * np.average(Radius))
@@ -440,17 +449,25 @@ class NanoWindow(QtWidgets.QMainWindow):
             val = str(int((all[0][0]*1e9) / 10) / 100.0)
             err = str(int((all[1][0]*1e9) / 10) / 100.0)
             self.ui.decay_e0.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+            self.E0=str(int(all[0][0]*1e9))
+            self.E0_std=str(int(all[1][0]*1e9))
             val = str(int((all[0][1]*1e9)))
             err = str(int((all[1][1]*1e9)))
             self.ui.decay_eb.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+            self.Eb=str(int(all[0][1]*1e9))
+            self.Eb_std=str(int(all[1][1]*1e9))
             val = str(int((all[0][2])))
             err = str(int((all[1][2])))
             self.ui.decay_d0.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+            self.d0=str(int(all[0][2]))
+            self.d0_std=str(int(all[1][2]))
 
         eall = y[:jmax]
         val = str(int(np.average(eall*1e9) / 10) / 100.0)
         err = str(int(np.std(eall*1e9) / 10) / 100.0)
         self.ui.data_std.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+        self.ESav=str(int(np.average(eall*1e9)))
+        self.ESav_std=str(int(np.std(eall*1e9)))
 
         y,x = np.histogram(eall*1e9, bins=bins, density=True)
         if len(y)>=3:
@@ -461,30 +478,69 @@ class NanoWindow(QtWidgets.QMainWindow):
                 val = str(int(np.average(x0) / 10) / 100.0)
                 err = str(int(np.average(w) / 10) / 100.0)
                 self.ui.fit_std.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+                self.ESgau=str(int(np.average(x0)))
+                self.ESgau_std=str(int(np.average(w)))
             except:
                 self.histo_esfit.setData(None)
 
-    def save_data(self):
+    def save_dataHertz(self):
         E_array = []
         for c in self.collection:
             if c.active is True and c.E is not None:
                 E_array.append(c.E)
 
-        fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Select the file to export your E data',self.workingdir, "Tab Separated Values (*.tsv)")
+        fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Select the file to export your Hertzian E data',self.workingdir, "Tab Separated Values (*.tsv)")
         if fname[0] == '':
             return
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
         with open(fname[0], 'w') as f:
-            f.write('# Data exported from Nanoindentation Analysis Software\n')
+            f.write('# Hertzian Fit Data exported from Nanoindentation Analysis Software\n')
             f.write('# Repository GitHub Project nanoindentation Branch HertzOnly\n')
             f.write('# \n')
             f.write('# Working folder {}\n'.format(self.workingdir))
             f.write('# Tip radius {} nm\n'.format(self.collection[0].R))
             f.write('# Elastic constant {} N/m\n'.format(self.collection[0].k))
             f.write('# \n')
+            f.write('# Young\'s Modulus Hertz, Gaussian Average {} Pa\n'.format(self.Yav))
+            f.write('# Young\'s Modulus Hertz Gaussian STD {} Pa\n'.format(self.Yav_std))
+            f.write('# \n')
             f.write('# Young\'s Modulus [Pa]\n')
             for e in E_array:
                 f.write('{}\n'.format(e))
+        f.close()
+        QtWidgets.QApplication.restoreOverrideCursor()
+
+
+    def save_dataES(self):
+
+        fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Select the file to export your Elasticity Spectra data',self.workingdir, "Tab Separated Values (*.tsv)")
+        if fname[0] == '':
+            return
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        with open(fname[0], 'w') as f:
+            f.write('# Elasticity Spectra Data exported from Nanoindentation Analysis Software\n')
+            f.write('# Repository GitHub Project nanoindentation Branch HertzOnly\n')
+            f.write('# \n')
+            f.write('# Working folder {}\n'.format(self.workingdir))
+            f.write('# Tip radius {} nm\n'.format(self.collection[0].R))
+            f.write('# Elastic constant {} N/m\n'.format(self.collection[0].k))
+            f.write('# Number valid curves \n'.format(self.Na))
+            f.write('# \n')
+            f.write('# Young\'s Modulus ES, Gaussian Average {} Pa\n'.format(self.ESav))
+            f.write('# Young\'s Modulus ES, Gaussian STD {} Pa\n'.format(self.ESav_std))
+            f.write('# \n')
+            f.write('# E0 from ES fit {} Pa\n'.format(self.E0))
+            f.write('# E0 STD {} Pa\n'.format(self.E0_std))
+            f.write('# \n')
+            f.write('# Eb from ES fit {} Pa\n'.format(self.Eb))
+            f.write('# Eb STD {} Pa\n'.format(self.Eb_std))
+            f.write('# \n')
+            f.write('# d0 from ES fit {} Pa\n'.format(self.d0))
+            f.write('# d0 STD {} Pa\n'.format(self.d0_std))
+            f.write('# \n')
+            f.write('# Average Elasticity Spectrum: Depth [nm], Young\'s Modulus [Pa]\n')
+            for x in zip(*[self.ES_array_x, self.ES_array_y]):
+                f.write("{0}\t{1}\n".format(*x))
         f.close()
         QtWidgets.QApplication.restoreOverrideCursor()
 
@@ -502,7 +558,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.stats_ne.setText(str(Ne))
         self.ui.stats_ni.setText(str(Ni))
         self.ui.stats_na.setText(str(Na))
-
+        self.Na=str(Na)
         self.numbers()
 
     def data_changed(self,item):
