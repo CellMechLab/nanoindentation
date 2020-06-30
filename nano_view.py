@@ -43,7 +43,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.addWidget(self.label)
         self.curve_segment = QtWidgets.QSpinBox(self.Curve)
         self.curve_segment.setMaximum(9)
-        self.curve_segment.setProperty("value", 1)
+        self.curve_segment.setProperty("value", 0)
         self.curve_segment.setObjectName("curve_segment")
         self.horizontalLayout_6.addWidget(self.curve_segment)
         self.crop = QtWidgets.QPushButton(self.Curve)

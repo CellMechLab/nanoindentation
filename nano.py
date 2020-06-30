@@ -456,27 +456,14 @@ class NanoWindow(QtWidgets.QMainWindow):
         if all is not None:
             self.es_averageFit.setData(x[:jmax], motor.TheExp(x[:jmax],*all[0])*1e9)
             val = str(int((all[0][0]*1e9) / 10) / 100.0)
-            err = str(int((all[1][0]*1e9) / 10) / 100.0)
-            self.ui.decay_e0.setText('<span>{}&plusmn;{}</span>'.format(val, err))
-            self.E0=str(int(all[0][0]*1e9))
-            self.E0_std=str(int(all[1][0]*1e9))
-            val = str(int((all[0][1]*1e9)))
-            err = str(int((all[1][1]*1e9)))
-            self.ui.decay_eb.setText('<span>{}&plusmn;{}</span>'.format(val, err))
-            self.Eb=str(int(all[0][1]*1e9))
-            self.Eb_std=str(int(all[1][1]*1e9))
-            val = str(int((all[0][2])))
-            err = str(int((all[1][2])))
-            self.ui.decay_d0.setText('<span>{}&plusmn;{}</span>'.format(val, err))
-            self.d0=str(int(all[0][2]))
-            self.d0_std=str(int(all[1][2]))
-
             try:
                 err = str(int((all[1][0]*1e9) / 10) / 100.0)
                 self.ui.decay_e0.setText('<span>{}&plusmn;{}</span>'.format(val, err))
             except OverflowError:
                 err=0
                 self.ui.decay_e0.setText('<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
+            self.E0=str(int(all[0][0]*1e9))
+            self.E0_std=str(int(all[1][0]*1e9))
             val = str(int((all[0][1]*1e9)))
             try:
                 err = str(int((all[1][1]*1e9)))
@@ -484,12 +471,16 @@ class NanoWindow(QtWidgets.QMainWindow):
             except OverflowError:
                 err=0
                 self.ui.decay_eb.setText('<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
+            self.Eb=str(int(all[0][1]*1e9))
+            self.Eb_std=str(int(all[1][1]*1e9))
             val = str(int((all[0][2])))
             try:
                 err = str(int((all[1][2])))
                 self.ui.decay_d0.setText('<span>{}&plusmn;{}</span>'.format(val, err))
             except OverflowError:
                 self.ui.decay_d0.setText('<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
+            self.d0=str(int(all[0][2]))
+            self.d0_std=str(int(all[1][2]))
 
         eall = y[:jmax]
         val = str(int(np.average(eall*1e9) / 10) / 100.0)
