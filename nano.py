@@ -71,9 +71,9 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_histo.plotItem.setTitle(title_style('Elasticity stats'))
         self.ui.g_decay.plotItem.setTitle(title_style('Bilayer model'))
 
-        self.ui.g_fdistance.plotItem.setLabel('left',lab_style('Force [pN]'))
-        self.ui.g_single.plotItem.setLabel('left', lab_style('Force [pN]'))
-        self.ui.g_indentation.plotItem.setLabel('left', lab_style('Force [pN]'))
+        self.ui.g_fdistance.plotItem.setLabel('left',lab_style('Force [nN]'))
+        self.ui.g_single.plotItem.setLabel('left', lab_style('Force [nN]'))
+        self.ui.g_indentation.plotItem.setLabel('left', lab_style('Force [nN]'))
         self.ui.g_es.plotItem.setLabel('left', lab_style('Elasticity [Pa]'))
         self.ui.g_scatter.plotItem.setLabel('left', lab_style('Young\'s modulus [Pa]'))
         self.ui.g_histo.plotItem.setLabel('left', lab_style('Probability density'))
