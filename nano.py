@@ -71,9 +71,9 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_histo.plotItem.setTitle(title_style('Elasticity stats'))
         self.ui.g_decay.plotItem.setTitle(title_style('Bilayer model'))
 
-        self.ui.g_fdistance.plotItem.setLabel('left',lab_style('Force [pN]'))
-        self.ui.g_single.plotItem.setLabel('left', lab_style('Force [pN]'))
-        self.ui.g_indentation.plotItem.setLabel('left', lab_style('Force [pN]'))
+        self.ui.g_fdistance.plotItem.setLabel('left',lab_style('Force [nN]'))
+        self.ui.g_single.plotItem.setLabel('left', lab_style('Force [nN]'))
+        self.ui.g_indentation.plotItem.setLabel('left', lab_style('Force [nN]'))
         self.ui.g_es.plotItem.setLabel('left', lab_style('Elasticity [Pa]'))
         self.ui.g_scatter.plotItem.setLabel('left', lab_style('Young\'s modulus [Pa]'))
         self.ui.g_histo.plotItem.setLabel('left', lab_style('Probability density'))
@@ -139,6 +139,10 @@ class NanoWindow(QtWidgets.QMainWindow):
         slots.append(self.ui.curve_segment.valueChanged)
         handlers.append(self.refill)
 
+        self.tipshape="sphere"
+        slots.append(self.ui.tip_sphere.toggled)
+        handlers.append(self.set_tipshape)
+
         slots.append(self.ui.slid_alpha.valueChanged)
         handlers.append(self.set_alpha)
 
@@ -185,6 +189,9 @@ class NanoWindow(QtWidgets.QMainWindow):
 
         slots.append(self.ui.save_dataES.clicked)
         handlers.append(self.save_dataES)
+
+        slots.append(self.ui.save_dataName.clicked)
+        handlers.append(self.save_dataName)
 
         slots.append(self.ui.reset_all.clicked)
         handlers.append(self.include_exclude_all)
@@ -241,6 +248,7 @@ class NanoWindow(QtWidgets.QMainWindow):
             node.myTree = myself
             myself.setText(0, node.basename)
             myself.curve = node
+            node.tipshape="sphere"
             myself.setFlags(myself.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
             myself.setCheckState(0,QtCore.Qt.Checked)
             for mychild in node:
@@ -272,12 +280,13 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_es.plotItem.addItem(self.es_average)
 
         self.ui.curve_segment.setMaximum(len(self.experiment.haystack[0])-1)
-        if len(self.experiment.haystack[0])>1:
-            self.ui.curve_segment.setValue(1)
+        # if len(self.experiment.haystack[0])>1:
+        #     self.ui.curve_segment.setValue(1)
         self.connect_all()
         self.refill()
 
     def quickCP(self):
+        next=None
         for c in self.collection:
             if c.selected is True:
                 x0,y0 = None,None
@@ -285,8 +294,36 @@ class NanoWindow(QtWidgets.QMainWindow):
                 if all is not None:
                     x0,y0 = all
                 a = popup.uiPanel()
-                a.setPlots(c._z,c._f,*self.contactPoint.quickTest(c),x0,y0)
+                a.manual_slider.setMinimum(c._z[0]-(c._z[-1]-c._z[0])*0.1)
+                a.manual_slider.setMaximum(c._z[-1]+(c._z[-1]-c._z[0])*0.1)
+                if c._contactpoint is not None and self.contactPoint.quickTest(c) is not None:
+                    if c._contactpoint!=[0,0]:
+                        a.setPlots(c._z, c._f, *self.contactPoint.quickTest(c), c._contactpoint[0], c._contactpoint[1])
+                    else:
+                        a.setPlots(c._z, c._f, *self.contactPoint.quickTest(c))
+                elif c._contactpoint is not None and c._contactpoint!=[0,0] and self.contactPoint.quickTest(c) is None:
+                    a.setPlots(c._z, c._f, x0=c._contactpoint[0], y0=c._contactpoint[1])
+                elif c._contactpoint is None and self.contactPoint.quickTest(c) is not None:
+                    a.setPlots(c._z,c._f,*self.contactPoint.quickTest(c),x0,y0)
+                else:
+                    a.setPlots(c._z, c._f)
                 a.exec()
+                if a.ManCP is True:
+                    #print("Manually set Contact Point to:", a.CP_man)
+                    c._contactpoint= [a.CP_man,a.yCP]
+                    c.active = True
+                    c.set_indentation()
+                    c.reset_E()
+                    c.update_view()
+                next=a.next
+                if a.excluded is True:
+                    c.included=False
+                    c.active=False
+                    self.count()
+        if next is not None:
+            self.change_selected_bybutton(next)
+            self.quickCP()
+
 
     def changeCP(self,index):
         if self.contactPoint is not None:
@@ -420,7 +457,7 @@ class NanoWindow(QtWidgets.QMainWindow):
                 self.Ygau_std=str(int(np.average(w)))
                 #self.ui.fit_std.setText()
 
-                x,y,z = motor.calc_hertz(x0,self.collection[0].R,self.collection[0].k,float(self.ui.fit_indentation.value()))
+                x,y,z = motor.calc_hertz(x0,self.collection[0].R,self.collection[0].k,float(self.ui.fit_indentation.value()), self.tipshape)
                 self.indentation_fit.setData(x,y)
                 self.fdistance_fit.setData(z,y)
 
@@ -463,7 +500,10 @@ class NanoWindow(QtWidgets.QMainWindow):
                 err=0
                 self.ui.decay_e0.setText('<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
             self.E0=str(int(all[0][0]*1e9))
-            self.E0_std=str(int(all[1][0]*1e9))
+            try:
+                self.E0_std=str(int(all[1][0]*1e9))
+            except:
+                self.E0_std=0
             val = str(int((all[0][1]*1e9)))
             try:
                 err = str(int((all[1][1]*1e9)))
@@ -532,7 +572,6 @@ class NanoWindow(QtWidgets.QMainWindow):
 
 
     def save_dataES(self):
-
         fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Select the file to export your Elasticity Spectra data',self.workingdir, "Tab Separated Values (*.tsv)")
         if fname[0] == '':
             return
@@ -563,6 +602,26 @@ class NanoWindow(QtWidgets.QMainWindow):
                 f.write("{0}\t{1}\n".format(*x))
         f.close()
         QtWidgets.QApplication.restoreOverrideCursor()
+
+
+    def save_dataName(self):
+        import pandas as pd
+        data=[[],[],[],[],[]]
+        for c in self.collection:
+            data[0].append(c.basename[:-6])
+            data[1].append(c.E)
+            data[2].append(c.Estd)
+            data[3].append(c.ind_end)
+            data[4].append(c.ind_2nN)
+        d = {'Name': data[0], 'E [Pa]': data[1], 'E_std [Pa]': data[2], 'Max Indent [nm]': data[3], '2nN Indent [nm]': data[4]}
+        df=pd.DataFrame(data=d)
+
+        fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Select the file to export your Elasticity data',self.workingdir, "Comma Separated Values (*.csv)")
+        if fname[0] == '':
+            return
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        df.to_csv(fname[0])
+
 
     def count(self):
         Ne = 0
@@ -601,6 +660,27 @@ class NanoWindow(QtWidgets.QMainWindow):
             item.nano.selected = True
         except AttributeError:
             pass
+
+    def change_selected_bybutton(self,direction):
+        for i, c in enumerate(self.collection):
+            if c.selected==True:
+                ind=i
+            c.selected = False
+        try:
+            for i, c in enumerate(self.collection):
+                if i==ind+direction:
+                    c.selected = True
+        except:
+            pass
+
+    def set_tipshape(self):
+        if self.ui.tip_sphere.isChecked() is True:
+            self.tipshape="sphere"
+        elif self.ui.tip_cylinder.isChecked() is True:
+            self.tipshape="cylinder"
+        for c in self.collection:
+            c.tipshape=self.tipshape
+        self.filter_changed()
 
     def set_alpha(self,num):
         num = int(num)

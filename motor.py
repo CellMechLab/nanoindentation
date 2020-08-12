@@ -22,17 +22,20 @@ def sames(ar1,ar2):
     return False
 
 
-def hertz (x, E, R, poisson=0.5):
-    return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
+def hertz (x, E, R, poisson=0.5, tipshape="sphere"):
+    if tipshape=="sphere":
+        return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
+    if tipshape=="cylinder":
+        return 2*R*x * (E / (1 - poisson ** 2))
 
 
 def Gauss(x,x0,w,A):
     return A*np.exp( -((x-x0)/w)**2 )
 
 
-def calc_hertz(E,R,k,maxvalue):
+def calc_hertz(E,R,k,maxvalue, tipshape):
     x = np.linspace(0,maxvalue,int(maxvalue))
-    y = hertz(x,E/1e9,R)
+    y = hertz(x,E/1e9,R, tipshape)
     z = x + y/k
     return x,y,z
 
@@ -77,6 +80,7 @@ class Nanoment(object):
             self.R = curve.tip_radius
             self.k = curve.cantilever_k
             self.basename = curve.basename
+            self.tipshape = curve.tipshape
 
     def connect(self,nanowin,node = False):
         self._ui=nanowin.ui
@@ -140,7 +144,7 @@ class Nanoment(object):
                         self._curve_raw.setData(self.z_raw,self.f_raw)
                         self._curve_single.setData(self.z,self.force)
                         if self.E is not None:
-                            ex,ey = self.getFitted()
+                            ex,ey = self.getFitted(self.tipshape)
                             self._curve_fit.setData(ex,ey)
                         else:
                             self._curve_fit.setData(None)
@@ -292,7 +296,8 @@ class Nanoment(object):
         Xf = z[iContact:]
         self.ind = Xf - Yf / self.k
         self.touch = Yf
-
+        self.ind_end=self.ind[-1]
+        self.ind_2nN=self.ind[np.argmin(np.abs(self.touch-2.))]
         self.set_elasticityspectra()
 
     def reset_E(self):
@@ -384,6 +389,10 @@ class Nanoment(object):
         self._f = np.fft.irfft(df, n=len(y))
 
     def calculate_contactpoint(self):
+        self.E=None
+        self.Estd=None
+        self.ind_end=None
+        self.ind_2nN=None
         self.reset_contactpoint()
         if self.included is False:
             return
@@ -399,13 +408,13 @@ class Nanoment(object):
         self.set_indentation()
         self.update_view()
 
-    def getFitted(self):
+    def getFitted(self, tipshape):
         if self._ui.analysis.isChecked() is False:
             return
 
         upto = np.min([float(self._ui.fit_indentation.value()),np.max(self.ind)])
         x = np.linspace(0,upto,int(upto))
-        y = hertz(x,self.E/1e9,self.R)
+        y = hertz(x,self.E/1e9,self.R, tipshape)
 
         x = x + y/self.k
 
@@ -419,13 +428,18 @@ class Nanoment(object):
         seeds = [1000.0 / 1e9]
         try:
             R = self.R
-
-            def Hertz(x, E):
-                x = np.abs(x)
-                poisson = 0.5
-                # Eeff = E*1.0e9 #to convert E in GPa to keep consistency with the units nm and nN
-                return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
-
+            if self.tipshape=="sphere":
+                def Hertz(x, E ):
+                    x = np.abs(x)
+                    poisson = 0.5
+                    # Eeff = E*1.0e9 #to convert E in GPa to keep consistency with the units nm and nN
+                    return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
+            elif self.tipshape=="cylinder":
+                def Hertz(x, E):
+                    x = np.abs(x)
+                    poisson = 0.5
+                    # Eeff = E*1.0e9 #to convert E in GPa to keep consistency with the units nm and nN
+                    return 2 * R * x * (E / (1 - poisson ** 2))
             indmax = float(self._ui.fit_indentation.value())
             jj = np.argmin((self.ind-indmax)**2)
             if jj < 5:
@@ -433,6 +447,7 @@ class Nanoment(object):
             popt, pcov = curve_fit(Hertz, self.ind[:jj], self.touch[:jj], p0=seeds, maxfev=100000)
             #E_std = np.sqrt(pcov[0][0])
             self._E = popt[0]*1e9
+            self.Estd=np.sqrt(pcov[0][0])*1e9
         except (RuntimeError, ValueError):
             return
 

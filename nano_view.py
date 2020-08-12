@@ -8,6 +8,8 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QShortcut
+from PyQt5.QtGui import QKeySequence
 
 
 class Ui_MainWindow(object):
@@ -62,6 +64,24 @@ class Ui_MainWindow(object):
         self.crop_right.setObjectName("crop_right")
         self.horizontalLayout_6.addWidget(self.crop_right)
         self.horizontalLayout_10.addWidget(self.Curve)
+        self.groupBox_15 = QtWidgets.QGroupBox(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.groupBox_15.sizePolicy().hasHeightForWidth())
+        self.groupBox_15.setSizePolicy(sizePolicy)
+        self.groupBox_15.setObjectName("groupBox_15")
+        self.horizontalLayout_15 = QtWidgets.QHBoxLayout(self.groupBox_15)
+        self.horizontalLayout_15.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
+        self.horizontalLayout_15.setObjectName("horizontalLayout_15")
+        self.tip_sphere = QtWidgets.QRadioButton(self.groupBox_15)
+        self.tip_sphere.setChecked(True)
+        self.tip_sphere.setObjectName("tip_sphere")
+        self.horizontalLayout_15.addWidget(self.tip_sphere)
+        self.tip_cylinder = QtWidgets.QRadioButton(self.groupBox_15)
+        self.tip_cylinder.setObjectName("tip_cylinder")
+        self.horizontalLayout_15.addWidget(self.tip_cylinder)
+        self.horizontalLayout_10.addWidget(self.groupBox_15)
         self.groupBox = QtWidgets.QGroupBox(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -125,6 +145,9 @@ class Ui_MainWindow(object):
         self.save_dataES = QtWidgets.QPushButton(self.groupBox_5)
         self.save_dataES.setObjectName("save_dataES")
         self.horizontalLayout_8.addWidget(self.save_dataES)
+        self.save_dataName = QtWidgets.QPushButton(self.groupBox_5)
+        self.save_dataName.setObjectName("save_dataName")
+        self.horizontalLayout_8.addWidget(self.save_dataName)
         self.horizontalLayout_10.addWidget(self.groupBox_5)
         self.verticalLayout_8.addLayout(self.horizontalLayout_10)
         self.splitter_2 = QtWidgets.QSplitter(self.centralwidget)
@@ -555,6 +578,9 @@ class Ui_MainWindow(object):
         self.crop.setText(_translate("MainWindow", "crop 50nm"))
         self.crop_left.setText(_translate("MainWindow", "L"))
         self.crop_right.setText(_translate("MainWindow", "R"))
+        self.groupBox_15.setTitle(_translate("MainWindow", "Tip Shape"))
+        self.tip_sphere.setText(_translate("MainWindow", "Sphere"))
+        self.tip_cylinder.setText(_translate("MainWindow", "Cylinder"))
         self.groupBox.setTitle(_translate("MainWindow", "View"))
         self.view_all.setText(_translate("MainWindow", "All"))
         self.view_included.setText(_translate("MainWindow", "Included"))
@@ -566,6 +592,7 @@ class Ui_MainWindow(object):
         self.groupBox_5.setTitle(_translate("MainWindow", "Save"))
         self.save_dataHertz.setText(_translate("MainWindow", "Data Hertz"))
         self.save_dataES.setText(_translate("MainWindow", "Data ES"))
+        self.save_dataName.setText(_translate("MainWindow", "Data With File Name"))
         self.mainlist.headerItem().setText(0, _translate("MainWindow", "Name"))
         self.analysis.setTitle(_translate("MainWindow", "Analysis"))
         self.groupBox_12.setTitle(_translate("MainWindow", "Open"))
