@@ -414,7 +414,7 @@ class Nanoment(object):
 
         upto = np.min([float(self._ui.fit_indentation.value()),np.max(self.ind)])
         x = np.linspace(0,upto,int(upto))
-        y = hertz(x,self.E/1e9,self.R, tipshape)
+        y = hertz(x,self.E/1e9,self.R, tipshape=tipshape)
 
         x = x + y/self.k
 
