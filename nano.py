@@ -512,7 +512,10 @@ class NanoWindow(QtWidgets.QMainWindow):
                 err=0
                 self.ui.decay_eb.setText('<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
             self.Eb=str(int(all[0][1]*1e9))
-            self.Eb_std=str(int(all[1][1]*1e9))
+            try:
+                self.Eb_std=str(int(all[1][1]*1e9))
+            except:
+                self.Eb_std=0
             val = str(int((all[0][2])))
             try:
                 err = str(int((all[1][2])))
@@ -520,7 +523,10 @@ class NanoWindow(QtWidgets.QMainWindow):
             except OverflowError:
                 self.ui.decay_d0.setText('<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
             self.d0=str(int(all[0][2]))
-            self.d0_std=str(int(all[1][2]))
+            try:
+                self.d0_std=str(int(all[1][2]))
+            except:
+                self.d0_std=0
 
         eall = y[:jmax]
         val = str(int(np.average(eall*1e9) / 10) / 100.0)
