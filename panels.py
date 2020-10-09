@@ -148,10 +148,10 @@ class PrimeContactPoint(ContactPoint):
         self.window.setValue(200)
         self.threshold = CPPFloat('Threshold')
         self.threshold.setValue(0.0005)
-        self.addParameter( self.window )
-        self.addParameter( self.threshold )
         self.Invalid_thresh = CPPFloat('Invalid Threshold')
         self.Invalid_thresh.setValue(-2)
+        self.addParameter( self.window )
+        self.addParameter( self.threshold )
         self.addParameter(self.Invalid_thresh)
 
     def getWeight(self,c):
