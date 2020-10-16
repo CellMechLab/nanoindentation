@@ -566,7 +566,7 @@ class Nanoment(object):
         if self._z is None or self.x_contact_point is None:
             return None
         delta = self._z - self.x_contact_point
-        return delta
+        return delta 
 
     @z.setter
     def z(self, x):
