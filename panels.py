@@ -149,19 +149,16 @@ class ContactPoint: #Contact point class
 #---------------------------------------------------------# 
 class PrimeContactPoint(ContactPoint): #Prime funciton
     def create(self):
-<<<<<<< HEAD
-        self.window = CPPInt('Window') 
+        self.window = CPPInt('Window')
         self.window.setValue(200) 
         self.threshold = CPPFloat('Threshold') 
         self.threshold.setValue(0.0005) 
         self.addParameter( self.window )
         self.addParameter( self.threshold )
-=======
         self.window = CPPInt('Window')
         self.window.setValue(200)
         self.threshold = CPPFloat('Threshold')
         self.threshold.setValue(0.0005)
->>>>>>> 620cd8807fc66ef907b629173945c4ab9671b7c1
         self.Invalid_thresh = CPPFloat('Invalid Threshold')
         self.Invalid_thresh.setValue(-2)
         self.addParameter( self.window )
