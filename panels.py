@@ -346,8 +346,9 @@ class GoodnessOfFit(ContactPoint):
             jmax = np.argmin((y - self.Fthreshold.getValue()) ** 2) 
             jmin = np.argmin((x - (x[jmax] - self.Xrange.getValue())) ** 2) 
         except ValueError: 
-            return False 
-        return jmin , jmax 
+            return False
+        #NB the getRange function should return the full Z range, not simply indices!
+        return jmin , jmax
 
      #Retunrs weight array (R**2) and corresponding index array. Uses get_indentation and fit methods defined below
      def getWeight(self, c):
@@ -366,16 +367,16 @@ class GoodnessOfFit(ContactPoint):
              ind, Yf = self.get_indentation(c, j, win) 
              E_std = self.fit(c, ind, Yf)
              R_squared.append(E_std) 
-         return j_x, R_squared 
+         return c._z[jmin:jmax], R_squared
      
      #Retunrs contact point (z0, f0) based on max R**2
      def calculate(self,c):
          z = c._z 
          f = c._f
-         jj_x, R_squared = self.getWeight(c)
+         zz_x, R_squared = self.getWeight(c)
          R_best_ind = np.argmax(R_squared)
-         j_GoF = jj_x[R_best_ind]
-         return [z[j_GoF],f[j_GoF]]
+         j_GoF = np.argmin( (c._z-zz_x[R_best_ind])**2 )
+         return [c._z[j_GoF],c._f[j_GoF]]
      
      #Retunrs indentation (ind) and f from z vs f data
      def get_indentation(self, c, iContact, win):
