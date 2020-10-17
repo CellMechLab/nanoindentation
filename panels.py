@@ -338,7 +338,7 @@ class GoodnessOfFit(ContactPoint):
         self.addParameter(self.Xrange)
         self.addParameter(self.Fthreshold)
         
-     #Returns max and min indices considered in f vs z data
+     #Returns array of indices considered for f v z data
      def getRange(self,c): 
         x = c._z
         y = c._f
@@ -347,16 +347,17 @@ class GoodnessOfFit(ContactPoint):
             jmin = np.argmin((x - (x[jmax] - self.Xrange.getValue())) ** 2) 
         except ValueError: 
             return False
-        #NB the getRange function should return the full Z range, not simply indices!
-        return jmin , jmax
-
+        i_range = np.arange(jmin, jmax)
+        return i_range 
+        
      #Retunrs weight array (R**2) and corresponding index array. Uses get_indentation and fit methods defined below
      def getWeight(self, c):
-         indices = self.getRange(c)
+         indices = self.getRange(c) 
          if indices is False:
              return False
-         jmin, jmax = indices 
-         
+         jmin = np.argmin(indices)
+         jmax =  np.argmax(indices)
+        
          zwin = self.windowr.getValue()
          zstep = (max(c._z) - min(c._z)) / (len(c._z)-1)  
          win = int(zwin / zstep) 
