@@ -454,29 +454,43 @@ class DDer(ContactPoint): #Second Derivative
 
 class Threshold(ContactPoint):
     def create(self):
-        self.Fthreshold = CPPFloat('Threshold')
+        self.Athreshold = CPPFloat('Align Threshold [pN]')
+        self.Athreshold.setValue(10.0)
+        self.deltaX = CPPFloat('Align left step [nm]')
+        self.deltaX.setValue(2000.0)
+        self.Fthreshold = CPPFloat('CP Threshold [pN]')
         self.Fthreshold.setValue(1.0)
-        self.addParameter( self.Fthreshold )
-        self.Invalid_thresh = CPPFloat('Invalid Threshold')
-        self.Invalid_thresh.setValue(-2)
-        self.addParameter(self.Invalid_thresh)
+        self.addParameter(self.Athreshold )
+        self.addParameter(self.deltaX)
+        self.addParameter(self.Fthreshold)
 
     def calculate(self,c):
-        yth = self.Fthreshold.getValue()
+        yth = self.Athreshold.getValue()
         x = c._z
         y = c._f
-        jrov = np.argmin( (y-yth)**2 )
-
-        invalid_thresh = self.Invalid_thresh.getValue()
-        invalid = self.invalidate(c, invalid_thresh, jrov)
-        if invalid == True:
+        if yth > np.max(y) or yth < np.min(y):
             return None
+        jrov = 0
+        for j in range(len(y)-1,1,-1):
+            if y[j]>yth and y[j-1]<yth:
+                jrov = j
+                break
+        x0 = x[jrov]
+        y0 = y[jrov]
+        dx = self.deltaX.getValue()
+        jxalign = np.argmin( (x-x0+dx)**2 )
+        f0 = y[jxalign] + self.Fthreshold.getValue()
+        jcp = jrov
+        for j in range(len(y)-1,1,-1):
+            if y[j]>f0 and y[j-1]<f0:
+                jcp = j
+                break
+        return [x[jcp],y[jcp]]
 
-        return [x[jrov],y[jrov]]
-    
+ALL.append( { 'label':'Threshold', 'method':Threshold} )
 ALL.append( { 'label':'Gooodness of Fit', 'method':GoodnessOfFit} ) 
 ALL.append( { 'label':'Prime function', 'method':PrimeContactPoint} ) 
 ALL.append( { 'label':'Ratio of Variances', 'method':ThRov} )
 ALL.append( { 'label':'Ratio of Variances - First Peak', 'method':ThRovFirst} )
 ALL.append( { 'label':'Second derivative', 'method':DDer} )
-ALL.append( { 'label':'Threshold', 'method':Threshold} )
+

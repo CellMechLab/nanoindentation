@@ -392,7 +392,7 @@ class Nanoment(object):
         self._state = ST_BLK
 
         res = self._cpfunction(self)
-        if res is None:
+        if res is None or res is False:
             self.active = False
             return
         self._contactpoint = res
