@@ -459,8 +459,8 @@ class Threshold(ContactPoint):
         self.Athreshold.setValue(10.0)
         self.deltaX = CPPFloat('Align left step [nm]')
         self.deltaX.setValue(2000.0)
-        self.Fthreshold = CPPFloat('CP Threshold [pN]')
-        self.Fthreshold.setValue(1.0)
+        self.Fthreshold = CPPFloat('AVG area [nm]')
+        self.Fthreshold.setValue(100.0)
         self.addParameter(self.Athreshold )
         self.addParameter(self.deltaX)
         self.addParameter(self.Fthreshold)
@@ -477,12 +477,17 @@ class Threshold(ContactPoint):
                 jrov = j
                 break
         x0 = x[jrov]
-        y0 = y[jrov]
         dx = self.deltaX.getValue()
-        jxalign = np.argmin( (x-x0+dx)**2 )
-        f0 = y[jxalign] + self.Fthreshold.getValue()
+        ddx = self.Fthreshold.getValue()
+        if ddx <= 0:
+            jxalign = np.argmin((x - (x0 - dx)) ** 2)
+            f0 = y[jxalign]
+        else:
+            jxalignLeft = np.argmin( (x-(x0-dx-ddx))**2 )
+            jxalignRight = np.argmin( (x-(x0-dx+ddx))**2 )
+            f0 = np.average(y[jxalignLeft:jxalignRight])
         jcp = jrov
-        for j in range(len(y)-1,1,-1):
+        for j in range(jrov,1,-1):
             if y[j]>f0 and y[j-1]<f0:
                 jcp = j
                 break
