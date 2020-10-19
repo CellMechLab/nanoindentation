@@ -347,17 +347,16 @@ class GoodnessOfFit(ContactPoint):
             jmin = np.argmin((x - (x[jmax] - self.Xrange.getValue())) ** 2) 
         except ValueError: 
             return False
-        i_range = np.arange(jmin, jmax)
-        return i_range 
+        z_i = np.arange(jmin,jmax) 
+        return z_i 
         
      #Retunrs weight array (R**2) and corresponding index array. Uses get_indentation and fit methods defined below
      def getWeight(self, c):
          indices = self.getRange(c) 
          if indices is False:
              return False
-         jmin = np.argmin(indices)
-         jmax =  np.argmax(indices)
-        
+         jmin, jmax = min(indices), max(indices) 
+         
          zwin = self.windowr.getValue()
          zstep = (max(c._z) - min(c._z)) / (len(c._z)-1)  
          win = int(zwin / zstep) 
