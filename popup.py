@@ -14,7 +14,8 @@ class uiPanel(QtWidgets.QDialog):
         self.p1.scene().addItem(self.p2)
         self.p1.getAxis('right').linkToView(self.p2)
         self.p2.setXLink(self.p1)
-        self.p1.getAxis('right').setLabel('Weight', color='#0000ff')
+        self.p1.getAxis('right').setLabel('Weight', color='#ff0000') #Red (Weight)
+        self.p1.getAxis('left').setLabel('FD Curve', color='#0000ff') #Blue (FD curve)
         self.p1.showGrid(True,True)
 
         self.updateViews()
