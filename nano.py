@@ -18,7 +18,7 @@ class NanoWindow(QtWidgets.QMainWindow):
 
         self.ui = view.Ui_MainWindow()
         self.ui.setupUi(self)
-        self.collection = None
+        self.collection = None 
         self.curve_raw = pg.PlotCurveItem(clickable=False)
         self.curve_raw.setPen(pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2))
         self.ui.g_single.plotItem.showGrid(True,True)
