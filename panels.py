@@ -363,7 +363,7 @@ class GoodnessOfFit(ContactPoint): #Goodness of Fit (GoF)
              return False
          if (iContact + win) > len(z):  
              return False 
-         if iContact < jmin: #check this conditional 
+         if iContact < win: #check this conditional 
              return False 
          Zf = z[iContact : iContact + win] - z[iContact]
          Yf = f[iContact: iContact + win] - f[iContact] 
