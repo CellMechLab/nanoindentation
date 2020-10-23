@@ -106,9 +106,9 @@ class ContactPoint: #Contact point class
         self._parameters = [] 
         self.create() 
         
-
-    def calculate_suggested_point(self, c, Athreshold = 10.0, deltaX = 2000.0, Fthreshold = 100.0 ):
+    def calculate_suggested_point(self, c, Athreshold = 10.0, deltaX = 2000.0, Fthreshold = 100.0):
         #suggested contact point calculated with Threshold method
+        #defual parameters given 
         yth = Athreshold
         x = c._z
         y = c._f
@@ -134,8 +134,8 @@ class ContactPoint: #Contact point class
             if y[j]>f0 and y[j-1]<f0:
                 jcp = j
                 break
-        return [x[jcp],y[jcp]] 
-        
+        return x[jcp], y[jcp] #retunrs x and y coordinate of contact point
+         
     def create(self):
         pass
 
@@ -342,27 +342,26 @@ class ThRovFirst(ContactPoint): #Ratio of variances First peak
 
         return [x[jrov],y[jrov]]
 
-class GoodnessOfFit(ContactPoint): #Goodness of Fit (GoF)
+class GoodnessOfFit(ContactPoint): #Goodness of Fit (GoF) with Threshold in the background
      def create(self): 
         self.windowr = CPPFloat('Window Fit [nm]') 
         self.windowr.setValue(200.0)
         self.Xrange = CPPFloat('X Range [nm]')
-        self.Xrange.setValue(400.0)
+        self.Xrange.setValue(5.0) #400.0
         self.Fthreshold = CPPFloat('Safe Threshold [pN]')
-        self.Fthreshold.setValue(10.0) 
+        self.Fthreshold.setValue(5.0) #10.0
         self.addParameter(self.windowr)
         self.addParameter(self.Xrange)
         self.addParameter(self.Fthreshold)  
         
      #Returns min and max indices of f-z data considered
      def getRange(self,c):
-        suggested_point = self.calculate_suggested_point(c) #retuns z and f of suggested contact point using Threshold algorithm
-        x0, y0 = suggested_point[0], suggested_point[1]
+        x0, y0 = self.calculate_suggested_point(c) #retuns z and f of suggested contact point using Threshold algorithm
         x = c._z
         y = c._f
         try:
-            jmax = np.argmin((y - self.Fthreshold.getValue() ) ** 2) #edit this to include y0
-            jmin = np.argmin((x - (x[jmax] - self.Xrange.getValue())) ** 2) #reflect above change
+            jmax = np.argmin((y -  (y0 + self.Fthreshold.getValue()) ) ** 2) #right of y0
+            jmin = np.argmin((x - (x[jmax] - self.Xrange.getValue())) ** 2) #left of y0
         except ValueError: 
             return False 
         return jmin, jmax 
