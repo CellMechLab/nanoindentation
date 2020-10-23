@@ -3,8 +3,8 @@ Nanoindentation curve reader and analyzer
 
 ## Introduction
 This program is intended to bulk analyze nanoindentation force-distance curve in 
-order to get mechanical properties based on the Hertz model, in terms of Young's
-modulus. 
+order to get mechanical properties based on the Oliver-Pharr analysis, 
+calculating Elasticity Spectra (ES). 
 
 ## Supported filetypes
 At the moment the software is able to open Nanosurf exported files (TXT) and
