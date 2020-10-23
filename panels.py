@@ -143,7 +143,8 @@ class ContactPoint: #Contact point class
             layout.addRow(widget.getLabel(), widget.getWidget())
 
 #---------------------------------------------------------# 
-class PrimeContactPoint(ContactPoint): #Prime funciton
+
+class PrimeContactPoint(ContactPoint): #Prime funciton (##Not Checked Yet##)
     def create(self):
         self.window = CPPInt('Window [nm]')
         self.window.setValue(200) 
@@ -190,15 +191,12 @@ class ThRov(ContactPoint): #Ratio of Variances
         self.Fthreshold = CPPFloat('Safe Threshold [pN]') #Force threshold
         self.Fthreshold.setValue(10.0) 
         self.Xrange = CPPFloat('X Range [nm]') 
-        self.Xrange.setValue(6000.0)
+        self.Xrange.setValue(400.0)
         self.windowr = CPPInt('Window RoV [nm]') #Window used for RoV calculation
         self.windowr.setValue(200)
-        self.Invalid_thresh = CPPFloat('Invalid Threshold [pN]')
-        self.Invalid_thresh.setValue(-2)
         self.addParameter( self.Fthreshold )
         self.addParameter( self.Xrange )
         self.addParameter(self.windowr)
-        self.addParameter(self.Invalid_thresh) 
         
     def getRange(self,c): 
         x = c._z
@@ -215,39 +213,25 @@ class ThRov(ContactPoint): #Ratio of Variances
         winr = self.windowr.getValue()
         x = c._z
         y = c._f
-        if (len(y) - jmax) < winr+1: 
+        if (winr + jmax) > len(y): 
             return False
-        if (jmin) < winr+1: 
+        if (jmin - winr)  < np.argmin(y): #check this conditional 
             return False 
         rov = [] 
-        for j in range(jmin, jmax + 1):
-            rov.append(np.var(y[j+1 : j+1+winr] / np.var(y[j-winr:j-1]))) 
+        for j in range(jmin, jmax + 1): #include jmax
+            rov.append(np.var(y[j+1 : j+winr] / np.var(y[j-winr : j-1]))) 
         return x[jmin:jmax+1] , rov  
 
     def calculate(self,c):
-        jmin, jmax = self.getRange(c)
-        if jmin is False:
-            return False
-        winr = self.windowr.getValue()
-        x = c._z
-        y = c._f
-        if (len(y) - jmax) < winr: 
-            return None
-        if (jmin) < winr+1:
-            return None
-        rov = []
-        for j in range(jmin,jmax+1):
-            rov.append(np.var(y[j+1:j+winr+1]/np.var(y[j-winr:j-1])))
-        jrov = np.argmax(rov) + jmin 
+        z = c._z
+        f = c._f
+        zz_x, rov = self.getWeight(c)
+        rov_best_ind = np.argmax(rov)
+        j_rov = np.argmin( (z-zz_x[rov_best_ind])**2 )
+        return [z[j_rov],f[j_rov]] 
 
-        invalid_thresh = self.Invalid_thresh.getValue()
-        invalid = self.invalidate(c, invalid_thresh, jrov)
-        if invalid == True:
-            return None
 
-        return [x[jrov], y[jrov]]
-
-class ThRovFirst(ContactPoint): #Ratio of variances First peak
+class ThRovFirst(ContactPoint): #Ratio of variances First peak (##Not Checked Yet##)
     def create(self):
         self.Fthreshold = CPPFloat('Safe Threshold [pN]')
         self.Fthreshold.setValue(10.0)
@@ -265,7 +249,7 @@ class ThRovFirst(ContactPoint): #Ratio of variances First peak
         self.addParameter(self.Rov_thresh)
         self.addParameter(self.Invalid_thresh)
         
-    def getRange(self,c):
+    def getRange(self,c): 
         x = c._z
         y = c._f
         jmax = np.argmin((y - self.Fthreshold.getValue()) ** 2)
@@ -283,7 +267,7 @@ class ThRovFirst(ContactPoint): #Ratio of variances First peak
             return None
         rov = []
         for j in range(jmin, jmax + 1):
-            rov.append(np.var(y[j + 1:j + winr + 1] / np.var(y[j - winr:j])))
+            rov.append(np.var(y[j + 1:j + winr] / np.var(y[j - winr:j-1])))
         return x[jmin:jmax+1], rov
 
     def calculate(self,c):
@@ -330,7 +314,7 @@ class GoodnessOfFit(ContactPoint): #Goodness of Fit (GoF)
         x = c._z
         y = c._f
         try:
-            jmax = np.argmin((y - self.Fthreshold.getValue()) ** 2) 
+            jmax = np.argmin((y - self.Fthreshold.getValue()) ** 2)  
             jmin = np.argmin((x - (x[jmax] - self.Xrange.getValue())) ** 2) 
         except ValueError: 
             return False 
@@ -343,7 +327,7 @@ class GoodnessOfFit(ContactPoint): #Goodness of Fit (GoF)
               return False 
          
          zwin = self.windowr.getValue()
-         zstep = (max(c._z) - min(c._z)) / (len(c._z)-1)
+         zstep = (max(c._z) - min(c._z)) / (len(c._z) - 1)
          win = int(zwin / zstep) 
     
          R_squared = []
@@ -363,7 +347,7 @@ class GoodnessOfFit(ContactPoint): #Goodness of Fit (GoF)
              return False
          if (iContact + win) > len(z):  
              return False 
-         if iContact < win: #check this conditional 
+         if iContact < win: #check this conditional. Does this happen? 
              return False 
          Zf = z[iContact : iContact + win] - z[iContact]
          Yf = f[iContact: iContact + win] - f[iContact] 
@@ -472,7 +456,7 @@ class Threshold(ContactPoint): #Threshold
         ddx = self.Fthreshold.getValue() 
         if ddx <= 0:
             jxalign = np.argmin((x - (x0 - dx)) ** 2)
-            f0 = y[jxalign]
+            f0 = y[jxalign] 
         else:
             jxalignLeft = np.argmin( (x-(x0-dx-ddx))**2 )
             jxalignRight = np.argmin( (x-(x0-dx+ddx))**2 )
@@ -482,7 +466,7 @@ class Threshold(ContactPoint): #Threshold
             if y[j]>f0 and y[j-1]<f0:
                 jcp = j
                 break
-        return [x[jcp],y[jcp]]
+        return [x[jcp], y[jcp]] 
 
 ALL.append( { 'label':'Threshold', 'method':Threshold} )
 ALL.append( { 'label':'Gooodness of Fit', 'method':GoodnessOfFit} ) 
