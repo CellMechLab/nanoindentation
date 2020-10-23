@@ -29,7 +29,7 @@ class CPParameter: #CP parameters class
         if t in self._validTypes:
             self._type = t
             
-    def setOptions(self,labels,values):
+    def setOptions(self,labels,values): 
         self.setValueLabels(labels)
         self.setValues(values)
 
@@ -101,12 +101,41 @@ class CPPCombo(CPParameter):
     def setValue(self,num):
         self._widget.setCurrentIndex(num)
 
-
 class ContactPoint: #Contact point class 
     def __init__(self):
         self._parameters = [] 
         self.create() 
+        
 
+    def calculate_suggested_point(self, c, Athreshold = 10.0, deltaX = 2000.0, Fthreshold = 100.0 ):
+        #suggested contact point calculated with Threshold method
+        yth = Athreshold
+        x = c._z
+        y = c._f
+        if yth > np.max(y) or yth < np.min(y): 
+            return None 
+        jrov = 0
+        for j in range(len(y)-1,1,-1): 
+            if y[j]>yth and y[j-1]<yth: #First point (index) passing the threshold
+                jrov = j 
+                break
+        x0 = x[jrov] 
+        dx = deltaX
+        ddx = Fthreshold
+        if ddx <= 0: 
+            jxalign = np.argmin((x - (x0 - dx)) ** 2) 
+            f0 = y[jxalign]
+        else:
+            jxalignLeft = np.argmin( (x-(x0-dx-ddx))**2 )
+            jxalignRight = np.argmin( (x-(x0-dx+ddx))**2 )
+            f0 = np.average(y[jxalignLeft:jxalignRight])
+        jcp = jrov
+        for j in range(jrov,1,-1):
+            if y[j]>f0 and y[j-1]<f0:
+                jcp = j
+                break
+        return [x[jcp],y[jcp]] 
+        
     def create(self):
         pass
 
@@ -323,15 +352,17 @@ class GoodnessOfFit(ContactPoint): #Goodness of Fit (GoF)
         self.Fthreshold.setValue(10.0) 
         self.addParameter(self.windowr)
         self.addParameter(self.Xrange)
-        self.addParameter(self.Fthreshold)
+        self.addParameter(self.Fthreshold)  
         
      #Returns min and max indices of f-z data considered
-     def getRange(self,c): 
+     def getRange(self,c):
+        suggested_point = self.calculate_suggested_point(c) #retuns z and f of suggested contact point using Threshold algorithm
+        x0, y0 = suggested_point[0], suggested_point[1]
         x = c._z
         y = c._f
         try:
-            jmax = np.argmin((y - self.Fthreshold.getValue()) ** 2) 
-            jmin = np.argmin((x - (x[jmax] - self.Xrange.getValue())) ** 2) 
+            jmax = np.argmin((y - self.Fthreshold.getValue() ) ** 2) #edit this to include y0
+            jmin = np.argmin((x - (x[jmax] - self.Xrange.getValue())) ** 2) #reflect above change
         except ValueError: 
             return False 
         return jmin, jmax 
@@ -464,14 +495,14 @@ class Threshold(ContactPoint): #Threshold
             return None 
         jrov = 0
         for j in range(len(y)-1,1,-1): 
-            if y[j]>yth and y[j-1]<yth:
+            if y[j]>yth and y[j-1]<yth: #First point (index) passing the threshold
                 jrov = j 
                 break
-        x0 = x[jrov]
+        x0 = x[jrov] 
         dx = self.deltaX.getValue()
         ddx = self.Fthreshold.getValue() 
-        if ddx <= 0:
-            jxalign = np.argmin((x - (x0 - dx)) ** 2)
+        if ddx <= 0: 
+            jxalign = np.argmin((x - (x0 - dx)) ** 2) 
             f0 = y[jxalign]
         else:
             jxalignLeft = np.argmin( (x-(x0-dx-ddx))**2 )

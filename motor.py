@@ -110,7 +110,7 @@ class Nanoment(object):
 
         if node is not False:
             self._tree = node
-        else:
+        else: 
             myself = QtWidgets.QTreeWidgetItem(nanowin.ui.mainlist)
             myself.setText(0, self.basename)
             myself.curve = self
