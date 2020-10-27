@@ -215,7 +215,7 @@ class ThRov(ContactPoint): #Ratio of Variances
             return False 
         rov = [] 
         for j in range(jmin, jmax): 
-            rov.append(np.var(y[j+1 : j+winr] / np.var(y[j-winr : j-1]))) 
+            rov.append( (np.var( y[j+1 : j+winr]) )  / (np.var(y[j-winr : j-1] ))) 
         return x[jmin:jmax] , rov  
 
     def calculate(self,c):
@@ -260,7 +260,7 @@ class ThRovFirst(ContactPoint): #Ratio of variances First peak
             return False
         rov = []
         for j in range(jmin, jmax):
-            rov.append(np.var(y[j+1 : j+winr] / np.var(y[j-winr : j-1]))) 
+            rov.append( (np.var( y[j+1 : j+winr]))  / (np.var(y[j-winr : j-1])) ) 
         return x[jmin:jmax], rov
 
     def calculate(self,c):
