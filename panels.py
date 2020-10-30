@@ -8,7 +8,7 @@ ALL = []
 
 # Return False if CP is not evaluated / found correctly 
 #Use Threhsold as first guess: 
-    #-use threhsold method in Contact Point Class as function 
+    #-use threhsold method in Contact Point Class as function with default parameters
 
 class CPParameter: #CP parameters class
     def __init__(self, label=None): 
@@ -147,44 +147,10 @@ class ContactPoint: #Contact point class
                      ##Contact Point Finding Algorithms##
 #----------------------------------------------------------------------------#
 
-class PrimeContactPoint(ContactPoint): #First Derivative threshold (to change)
-    def create(self):
-        self.window = CPPInt('Window [nm]')
-        self.window.setValue(200) 
-        self.threshold = CPPFloat('Threshold [pN]') 
-        self.threshold.setValue(0.0005) 
-        self.Invalid_thresh = CPPFloat('Invalid Threshold [pN]')
-        self.addParameter(self.window)
-        self.addParameter(self.threshold)
-
-    def getWeight(self, c): 
-        win = self.window.getValue()
-        fprime = False 
-        if win % 2 == 0:
-            win += 1 
-        try:
-            fprime = savgol_filter(c._f, polyorder=1, deriv=1, window_length=win) 
-        except:
-            return False
-        return c._z , fprime / (1 - fprime)  
-
-    def calculate(self,c):
-        win = self.window.getValue()
-        z, df = self.getWeight(c)
-        threshold = self.threshold.getValue()
-        jk = np.argmin( ( df - threshold )**2) 
-        if jk < win:
-            return False
-        for jj in range(jk+5,1,-1):
-            if df[jj]>threshold/2 and df[jj-1]<threshold/2:
-                break
-        if jj < win:
-            return False
-        return [c._z[jj], c._f[jj]]
 
 class ThRov(ContactPoint): #Ratio of Variances 
     def create(self):
-        self.Fthreshold = CPPFloat('Safe Threshold [pN]') #Force threshold
+        self.Fthreshold = CPPFloat('Safe Threshold [nN]') #Force threshold
         self.Fthreshold.setValue(10.0) 
         self.Xrange = CPPFloat('X Range [nm]') 
         self.Xrange.setValue(1000.0)
@@ -229,7 +195,7 @@ class ThRov(ContactPoint): #Ratio of Variances
 
 class ThRovFirst(ContactPoint): #Ratio of variances First peak 
     def create(self):
-        self.Fthreshold = CPPFloat('Safe Threshold [pN]') #Force threshold
+        self.Fthreshold = CPPFloat('Safe Threshold [nN]') #Force threshold
         self.Fthreshold.setValue(10.0) 
         self.Xrange = CPPFloat('X Range [nm]') 
         self.Xrange.setValue(1000.0)
@@ -277,7 +243,7 @@ class GoodnessOfFit(ContactPoint): #Goodness of Fit (GoF)
         self.windowr.setValue(200.0)
         self.Xrange = CPPFloat('X Range [nm]')
         self.Xrange.setValue(1000.0)
-        self.Fthreshold = CPPFloat('Safe Threshold [pN]')
+        self.Fthreshold = CPPFloat('Safe Threshold [nN]')
         self.Fthreshold.setValue(10.0) 
         self.addParameter(self.windowr)
         self.addParameter(self.Xrange)
@@ -354,11 +320,11 @@ class GoodnessOfFit(ContactPoint): #Goodness of Fit (GoF)
 
 class DDer(ContactPoint): #Second Derivative 
     def create(self):
-        self.window = CPPInt('Window P')
+        self.window = CPPInt('Window P [nm]')
         self.window.setValue(20)
-        self.Xrange = CPPFloat('X Range')
+        self.Xrange = CPPFloat('X Range [nm]')
         self.Xrange.setValue(1000.0)
-        self.Fthreshold = CPPFloat('Safe Threshold')
+        self.Fthreshold = CPPFloat('Safe Threshold [nN]')
         self.Fthreshold.setValue(10.0)
         self.addParameter(self.window)
         self.addParameter(self.Xrange)
@@ -391,7 +357,7 @@ class DDer(ContactPoint): #Second Derivative
     
 class Threshold(ContactPoint): #Threshold 
     def create(self):
-        self.Athreshold = CPPFloat('Align Threshold [pN]')
+        self.Athreshold = CPPFloat('Align Threshold [nN]')
         self.Athreshold.setValue(10.0)
         self.deltaX = CPPFloat('Align left step [nm]')
         self.deltaX.setValue(2000.0)
@@ -415,7 +381,7 @@ class Threshold(ContactPoint): #Threshold
         x0 = x[jrov]
         dx = self.deltaX.getValue()
         ddx = self.Fthreshold.getValue() 
-        if ddx <= 0:
+        if ddx <= 0: 
             jxalign = np.argmin((x - (x0 - dx)) ** 2)
             f0 = y[jxalign] 
         else:
@@ -431,7 +397,6 @@ class Threshold(ContactPoint): #Threshold
 
 ALL.append( { 'label':'Threshold', 'method':Threshold} )
 ALL.append( { 'label':'Gooodness of Fit', 'method':GoodnessOfFit} ) 
-ALL.append( { 'label':'Prime function', 'method':PrimeContactPoint} ) 
 ALL.append( { 'label':'Ratio of Variances', 'method':ThRov} )
 ALL.append( { 'label':'Ratio of Variances - First Peak', 'method':ThRovFirst} )
 ALL.append( { 'label':'Second derivative', 'method':DDer} )
