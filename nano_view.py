@@ -2,18 +2,16 @@
 
 # Form implementation generated from reading ui file 'nano.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1241, 765)
+        MainWindow.resize(1615, 765)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("ico.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -25,6 +23,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_10.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
         self.horizontalLayout_10.setObjectName("horizontalLayout_10")
         self.Curve = QtWidgets.QGroupBox(self.centralwidget)
+        self.Curve.setEnabled(False)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -43,7 +42,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.addWidget(self.label)
         self.curve_segment = QtWidgets.QSpinBox(self.Curve)
         self.curve_segment.setMaximum(9)
-        self.curve_segment.setProperty("value", 0)
+        self.curve_segment.setProperty("value", 1)
         self.curve_segment.setObjectName("curve_segment")
         self.horizontalLayout_6.addWidget(self.curve_segment)
         self.crop = QtWidgets.QPushButton(self.Curve)
@@ -119,12 +118,9 @@ class Ui_MainWindow(object):
         self.groupBox_5.setObjectName("groupBox_5")
         self.horizontalLayout_8 = QtWidgets.QHBoxLayout(self.groupBox_5)
         self.horizontalLayout_8.setObjectName("horizontalLayout_8")
-        self.save_dataHertz = QtWidgets.QPushButton(self.groupBox_5)
-        self.save_dataHertz.setObjectName("save_dataHertz")
-        self.horizontalLayout_8.addWidget(self.save_dataHertz)
-        self.save_dataES = QtWidgets.QPushButton(self.groupBox_5)
-        self.save_dataES.setObjectName("save_dataES")
-        self.horizontalLayout_8.addWidget(self.save_dataES)
+        self.save_data = QtWidgets.QPushButton(self.groupBox_5)
+        self.save_data.setObjectName("save_data")
+        self.horizontalLayout_8.addWidget(self.save_data)
         self.horizontalLayout_10.addWidget(self.groupBox_5)
         self.verticalLayout_8.addLayout(self.horizontalLayout_10)
         self.splitter_2 = QtWidgets.QSplitter(self.centralwidget)
@@ -353,7 +349,7 @@ class Ui_MainWindow(object):
         self.es_win = QtWidgets.QSpinBox(self.groupBox_6)
         self.es_win.setMinimum(3)
         self.es_win.setMaximum(9999)
-        self.es_win.setProperty("value", 25)
+        self.es_win.setProperty("value", 21)
         self.es_win.setObjectName("es_win")
         self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.es_win)
         self.label_21 = QtWidgets.QLabel(self.groupBox_6)
@@ -564,14 +560,13 @@ class Ui_MainWindow(object):
         self.toggle_included.setText(_translate("MainWindow", "Included"))
         self.toggle_activated.setText(_translate("MainWindow", "Activated"))
         self.groupBox_5.setTitle(_translate("MainWindow", "Save"))
-        self.save_dataHertz.setText(_translate("MainWindow", "Data Hertz"))
-        self.save_dataES.setText(_translate("MainWindow", "Data ES"))
+        self.save_data.setText(_translate("MainWindow", "Data"))
         self.mainlist.headerItem().setText(0, _translate("MainWindow", "Name"))
         self.analysis.setTitle(_translate("MainWindow", "Analysis"))
         self.groupBox_12.setTitle(_translate("MainWindow", "Open"))
-        self.open_nanosurf.setText(_translate("MainWindow", "Nanosurf export"))
         self.open_o11new.setText(_translate("MainWindow", "Optics11 - NEW"))
         self.open_o11old.setText(_translate("MainWindow", "Optics11 - OLD"))
+        self.open_nanosurf.setText(_translate("MainWindow", "Nanosurf export"))
         self.open_selectfolder.setText(_translate("MainWindow", "Load Folder"))
         self.open_selectfolder.setShortcut(_translate("MainWindow", "Ctrl+S"))
         self.groupBox_4.setTitle(_translate("MainWindow", "Reset"))
@@ -621,4 +616,5 @@ class Ui_MainWindow(object):
         self.decay_eb.setText(_translate("MainWindow", "0.00"))
         self.label_25.setText(_translate("MainWindow", "<html><head/><body><p>d<span style=\" vertical-align:sub;\">0</span> [nm]:</p></body></html>"))
         self.decay_d0.setText(_translate("MainWindow", "0.00"))
+
 from pyqtgraph import PlotWidget
