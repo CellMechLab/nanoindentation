@@ -8,7 +8,7 @@ ALL = []
 
 # Return False if CP is not evaluated / found correctly 
 #Use Threhsold as first guess: 
-    #-use threhsold method in Contact Point Class as function with default parameters
+#use threhsold method in Contact Point Class as function with default parameters
 
 class CPParameter: #CP parameters class
     def __init__(self, label=None): 
