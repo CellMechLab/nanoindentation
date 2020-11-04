@@ -217,9 +217,16 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_8">
          <item>
-          <widget class="QPushButton" name="save_data">
+          <widget class="QPushButton" name="save_dataHertz">
            <property name="text">
-            <string>Data</string>
+            <string>Hertz</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="save_dataES">
+           <property name="text">
+            <string>ES</string>
            </property>
           </widget>
          </item>

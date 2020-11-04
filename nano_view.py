@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'nano.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -118,9 +120,12 @@ class Ui_MainWindow(object):
         self.groupBox_5.setObjectName("groupBox_5")
         self.horizontalLayout_8 = QtWidgets.QHBoxLayout(self.groupBox_5)
         self.horizontalLayout_8.setObjectName("horizontalLayout_8")
-        self.save_data = QtWidgets.QPushButton(self.groupBox_5)
-        self.save_data.setObjectName("save_data")
-        self.horizontalLayout_8.addWidget(self.save_data)
+        self.save_dataHertz = QtWidgets.QPushButton(self.groupBox_5)
+        self.save_dataHertz.setObjectName("save_dataHertz")
+        self.horizontalLayout_8.addWidget(self.save_dataHertz)
+        self.save_dataES = QtWidgets.QPushButton(self.groupBox_5)
+        self.save_dataES.setObjectName("save_dataES")
+        self.horizontalLayout_8.addWidget(self.save_dataES)
         self.horizontalLayout_10.addWidget(self.groupBox_5)
         self.verticalLayout_8.addLayout(self.horizontalLayout_10)
         self.splitter_2 = QtWidgets.QSplitter(self.centralwidget)
@@ -560,7 +565,8 @@ class Ui_MainWindow(object):
         self.toggle_included.setText(_translate("MainWindow", "Included"))
         self.toggle_activated.setText(_translate("MainWindow", "Activated"))
         self.groupBox_5.setTitle(_translate("MainWindow", "Save"))
-        self.save_data.setText(_translate("MainWindow", "Data"))
+        self.save_dataHertz.setText(_translate("MainWindow", "Hertz"))
+        self.save_dataES.setText(_translate("MainWindow", "ES"))
         self.mainlist.headerItem().setText(0, _translate("MainWindow", "Name"))
         self.analysis.setTitle(_translate("MainWindow", "Analysis"))
         self.groupBox_12.setTitle(_translate("MainWindow", "Open"))
@@ -616,5 +622,4 @@ class Ui_MainWindow(object):
         self.decay_eb.setText(_translate("MainWindow", "0.00"))
         self.label_25.setText(_translate("MainWindow", "<html><head/><body><p>d<span style=\" vertical-align:sub;\">0</span> [nm]:</p></body></html>"))
         self.decay_d0.setText(_translate("MainWindow", "0.00"))
-
 from pyqtgraph import PlotWidget
