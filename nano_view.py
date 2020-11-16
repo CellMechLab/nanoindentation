@@ -2,18 +2,16 @@
 
 # Form implementation generated from reading ui file 'nano.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1615, 765)
+        MainWindow.resize(1615, 908)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("ico.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -35,6 +33,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout(self.Curve)
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.label = QtWidgets.QLabel(self.Curve)
+        self.label.setEnabled(False)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -622,4 +621,5 @@ class Ui_MainWindow(object):
         self.decay_eb.setText(_translate("MainWindow", "0.00"))
         self.label_25.setText(_translate("MainWindow", "<html><head/><body><p>d<span style=\" vertical-align:sub;\">0</span> [nm]:</p></body></html>"))
         self.decay_d0.setText(_translate("MainWindow", "0.00"))
+
 from pyqtgraph import PlotWidget
