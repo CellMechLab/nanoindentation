@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1615</width>
-    <height>765</height>
+    <height>908</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,6 +41,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,0,0,0,0">
          <item>
           <widget class="QLabel" name="label">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
              <horstretch>0</horstretch>
