@@ -131,6 +131,7 @@ class ChiaroBase(DataSet):
                 data.append([float(line[0]),float(line[1]),float(line[3]),float(line[4])]) #skip 2 = indentation and #5 auxiliary if present
         f.close()
         data = np.array(data)
+
         self.data['time'] = data[:, 0]
         self.data['force'] = data[:, 1]*1000.0
         self.data['deflection'] = data[:, 2]
@@ -337,3 +338,15 @@ class NanoSurf(DataSet):
             z = self.data['z'][self.protocol[i]:self.protocol[i+1]]
             f = self.data['force'][self.protocol[i]:self.protocol[i+1]]
             self[i].setData(z,f,reorder=True)
+
+
+class FakeData(DataSet):
+
+    def load(self):
+        data = np.loadtxt(self.filename,separator='\t')
+        self.data['force'] = data[:,0]
+        self.data['z'] = data[:, 1]
+
+    def createSegments(self):
+        self.append(Segment(self))
+        self[0].setData(self.data['z'], self.data['force'])
