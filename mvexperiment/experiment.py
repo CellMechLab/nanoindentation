@@ -340,7 +340,16 @@ class NanoSurf(DataSet):
             self[i].setData(z,f,reorder=True)
 
 
+##########################
+###Synthetic Hertz Data###
+##########################
+
+#Data file: .tsv file with force and displacement colums
+             #only one segment, can add more 
+             #No header, use mother class default parameters for K, R
+
 class FakeData(DataSet):
+    _leaf_ext = ['.tsv']
 
     def load(self):
         data = np.loadtxt(self.filename,separator='\t')
@@ -350,3 +359,10 @@ class FakeData(DataSet):
     def createSegments(self):
         self.append(Segment(self))
         self[0].setData(self.data['z'], self.data['force'])
+        
+        
+        
+        
+        
+        
+        
