@@ -14,7 +14,7 @@ class DataSet(MvNode):
         self.cantilever_type = 'Colloidal probe'
         self.original_filename = None #the name of the file the text output was created from
         self.tip_radius = 1000.0    #radius of the tip, used for sphere, in nm
-        self.tip_shape = 'sphere'   #honest shapes are 'sphere' , 'cone' , 'flat'
+        self.tip_shape = 'sphere'   #onest shapes are 'sphere' , 'cone' , 'flat'
         self.data = {'time':[],'force':[],'deflection':[],'z':[]} #store for the full time tracks, add additional channels
         self.protocol = []          #a list of protsegments parameters
         self.protocol_speed = None  #in case a default speed was set and it is not readable from the segment
@@ -348,17 +348,34 @@ class NanoSurf(DataSet):
              #only one segment, can add more 
              #No header, use mother class default parameters for K, R
 
-class FakeData(DataSet):
+class Easytsv(DataSet):
     _leaf_ext = ['.tsv']
+    
+    def check(self):
+        f = open(self.filename)
+        l1 = f.readline().strip()
+        f.close()
+        if l1 == '#easy_tsv':
+            return True
+        else:
+            return False 
 
     def load(self):
-        data = np.loadtxt(self.filename,separator='\t')
-        self.data['force'] = data[:,0]
-        self.data['z'] = data[:, 1]
+        f = open(self.filename)
+        lines = list()
+        for i in range(3): #first three lines of the file
+            lines.append(f.readline().strip()) #strip removes \n
+        f.close()
+        self.cantilever_k = float(lines[1][lines[1].find(':')+1:].strip()) #K value needed by program 
+        self.tip_radius =   float(lines[2][lines[2].find(':')+1:].strip()) #R value needed by program 
+        data = np.loadtxt(self.filename, delimiter='\t', skiprows = 4)
+        self.data['force'] = data[:,1]
+        self.data['z'] = data[:, 0]
 
     def createSegments(self):
         self.append(Segment(self))
         self[0].setData(self.data['z'], self.data['force'])
         
-
+        
+    
         

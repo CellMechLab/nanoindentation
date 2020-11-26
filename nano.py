@@ -222,6 +222,8 @@ class NanoWindow(QtWidgets.QMainWindow):
             exp = experiment.ChiaroGenova(fname)
         elif self.ui.open_nanosurf.isChecked() is True:
             exp = experiment.NanoSurf(fname)
+        elif self.ui.open_easy_tsv.isChecked() is True:
+            exp = experiment.Easytsv(fname)
 
         exp.browse()
         if len(exp) == 0:

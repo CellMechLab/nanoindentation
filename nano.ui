@@ -374,6 +374,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QRadioButton" name="open_easy_tsv">
+           <property name="text">
+            <string>Easy tsv</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="open_selectfolder">
            <property name="font">
             <font>
