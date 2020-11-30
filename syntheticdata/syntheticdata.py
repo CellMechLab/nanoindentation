@@ -8,8 +8,9 @@ Created on Wed Nov 25 09:29:21 2020
 
 #This script generates fake F-z data following a specific contact mechanics model (model) in order to test nanoindentation software 
 #Only the forward segment is generated 
-#Particularly, it generates a number of .tsv files (num_files) having z as first column and F as second column 
-#the F array has random gaussian noise (add_noise) added to it. Both noise baseline and scale can be controlled 
+#Particularly, it generates a number of .tsv files (num_files) having z as first column and F as second column. 
+#The files should be read in the graphical user interface using the Easy tsv format. 
+#the F array has random gaussian noise (add_noise) added to it. Both noise baseline and scale can be controlled.
 
 import matplotlib.pyplot as plt 
 import numpy as np 
