@@ -39,7 +39,7 @@ class FakeDataHertz(FakeData): #fake Hertzian data
                                
     def model(self): 
         F = 4/3 * (self.parameters['E']/ (1-self.parameters['v']**2) ) * np.sqrt(self.R) * self.ind**(1.5)   #Hertz nN
-        F = np.nan_to_num(F, nan = 0.0) 
+        F = np.nan_to_num(F, nan = 0.0) #replaces Nans from negative indentations (ind0) with zeros
         dcantilver = F/self.K       
         z = self.ind + dcantilver   
         return z, F  #returns arrays  
@@ -48,12 +48,12 @@ class FakeDataHertz(FakeData): #fake Hertzian data
         z, F = self.model()
         noise =  np.random.normal(noise_baseline, noise_scale, F.shape)
         F_noise =  F + noise    
-        return z, F_noise
+        return z, F_noise #returns arrays
     
     def gen_data_file(self, numfile=100): #easy tsv
         for nfiles in range(numfile): 
             z, F_noise = self.add_noise()
-            datafile_path = "/Users/giuseppeciccone/OneDrive - University of Glasgow/PhD/Nanoindentation/Data/fakedatafiles/CurveHertz_%d.tsv"%nfiles
+            datafile_path = "/Users/giuseppeciccone/OneDrive - University of Glasgow/PhD/Nanoindentation/Data/fakedatafiles/CurveHertz_%d.tsv"%nfiles #change to user directory
             with open(datafile_path, 'w') as f:
                 f.write('#easy_tsv\n')
                 f.write('#k: %.2f \n'%self.K)
