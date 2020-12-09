@@ -4,6 +4,7 @@ import pyqtgraph as pg
 from scipy.signal import savgol_filter,medfilt,find_peaks
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
+from derivative import dxdt
 
 PEN_GREEN = pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2)
 ST_RED = 1
@@ -236,42 +237,26 @@ class Nanoment(object):
             return
         if len(self.ind) != len(self.touch):
             return
-
-        x = self.ind
-        y = self.touch
-
-        if(len(x))<1:
+        if self.force is None or self.z is None: 
+            return 
+        if len(self.z) != len(self.force) is None:
             return
 
-        interp = self._ui.es_interpolate.isChecked()
-        if interp is True:
-            yi = interp1d(x, y)
-            max_x = np.max(x)
-            min_x = 1
-            if np.min(x) > 1:
-                min_x = np.min(x)
-            xx = np.arange(min_x, max_x, 1.0)
-            yy = yi(xx)
-            ddt = 1.0
-        else:
-            xx = x[1:]
-            yy = y[1:]
-            ddt = (x[-1]-x[1])/(len(x)-2)
-
-        area = np.pi * xx * self.R
-        contactradius = np.sqrt(xx * self.R)
-        coeff = 3 * np.sqrt(np.pi) / 8 / np.sqrt(area)
-        win = int( self._ui.es_win.value() )
-        if win % 2 == 0:
-            win += 1
-        if len(yy) <= win:
-            return None, None
-        order = int( self._ui.es_order.value() )
-        deriv = savgol_filter(yy, win, order, delta=ddt, deriv=1)
-        Ey = coeff * deriv
-        dwin = int(win - 1)  # int((win-1)/2)
-        Ex = contactradius[dwin:-dwin]
-        Ey = Ey[dwin:-dwin]
+        f = self.force #force 
+        z = self.z #displacement
+        ind = self.ind
+        xcp = self.x_contact_point #x coordinate of CP
+        jj = np.argmin( (z - xcp ) **2 )
+        indmax = float(self._ui.fit_indentation.value()) #max indentation
+        jjmax = np.argmin((ind - indmax)**2)
+        
+        contactradius = np.sqrt(ind[jj:jjmax] * self.R)
+        poisson = 0.5
+        coeff = ( (1 - poisson**2) / ( 2 * contactradius) )
+        #order = int( self._ui.es_order.value() )
+        deriv = dxdt(f, z,  kind="trend_filtered", order=0, alpha=0.001) # max_iter=1000000
+        Ey = coeff * (deriv[jj:jjmax] / (1 - 1/self.k * deriv[jj:jjmax])) 
+        Ex = contactradius
 
         self.Ex = np.array(Ex)
         self.Ey = np.array(Ey)

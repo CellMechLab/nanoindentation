@@ -36,7 +36,6 @@ class FakeData:
     
 class FakeDataHertz(FakeData): #fake Hertzian data                              
     parameters = {'E' : (5 * 1000* 10**9 / ( 10 ** 9 )**2) , 'v':  0.5} #Hertz parameters: E (nN/nm**2) and v
-                               
     def model(self): 
         F = 4/3 * (self.parameters['E']/ (1-self.parameters['v']**2) ) * np.sqrt(self.R) * self.ind**(1.5)   #Hertz nN
         F = np.nan_to_num(F, nan = 0.0) #replaces Nans from negative indentations (ind0) with zeros
@@ -61,8 +60,11 @@ class FakeDataHertz(FakeData): #fake Hertzian data
                 f.write('#displacement [nm] \t #force [nN] \n')
                 tsv_writer = csv.writer(f, delimiter='\t' )
                 tsv_writer.writerows(zip(z, F_noise))
+                
+class FakeDataBilayer(FakeData): #Doss et al., Soft Matter, 2019
+    pass
      
-fakedata1 = FakeDataHertz().add_noise(0,10)
+fakedata1 = FakeDataHertz().add_noise(0,0)
 savefiles1 = FakeDataHertz().gen_data_file()
 plt.plot(fakedata1[0],fakedata1[1], 'or', ms = 5, alpha= 0.5)
 plt.xlabel('Distance [nm]')
