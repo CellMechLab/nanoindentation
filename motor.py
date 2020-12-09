@@ -244,18 +244,20 @@ class Nanoment(object):
 
         f = self.force #force 
         z = self.z #displacement
+
         ind = self.ind
-        xcp = self.x_contact_point #x coordinate of CP
-        jj = np.argmin( (z - xcp ) **2 )
+        #xcp = self.x_contact_point #x coordinate of CP
+        jj = np.argmin( z  **2 ) #z is already z-z_CP
         indmax = float(self._ui.fit_indentation.value()) #max indentation
         jjmax = np.argmin((ind - indmax)**2)
         
-        contactradius = np.sqrt(ind[jj:jjmax] * self.R)
+        contactradius = np.sqrt(ind[1:jjmax] * self.R) #NB ind is defined from 0
         poisson = 0.5
         coeff = ( (1 - poisson**2) / ( 2 * contactradius) )
         #order = int( self._ui.es_order.value() )
         deriv = dxdt(f, z,  kind="trend_filtered", order=0, alpha=0.001) # max_iter=1000000
-        Ey = coeff * (deriv[jj:jjmax] / (1 - 1/self.k * deriv[jj:jjmax])) 
+        derivind = deriv[jj+1:jj+jjmax]
+        Ey =  coeff * (derivind / (1 - 1/self.k * derivind))
         Ex = contactradius
 
         self.Ex = np.array(Ex)
