@@ -242,23 +242,32 @@ class Nanoment(object):
         if len(self.z) != len(self.force) is None:
             return
 
-        f = self.force #force 
-        z = self.z #displacement
+        option1 = False
+        #Calculate a clean area a
 
-        ind = self.ind
-        #xcp = self.x_contact_point #x coordinate of CP
-        jj = np.argmin( z  **2 ) #z is already z-z_CP
-        indmax = float(self._ui.fit_indentation.value()) #max indentation
-        jjmax = np.argmin((ind - indmax)**2)
-        
-        contactradius = np.sqrt(ind[1:jjmax] * self.R) #NB ind is defined from 0
-        poisson = 0.5
-        coeff = ( (1 - poisson**2) / ( 2 * contactradius) )
-        #order = int( self._ui.es_order.value() )
-        deriv = dxdt(f, z,  kind="trend_filtered", order=0, alpha=0.001) # max_iter=1000000
-        derivind = deriv[jj+1:jj+jjmax]
-        Ey =  coeff * (derivind / (1 - 1/self.k * derivind))
-        Ex = contactradius
+        if option1 is True:
+            #Option 1, use the original formula, but with a cleaner derivative
+            # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
+            #import matplotlib.pyplot as plt
+            #plt.plot(self.ind,self.touch)
+            #plt.show()
+            odg = np.argsort(self.ind)
+            Oind = self.ind[odg]
+            Ofor = self.touch[odg]
+            dFdd = dxdt(Ofor, Oind ,  kind="spline", s=0.01) # max_iter=1000000
+            Ex = np.sqrt(self.R * Oind)
+            Ey = 3*dFdd[Ex>0]/8/Ex[Ex>0]
+            Ex=Ex[Ex>0]
+        else:
+            #Option2 use the prime function
+            # E = 3*S/(1-S/k)/8a
+            jcp = np.argmin(self.z ** 2)  # z is already z-z_CP
+            Sfull = dxdt(self.force, self.z, kind="trend_filtered", order=0, alpha=0.01)  # max_iter=1000000
+            #Sfull = dxdt(self.force, self.z, kind="spline", s=0.01)  # max_iter=1000000
+            nonull = self.ind>0
+            Ex = np.sqrt(self.R * self.ind[nonull])
+            S = Sfull[jcp:]
+            Ey = 3*S[nonull]/(1-S[nonull]/self.k)/8/Ex
 
         self.Ex = np.array(Ex)
         self.Ey = np.array(Ey)
