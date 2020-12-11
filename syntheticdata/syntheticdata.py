@@ -15,6 +15,7 @@ Created on Wed Nov 25 09:29:21 2020
 import matplotlib.pyplot as plt 
 import numpy as np 
 import csv
+import os 
                                     
 class FakeData:
    parameters = {} ##PARAMETERS SPECIFIC TO EACH MODEL: populate under specific model class (e.g. FakeHertzData -> E, v)
@@ -43,17 +44,20 @@ class FakeDataHertz(FakeData): #fake Hertzian data
         z = self.ind + dcantilver   
         return z, F  #returns arrays  
 
-    def add_noise(self, noise_baseline=0, noise_scale=10):
+    def add_noise(self, noise_baseline=0, noise_scale=100): #change noise_scale here
         z, F = self.model()
         noise =  np.random.normal(noise_baseline, noise_scale, F.shape)
         F_noise =  F + noise    
-        return z, F_noise #returns arrays
+        return z, F_noise, noise_scale #returns arrays
     
-    def gen_data_file(self, numfile=100): #easy tsv
+    def gen_data_file(self, numfile=5): #easy tsv, change numfile here
         for nfiles in range(numfile): 
-            z, F_noise = self.add_noise()
-            datafile_path = "/Users/giuseppeciccone/OneDrive - University of Glasgow/PhD/Nanoindentation/Data/fakedatafiles/CurveHertz_%d.tsv"%nfiles #change to user directory
-            with open(datafile_path, 'w') as f:
+            z, F_noise, noise_scale = self.add_noise()
+            folder_path = '/Users/giuseppeciccone/OneDrive - University of Glasgow/PhD/Nanoindentation/Data/Synthetic_Hertz_Data/Fake_Data%d'%noise_scale
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            filename = "CurveHertz_%d.tsv"%nfiles 
+            with open(os.path.join(folder_path, filename), 'w') as f:
                 f.write('#easy_tsv\n')
                 f.write('#k: %.2f \n'%self.K)
                 f.write('#R: %.2f \n'%self.R)
@@ -64,8 +68,11 @@ class FakeDataHertz(FakeData): #fake Hertzian data
 class FakeDataBilayer(FakeData): #Doss et al., Soft Matter, 2019
     pass
      
-fakedata1 = FakeDataHertz().add_noise(0,0)
+
+#Saving #numfile files with specific #noise_scale
 savefiles1 = FakeDataHertz().gen_data_file()
+#Plotting
+fakedata1 = FakeDataHertz().add_noise(0,1)
 plt.plot(fakedata1[0],fakedata1[1], 'or', ms = 5, alpha= 0.5)
 plt.xlabel('Distance [nm]')
 plt.ylabel('Force [nN]')

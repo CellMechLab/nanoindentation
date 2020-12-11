@@ -251,23 +251,23 @@ class Nanoment(object):
             #import matplotlib.pyplot as plt
             #plt.plot(self.ind,self.touch)
             #plt.show()
-            odg = np.argsort(self.ind)
-            Oind = self.ind[odg]
-            Ofor = self.touch[odg]
+            odg = np.argsort(self.ind) #sorting ind in ascending order (indices)
+            Oind = self.ind[odg] #sorted indentation
+            Ofor = self.touch[odg] #sorted force
             dFdd = dxdt(Ofor, Oind ,  kind="spline", s=0.01) # max_iter=1000000
             Ex = np.sqrt(self.R * Oind)
             Ey = 3*dFdd[Ex>0]/8/Ex[Ex>0]
             Ex=Ex[Ex>0]
         else:
             #Option2 use the prime function
-            # E = 3*S/(1-S/k)/8a
+            # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
             jcp = np.argmin(self.z ** 2)  # z is already z-z_CP
-            Sfull = dxdt(self.force, self.z, kind="trend_filtered", order=0, alpha=0.01)  # max_iter=1000000
-            #Sfull = dxdt(self.force, self.z, kind="spline", s=0.01)  # max_iter=1000000
+            Sfull = dxdt(self.force, self.z, kind="trend_filtered", order=0, alpha=0.001) # max_iter=1000000
+            #Sfull = dxdt(self.force, self.z, kind="spline", s=0.01)  
             nonull = self.ind>0
             Ex = np.sqrt(self.R * self.ind[nonull])
             S = Sfull[jcp:]
-            Ey = 3*S[nonull]/(1-S[nonull]/self.k)/8/Ex
+            Ey = 3*S[nonull]/(1-S[nonull]/self.k)/8/Ex 
 
         self.Ex = np.array(Ex)
         self.Ey = np.array(Ey)
