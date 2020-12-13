@@ -66,9 +66,18 @@ class FakeDataHertz(FakeData): #fake Hertzian data
                 tsv_writer.writerows(zip(z, F_noise))
                 
 class FakeDataBilayer(FakeData): #Doss et al., Soft Matter, 2019
-    pass
-     
-
+    parameters = {'E1' : (10 * 1000* 10**9 / ( 10 ** 9 )**2) , 'E2' : (1 * 1000* 10**9 / ( 10 ** 9 )**2), 'h': 1000} #v1 = v2 = 0.5 assumed 
+    def model(self):
+        hertz = 16 * (self.parameters['E1'] * np.sqrt(self.R) * self.ind**(1.5)) / 9
+        coeff1 = 0.85 * (np.sqrt(self.R) * self.ind**(1.5) / self.parameters['h']) + 3.36 * (np.sqrt(self.R) * self.ind**(1.5) / self.parameters['h'])**2    
+        coeff2 = 0.72 - 0.34 * (np.sqrt(self.R) * self.ind**(1.5) / self.parameters['h']) + 0.51  * (np.sqrt(self.R) * self.ind**(1.5) / self.parameters['h'])**2
+        F = hertz * ((coeff1+1) / (coeff1 * (self.parameter['E1']/self.parameters['E2'])**coeff2 +1 ))
+        F = np.nan_to_num(F, nan = 0.0) #replaces Nans from negative indentations (ind0) with zeros
+        dcantilver = F/self.K       
+        z = self.ind + dcantilver 
+        return z, F
+                     
+                     
 #Saving #numfile files with specific #noise_scale
 savefiles1 = FakeDataHertz().gen_data_file()
 #Plotting
