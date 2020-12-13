@@ -64,6 +64,7 @@ class FakeDataHertz(FakeData): #fake Hertzian data
                 f.write('#displacement [nm] \t #force [nN] \n')
                 tsv_writer = csv.writer(f, delimiter='\t' )
                 tsv_writer.writerows(zip(z, F_noise))
+
                 
 class FakeDataBilayer(FakeData): #Doss et al., Soft Matter, 2019
     parameters = {'E1' : (10 * 1000* 10**9 / ( 10 ** 9 )**2) , 'E2' : (1 * 1000* 10**9 / ( 10 ** 9 )**2), 'h': 1000} #v1 = v2 = 0.5 assumed 
@@ -76,10 +77,34 @@ class FakeDataBilayer(FakeData): #Doss et al., Soft Matter, 2019
         dcantilver = F/self.K       
         z = self.ind + dcantilver 
         return z, F
+    
+    def add_noise(self, noise_baseline=0, noise_scale=10): #change noise_scale here
+        z, F = self.model()
+        noise =  np.random.normal(noise_baseline, noise_scale, F.shape)
+        F_noise =  F + noise    
+        return z, F_noise, noise_scale #returns arrays
+    
+    def gen_data_file(self, numfile=5): #easy tsv, change numfile here
+        for nfiles in range(numfile): 
+            z, F_noise, noise_scale = self.add_noise()
+            folder_path = '/Users/giuseppeciccone/OneDrive - University of Glasgow/PhD/Nanoindentation/Data/Synthetic_Hertz_Data_Bilayer/Fake_Data%d'%noise_scale
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            filename = "CurveBilayer_%d.tsv"%nfiles 
+            with open(os.path.join(folder_path, filename), 'w') as f:
+                f.write('#easy_tsv\n')
+                f.write('#k: %.2f \n'%self.K)
+                f.write('#R: %.2f \n'%self.R)
+                f.write('#displacement [nm] \t #force [nN] \n')
+                tsv_writer = csv.writer(f, delimiter='\t' )
+                tsv_writer.writerows(zip(z, F_noise))
+    
+    
                      
                      
 #Saving #numfile files with specific #noise_scale
-savefiles1 = FakeDataHertz().gen_data_file()
+savefileshertz = FakeDataHertz().gen_data_file()
+savefilesbilayer = FakeDataBilayer().gen_data_file()
 #Plotting
 fakedata1 = FakeDataHertz().add_noise(0,1)
 plt.plot(fakedata1[0],fakedata1[1], 'or', ms = 5, alpha= 0.5)
