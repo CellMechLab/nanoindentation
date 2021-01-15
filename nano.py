@@ -335,7 +335,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         left = self.ui.crop_left.isChecked()
         right = self.ui.crop_right.isChecked()
         if left is True or right is True:
-            indicator = int(self.ui.curve_segment.value())
+            #indicator = int(self.ui.curve_segment.value())
             for i in range(len(self.collection)):
                 c = self.collection[i]
                 try:
@@ -546,7 +546,7 @@ class NanoWindow(QtWidgets.QMainWindow):
             f.write('# Working folder {}\n'.format(self.workingdir))
             f.write('# Tip radius {} nm\n'.format(self.collection[0].R))
             f.write('# Elastic constant {} N/m\n'.format(self.collection[0].k))
-            f.write('# Number valid curves \n'.format(self.Na))
+            f.write('# Number valid curves {}\n'.format(self.Na))
             f.write('# \n')
             f.write('# Young\'s Modulus ES, Gaussian Average {} Pa\n'.format(self.ESav))
             f.write('# Young\'s Modulus ES, Gaussian STD {} Pa\n'.format(self.ESav_std))
