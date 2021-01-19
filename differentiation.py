@@ -36,7 +36,6 @@ result5 = dxdt(y, x, kind="trend_filtered", order=0, alpha=0.001)
 derivates.append(result5)
 
 
-
 orig=[]
 for i in range(len(derivates)):
     orig.append(cumtrapz(derivates[i], dx=dx, initial=0) )

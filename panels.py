@@ -4,13 +4,14 @@ import numpy as np
 import pyqtgraph as pg
 import popup
 from scipy.optimize import curve_fit
+import pynumdiff 
+
 ALL = []   
 
-# Return False if CP is not evaluated / found correctly 
-#Use Threhsold as first guess: 
-#use threhsold method in Contact Point Class as function with default parameters
+#Return False if CP is not evaluated / found correctly 
+#Use Threhsold as first guess: use threhsold method in Contact Point Class as function with default parameters
 
-class CPParameter: #CP parameters class
+class CPParameter: #CP parameter class
     def __init__(self, label=None): 
         self._label=label
         self._defaultValue = None
@@ -19,7 +20,7 @@ class CPParameter: #CP parameters class
         self._values = []
         self._valueLabels = []
         self._widget = None
-        self.triggered = None 
+        self.triggered = None
 
     def getLabel(self):
         return self._label 
@@ -27,7 +28,7 @@ class CPParameter: #CP parameters class
     def getWidget(self):
         return self._widget
 
-    def setType(self, t ):
+    def setType(self, t):
         if t in self._validTypes:
             self._type = t
             
@@ -103,7 +104,6 @@ class CPPCombo(CPParameter):
     def setValue(self,num):
         self._widget.setCurrentIndex(num)
 
-
 class ContactPoint: #Contact point class 
     def __init__(self):
         self._parameters = [] 
@@ -146,7 +146,6 @@ class ContactPoint: #Contact point class
 
                      ##Contact Point Finding Algorithms##
 #----------------------------------------------------------------------------#
-
 
 class ThRov(ContactPoint): #Ratio of Variances 
     def create(self):
@@ -236,7 +235,8 @@ class ThRovFirst(ContactPoint): #Ratio of variances First peak
         rov_best_ind = np.argmax(rov)
         j_rov = np.argmin( (z-zz_x[rov_best_ind])**2 )
         return [z[j_rov], f[j_rov]] 
-        
+
+
 class GoodnessOfFit(ContactPoint): #Goodness of Fit (GoF)
      def create(self): 
         self.windowr = CPPFloat('Window Fit [nm]') 
@@ -265,7 +265,6 @@ class GoodnessOfFit(ContactPoint): #Goodness of Fit (GoF)
          jmin, jmax = self.getRange(c) 
          if jmin is False or jmax is False:
               return False 
-          
          zwin = self.windowr.getValue()
          zstep = (max(c._z) - min(c._z)) / (len(c._z) - 1)
          win = int(zwin / zstep) 
@@ -395,7 +394,58 @@ class Threshold(ContactPoint): #Threshold
                 break
         return [x[jcp], y[jcp]] 
 
+class PrimeFunction(ContactPoint): #Prime Function 
+    def create(self): #parameters that user inputs in this method for CP calculation
+        self.Athreshold = CPPFloat('Align Threshold [nN/nm]')
+        self.Athreshold.setValue(0.0005)
+        self.deltaX = CPPFloat('Align left step [nm]')
+        self.deltaX.setValue(2000.0)
+        self.Fthreshold = CPPFloat('AVG area [nm]')
+        self.Fthreshold.setValue(100.0)
+        self.addParameter(self.Athreshold )
+        self.addParameter(self.deltaX)
+        self.addParameter(self.Fthreshold)
+
+    def getWeight(self, c): #weight is the prime function 
+        z = c._z 
+        f = c._f 
+        dz = np.average( z[1:] - z[:-1] )
+        try: 
+            f_smooth, dfdz = pynumdiff.finite_difference.first_order(f, dz, params = [500], options={'iterate': True})
+        except:
+            return None 
+        return z, dfdz/(1-dfdz)
+    
+    def calculate(self,c): #calculates CP baed on prime function threshold 
+        primeth = self.Athreshold.getValue()
+        z, prime = self.getWeight(c)
+        f = c._f
+        if primeth > np.max(prime) or primeth < np.min(prime): 
+            return None 
+        jrov = 0
+        for j in range(len(prime)-1,1,-1): 
+            if prime[j]>primeth and prime[j-1]<primeth: 
+                jrov = j 
+                break
+        x0 = z[jrov]
+        dx = self.deltaX.getValue()
+        ddx = self.Fthreshold.getValue() 
+        if ddx <= 0: 
+            jxalign = np.argmin((z - (x0 - dx)) ** 2)
+            df0 = prime[jxalign] 
+        else:
+            jxalignLeft = np.argmin( (z-(x0-dx-ddx))**2 )
+            jxalignRight = np.argmin( (z-(x0-dx+ddx))**2 )
+            df0 = np.average(prime[jxalignLeft:jxalignRight])
+        jcp = jrov
+        for j in range(jrov,1,-1):
+            if prime[j]>df0 and prime[j-1]<df0:
+                jcp = j
+                break
+        return [z[jcp], f[jcp]] 
+
 ALL.append( { 'label':'Threshold', 'method':Threshold} )
+ALL.append( { 'label':'Prime Funcion', 'method':PrimeFunction} )
 ALL.append( { 'label':'Gooodness of Fit', 'method':GoodnessOfFit} ) 
 ALL.append( { 'label':'Ratio of Variances', 'method':ThRov} )
 ALL.append( { 'label':'Ratio of Variances - First Peak', 'method':ThRovFirst} )

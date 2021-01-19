@@ -376,6 +376,3 @@ class Easytsv(DataSet):
         self.append(Segment(self))
         self[0].setData(self.data['z'], self.data['force'])
         
-        
-    
-        

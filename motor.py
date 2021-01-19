@@ -4,7 +4,9 @@ import pyqtgraph as pg
 from scipy.signal import savgol_filter,medfilt,find_peaks
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
+#derivative packages
 from derivative import dxdt
+import pynumdiff
 
 PEN_GREEN = pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2)
 ST_RED = 1
@@ -22,7 +24,7 @@ def sames(ar1,ar2):
         return True
     return False
 
-def hertz (x, E, R, poisson=0.5):
+def hertz(x, E, R, poisson=0.5):
     return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
 
 
@@ -242,31 +244,34 @@ class Nanoment(object):
         if len(self.z) != len(self.force) is None:
             return
 
-        option1 = False
+        option1 = True
         #Calculate a clean area a
-
         if option1 is True:
             #Option 1, use the original formula, but with a cleaner derivative
             # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
             #import matplotlib.pyplot as plt
             #plt.plot(self.ind,self.touch)
             #plt.show()
+            dz = np.average( self.z[1:] - self.z[:-1] )
             odg = np.argsort(self.ind) #sorting ind in ascending order (indices)
             Oind = self.ind[odg] #sorted indentation
             Ofor = self.touch[odg] #sorted force
-            dFdd = dxdt(Ofor, Oind ,  kind="spline", s=0.01) # max_iter=1000000
+            #dFdd = dxdt(Ofor, Oind, kind="spline", s=0.01) # max_iter=1000000
+            F_hat, dFdd = pynumdiff.finite_difference.first_order(Ofor, dz, params = [100], options={'iterate': True})
             Ex = np.sqrt(self.R * Oind)
             Ey = 3*dFdd[Ex>0]/8/Ex[Ex>0]
             Ex=Ex[Ex>0]
         else:
             #Option2 use the prime function
             # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
+            dz = np.average( self.z[1:] - self.z[:-1] )
             jcp = np.argmin(self.z ** 2)  # z is already z-z_CP
-            Sfull = dxdt(self.force, self.z, kind="trend_filtered", order=0, alpha=0.001) # max_iter=1000000
+            #Sfull = dxdt(self.force, self.z, kind="trend_filtered", order=0, alpha=0.001) # max_iter=1000000
+            S_hat, dSdz_hat = pynumdiff.finite_difference.first_order(self.force, dz, params = [100], options={'iterate': True})
             #Sfull = dxdt(self.force, self.z, kind="spline", s=0.01)  
             nonull = self.ind>0
             Ex = np.sqrt(self.R * self.ind[nonull])
-            S = Sfull[jcp:]
+            S = dSdz_hat[jcp:]
             Ey = 3*S[nonull]/(1-S[nonull]/self.k)/8/Ex 
 
         self.Ex = np.array(Ex)

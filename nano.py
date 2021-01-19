@@ -11,7 +11,6 @@ import popup
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
-
 class NanoWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         QtWidgets.QMainWindow.__init__(self, parent)
