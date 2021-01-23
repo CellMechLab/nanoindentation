@@ -1,19 +1,20 @@
-from PyQt5 import QtCore, QtWidgets, QtGui
 import numpy as np
+import pynumdiff
 import pyqtgraph as pg
-from scipy.signal import savgol_filter,medfilt,find_peaks
+# derivative packages
+from derivative import dxdt
+from PyQt5 import QtCore, QtGui, QtWidgets
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
-#derivative packages
-from derivative import dxdt
-import pynumdiff
+from scipy.signal import find_peaks, medfilt, savgol_filter
 
 PEN_GREEN = pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2)
 ST_RED = 1
 ST_BLU = 2
 ST_BLK = 3
 
-def sames(ar1,ar2):
+
+def sames(ar1, ar2):
     if (ar1 is None) or (ar2 is None):
         return False
     if len(ar1) != len(ar2):
@@ -24,33 +25,36 @@ def sames(ar1,ar2):
         return True
     return False
 
+
 def hertz(x, E, R, poisson=0.5):
     return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
 
 
-def Gauss(x,x0,w,A):
-    return A*np.exp( -((x-x0)/w)**2 )
+def Gauss(x, x0, w, A):
+    return A*np.exp(-((x-x0)/w)**2)
 
 
-def calc_hertz(E,R,k,maxvalue):
-    x = np.linspace(0,maxvalue,int(maxvalue))
-    y = hertz(x,E/1e9,R)
+def calc_hertz(E, R, k, maxvalue):
+    x = np.linspace(0, maxvalue, int(maxvalue))
+    y = hertz(x, E/1e9, R)
     z = x + y/k
-    return x,y,z
+    return x, y, z
 
 
-def gauss_fit(x,y):
-    if len(x)==len(y)+1:
+def gauss_fit(x, y):
+    if len(x) == len(y)+1:
         x = (x[1:]+x[:-1])/2.0
-    popt, pcov = curve_fit(Gauss, x,y , p0=[x[np.argmax(y)],(np.max(x)-np.min(x))/10.0,np.max(y)], maxfev=1000)
-    nx = np.linspace(np.min(x),np.max(x),100)
-    x0,w,A = popt
-    return x0,w,A,nx,Gauss(nx,*popt)
+    popt, pcov = curve_fit(Gauss, x, y, p0=[x[np.argmax(
+        y)], (np.max(x)-np.min(x))/10.0, np.max(y)], maxfev=1000)
+    nx = np.linspace(np.min(x), np.max(x), 100)
+    x0, w, A = popt
+    return x0, w, A, nx, Gauss(nx, *popt)
+
 
 class Nanoment(object):
-    def __init__(self,curve = None):
+    def __init__(self, curve=None):
         self.basename = None
-        self._contactpoint = [0,0]
+        self._contactpoint = [0, 0]
         self._z = None
         self._f = None
         self._z_raw = None
@@ -80,9 +84,9 @@ class Nanoment(object):
             self.k = curve.cantilever_k
             self.basename = curve.basename
 
-    def connect(self,nanowin,node = False):
-        self._ui=nanowin.ui
-        #Plot F(z)
+    def connect(self, nanowin, node=False):
+        self._ui = nanowin.ui
+        # Plot F(z)
         self._g_fdistance = pg.PlotCurveItem(clickable=True)
         nanowin.ui.g_fdistance.plotItem.addItem(self._g_fdistance)
         self._g_fdistance.sigClicked.connect(nanowin.curve_clicked)
@@ -98,7 +102,8 @@ class Nanoment(object):
         self._g_es.sigClicked.connect(nanowin.curve_clicked)
         self._g_es.nano = self
         # Plot E
-        self._g_scatter = pg.PlotDataItem(clickable=True,pen=None,symbol='o',symbolPen=None,symbolBrush=None)
+        self._g_scatter = pg.PlotDataItem(
+            clickable=True, pen=None, symbol='o', symbolPen=None, symbolBrush=None)
         self._Eindex = len(nanowin.ui.g_scatter.plotItem.items)
         self._g_scatter.setSymbolPen(None)
         self._g_scatter.setSymbolBrush(None)
@@ -116,7 +121,8 @@ class Nanoment(object):
             myself = QtWidgets.QTreeWidgetItem(nanowin.ui.mainlist)
             myself.setText(0, self.basename)
             myself.curve = self
-            myself.setFlags(myself.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
+            myself.setFlags(
+                myself.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
             myself.setCheckState(0, QtCore.Qt.Checked)
 
     def disconnect(self):
@@ -137,16 +143,16 @@ class Nanoment(object):
         if self._g_fdistance is not None:
             if self.z is not None and self.force is not None:
                 if len(self.z) == len(self.force):
-                    self._g_fdistance.setData(self.z,self.force)
+                    self._g_fdistance.setData(self.z, self.force)
                     if self.selected is True:
-                        self._curve_raw.setData(self.z_raw,self.f_raw)
-                        self._curve_single.setData(self.z,self.force)
+                        self._curve_raw.setData(self.z_raw, self.f_raw)
+                        self._curve_single.setData(self.z, self.force)
                         if self.E is not None:
-                            ex,ey = self.getFitted()
-                            self._curve_fit.setData(ex,ey)
+                            ex, ey = self.getFitted()
+                            self._curve_fit.setData(ex, ey)
                         else:
                             self._curve_fit.setData(None)
-            self._g_fdistance.setPen(self.getPen('dist') )
+            self._g_fdistance.setPen(self.getPen('dist'))
 
         if self._g_indentation is not None:
             if self.ind is not None and self.touch is not None:
@@ -162,7 +168,7 @@ class Nanoment(object):
 
         if self._g_scatter is not None:
             if self.active is True and self.E is not None:
-                self._g_scatter.setData(x=[self._Eindex],y=[self.E])
+                self._g_scatter.setData(x=[self._Eindex], y=[self.E])
                 self._g_scatter.setSymbolPen('k')
                 self._g_scatter.setSymbolBrush('b')
             else:
@@ -181,7 +187,7 @@ class Nanoment(object):
             else:
                 self._ui.toggle_included.setChecked(True)
 
-    def getPen(self,curve='ind'):
+    def getPen(self, curve='ind'):
         PEN_BLACK = pg.mkPen(pg.QtGui.QColor(0, 0, 0, self.alpha), width=1)
         PEN_RED = pg.mkPen(pg.QtGui.QColor(255, 0, 0, self.alpha), width=1)
         PEN_BLUE = pg.mkPen(pg.QtGui.QColor(0, 0, 255, self.alpha), width=1)
@@ -225,11 +231,11 @@ class Nanoment(object):
             pen = PEN_GREEN
         return pen
 
-    def setCPFunction(self,cf):
-        self._cpfunction=cf
+    def setCPFunction(self, cf):
+        self._cpfunction = cf
 
     def set_elasticityspectra(self):
-        if self._ui.analysis.isChecked() is False:
+        if self._ui.es_analysis.isChecked() is False:
             return
         if self.k is None:
             return
@@ -239,40 +245,56 @@ class Nanoment(object):
             return
         if len(self.ind) != len(self.touch):
             return
-        if self.force is None or self.z is None: 
-            return 
+        if self.force is None or self.z is None:
+            return
         if len(self.z) != len(self.force) is None:
             return
 
+        # implementing derivative with optimisation (see pynumdiff_test.py) may be too slow
+        # since we are interested in global phenomenon (stiffening/softening) we could input parameter manually,
+        # so that we have a smooth derivative (might lose some info) but gain speed
         option1 = True
-        #Calculate a clean area a
+        # Calculate a clean area a
         if option1 is True:
-            #Option 1, use the original formula, but with a cleaner derivative
+            # Option 1, use the original formula, but with a cleaner derivative
             # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
-            #import matplotlib.pyplot as plt
-            #plt.plot(self.ind,self.touch)
-            #plt.show()
-            dz = np.average( self.z[1:] - self.z[:-1] )
-            odg = np.argsort(self.ind) #sorting ind in ascending order (indices)
-            Oind = self.ind[odg] #sorted indentation
-            Ofor = self.touch[odg] #sorted force
-            #dFdd = dxdt(Ofor, Oind, kind="spline", s=0.01) # max_iter=1000000
-            F_hat, dFdd = pynumdiff.finite_difference.first_order(Ofor, dz, params = [100], options={'iterate': True})
+            # import matplotlib.pyplot as plt
+            # plt.plot(self.ind,self.touch)
+            # plt.show()
+            dz = np.average(self.z[1:] - self.z[:-1])
+            # sorting ind in ascending order (indices)
+            odg = np.argsort(self.ind)
+            Oind = self.ind[odg]  # sorted indentation
+            Ofor = self.touch[odg]  # sorted force
+            # tvgamma = 0.03
+            # params, val = pynumdiff.optimize.finite_difference.first_order(Ofor, dz, params=None,
+            #                                                                options = {
+            #                                                                    'iterate': True},
+            #                                                                tvgamma = tvgamma,
+            #                                                                dxdt_truth = None)
+            F_hat, dFdd = pynumdiff.finite_difference.first_order(
+                Ofor, dz,  # params = params
+                params=[500], options={'iterate': True})
             Ex = np.sqrt(self.R * Oind)
-            Ey = 3*dFdd[Ex>0]/8/Ex[Ex>0]
-            Ex=Ex[Ex>0]
+            Ey = 3*dFdd[Ex > 0]/8/Ex[Ex > 0]
+            Ex = Ex[Ex > 0]
         else:
-            #Option2 use the prime function
+            # Option2 use the prime function
             # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
-            dz = np.average( self.z[1:] - self.z[:-1] )
+            dz = np.average(self.z[1:] - self.z[:-1])
             jcp = np.argmin(self.z ** 2)  # z is already z-z_CP
-            #Sfull = dxdt(self.force, self.z, kind="trend_filtered", order=0, alpha=0.001) # max_iter=1000000
-            S_hat, dSdz_hat = pynumdiff.finite_difference.first_order(self.force, dz, params = [100], options={'iterate': True})
-            #Sfull = dxdt(self.force, self.z, kind="spline", s=0.01)  
-            nonull = self.ind>0
+            tvgamma = 0.03
+            params, val = pynumdiff.optimize.finite_difference.first_order(self.force, dz, params=None,
+                                                                           options={
+                                                                               'iterate': True},
+                                                                           tvgamma=tvgamma,
+                                                                           dxdt_truth=None)
+            S_hat, dSdz_hat = pynumdiff.finite_difference.first_order(
+                self.force, dz, params=params, options={'iterate': True})
+            nonull = self.ind > 0
             Ex = np.sqrt(self.R * self.ind[nonull])
             S = dSdz_hat[jcp:]
-            Ey = 3*S[nonull]/(1-S[nonull]/self.k)/8/Ex 
+            Ey = 3*S[nonull]/(1-S[nonull]/self.k)/8/Ex
 
         self.Ex = np.array(Ex)
         self.Ey = np.array(Ey)
@@ -293,14 +315,20 @@ class Nanoment(object):
         self.ind = Xf - Yf / self.k
         self.touch = Yf
 
+        # if self._ui.es_analysis.isChecked() is False:
+        # return
         self.set_elasticityspectra()
+
+        # self.set_elasticityspectra()  #need to change this: now, it is called when Analysis is checked,
+        # hoever it does not do anything as it is set to none (box is not ticked at the start). It needs
+        # to be called after the Hertz analysis, when box is ticked
 
     def reset_E(self):
         self._E = None
 
     def reset_contactpoint(self):
-        self._contactpoint = [0,0]
-        self._E=None
+        self._contactpoint = [0, 0]
+        self._E = None
 
     def rewind_data(self):
         self._ind = None
@@ -316,7 +344,7 @@ class Nanoment(object):
         self._touch = None
         self._E = None
 
-    def set_XY(self,x,y):
+    def set_XY(self, x, y):
         self.reset_data()
         self.reset_contactpoint()
         self._included = True
@@ -403,13 +431,14 @@ class Nanoment(object):
         if self._ui.analysis.isChecked() is False:
             return
 
-        upto = np.min([float(self._ui.fit_indentation.value()),np.max(self.ind)])
-        x = np.linspace(0,upto,int(upto))
-        y = hertz(x,self.E/1e9,self.R)
+        upto = np.min(
+            [float(self._ui.fit_indentation.value()), np.max(self.ind)])
+        x = np.linspace(0, upto, int(upto))
+        y = hertz(x, self.E/1e9, self.R)
 
         x = x + y/self.k
 
-        return x,y
+        return x, y
 
     def fitHertz(self):
         if self._ui.analysis.isChecked() is False:
@@ -430,8 +459,9 @@ class Nanoment(object):
             jj = np.argmin((self.ind-indmax)**2)
             if jj < 5:
                 return
-            popt, pcov = curve_fit(Hertz, self.ind[:jj], self.touch[:jj], p0=seeds, maxfev=100000)
-            #E_std = np.sqrt(pcov[0][0])
+            popt, pcov = curve_fit(
+                Hertz, self.ind[:jj], self.touch[:jj], p0=seeds, maxfev=100000)
+            # E_std = np.sqrt(pcov[0][0])
             self._E = popt[0]*1e9
         except (RuntimeError, ValueError):
             return
@@ -531,7 +561,7 @@ class Nanoment(object):
     @y_contact_point.setter
     def y_contact_point(self, x):
         if self._contactpoint[1] == x:
-            return
+            returnF
         self._contactpoint[1] = x
         self.set_indentation()
 
@@ -566,11 +596,11 @@ class Nanoment(object):
         if self._z is None or self.x_contact_point is None:
             return None
         delta = self._z - self.x_contact_point
-        return delta 
+        return delta
 
     @z.setter
     def z(self, x):
-        if sames(self._z,x) is False:
+        if sames(self._z, x) is False:
             if x is None:
                 self._z = None
             else:
@@ -641,7 +671,8 @@ class Nanoment(object):
             self._touch = x
             self.update_view()
 
-def getMedCurve(xar,yar,loose = True,threshold=3, error=False):
+
+def getMedCurve(xar, yar, loose=True, threshold=3, error=False):
     if loose is False:
         xmin = -np.inf
         xmax = np.inf
@@ -649,19 +680,19 @@ def getMedCurve(xar,yar,loose = True,threshold=3, error=False):
         nonecount = 0
         for x in xar:
             if x is not None and np.min(x) is not None:
-                xmin = np.max([xmin,np.min(x)])
-                xmax = np.min([xmax,np.max(x)])
+                xmin = np.max([xmin, np.min(x)])
+                xmax = np.min([xmax, np.max(x)])
                 deltax += ((np.max(x)-np.min(x))/(len(x)-1))
             else:
-                nonecount +=1
+                nonecount += 1
         deltax /= (len(xar)-nonecount)
-        xnew = np.linspace(xmin,xmax,int( (xmax-xmin)/(deltax)) )
+        xnew = np.linspace(xmin, xmax, int((xmax-xmin)/(deltax)))
         ynew = np.zeros(len(xnew))
         for i in range(len(xar)):
             if xar[i] is not None and np.min(xar[i]) is not None:
                 ycur = np.interp(xnew, xar[i], yar[i])
                 ynew += ycur
-        ynew/=(len(xar)-nonecount)
+        ynew /= (len(xar)-nonecount)
     else:
         xmin = np.inf
         xmax = -np.inf
@@ -705,20 +736,27 @@ def getMedCurve(xar,yar,loose = True,threshold=3, error=False):
     elif error == True:
         return xnew[:-1], ynew[:-1], yerr[:-1]
 
+
 LAMBD = 1.74
+
+
 def TheExp(a, E0, Eb, d0):
     weight = np.exp(-LAMBD * a / d0)
     return Eb + (E0 - Eb) * weight
 
-def fitExpSimple(a,y, sigma=None):
-    seeds=[10000*1e-9,1000*1e-9,200]
-    a=np.asarray(a)
+
+def fitExpSimple(a, y, sigma=None):
+    seeds = [10000*1e-9, 1000*1e-9, 200]
+    a = np.asarray(a)
     try:
-        if sigma is None or any(sigma)==0:
-            popt1, pcov1 = curve_fit(TheExp, a[:-1],y[:-1], p0=seeds, maxfev=10000)
+        if sigma is None or any(sigma) == 0:
+            popt1, pcov1 = curve_fit(
+                TheExp, a[:-1], y[:-1], p0=seeds, maxfev=10000)
         else:
-            popt1, pcov1 = curve_fit(TheExp, a[:-1], y[:-1], sigma=sigma[:-1], p0=seeds, maxfev=10000)#sigma=sigma[:-1],
-        stds1=[np.sqrt(pcov1[0][0]), np.sqrt(pcov1[1][1]), np.sqrt(pcov1[2][2])]
+            popt1, pcov1 = curve_fit(
+                TheExp, a[:-1], y[:-1], sigma=sigma[:-1], p0=seeds, maxfev=10000)  # sigma=sigma[:-1],
+        stds1 = [np.sqrt(pcov1[0][0]), np.sqrt(
+            pcov1[1][1]), np.sqrt(pcov1[2][2])]
         return popt1, stds1
     except:
         print('Exp fit failed!')

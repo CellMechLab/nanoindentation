@@ -6,121 +6,158 @@ Created on Tue Dec 15 13:46:35 2020
 @author: giuseppeciccone
 """
 import mvexperiment.experiment as experiment
+from matplotlib import pyplot as plt
 import numpy as np
-from scipy.integrate import cumtrapz
-from scipy import signal
 import pynumdiff
+from derivative import dxdt
+from scipy import signal
+from scipy.integrate import cumtrapz
 
-if __name__ == '__main__':  #IMPORTANT FOR PARALLEL PROCESSES
-    
-    RealData = True 
-    
-    if RealData is True: #realdata
-            exp = experiment.Chiaro('/Users/giuseppeciccone/OneDrive - University of Glasgow/PhD/Nanoindentation/Data/PDMS/2020_12_7_PDMS_bilayers_stiffprobe/10_1_homogeneous/10_1_homogeneous/matrix_scan01/')
-            exp.browse()
-            exp[0].open()
-            cv = exp[0][1]
-            x = cv.z
-            y = cv.f
-            dx = np.average( x[1:] - x[:-1])
-        
-    else: #fakedata
-        exp = experiment.Easytsv('/Users/giuseppeciccone/OneDrive - University of Glasgow/PhD/Nanoindentation/Data/Synthetic_Hertz_Data/Fake_Data5/')
+
+if __name__ == '__main__':  # IMPORTANT FOR PARALLEL PROCESSES
+
+    RealData = True
+
+    if RealData is True:  # realdata
+        exp = experiment.Chiaro(
+            '/Users/giuseppeciccone/OneDrive - University of Glasgow/PhD/Nanoindentation/Data/hydrogels data/10 wv pc PEGFN/matrix_scan08 sample 1/')
+        exp.browse()
+        exp[0].open()
+        cv = exp[0][1]
+        x = cv.z
+        x = x[:len(x)]
+        y = cv.f
+        y = y[:len(y)]
+        dx = np.average(x[1:] - x[:-1])
+
+    else:  # fakedata
+        exp = experiment.Easytsv(
+            '/Users/giuseppeciccone/OneDrive - University of Glasgow/PhD/Nanoindentation/Data/Synthetic_Hertz_Data/Fake_Data1/')
         exp.browse()
         exp[0].open()
         cv = exp[0]
         y = cv.data['force']
         x = cv.data['z']
-        dx = np.average( x[1:] - x[:-1] )
-    
-    
-    # x = np.loadtxt('x.txt')
-    # y = np.loadtxt('y.txt')
-    # dx = np.average( x[1:] - x[:-1] )
-    
-    #power spectral density of data
-    #We should select 'frequency where power begings to decrease and noise starts to increase'
-    #
+        dx = np.average(x[1:] - x[:-1])
+        print(dx)
+
+    # PSD
+    # We should select 'frequency where power begings to decrease and noise starts to increase'
     freqs, psd = signal.welch(y)
-    #Frequency selection 
-    cutoff_frequency =  0.09 #IMPORTANT PARAMETER FOR SMOOTH DERIVATIVE 
-    #then, optimization parameter given by: 
-    log_gamma = -1.6*np.log(cutoff_frequency) -0.71*np.log(dx) - 5.1
+    # Frequency selection
+    cutoff_frequency = 0.0039
+    # then, optimization parameter given by:
+    log_gamma = -1.6*np.log(cutoff_frequency) - 0.71*np.log(dx) - 5.1
     tvgamma = np.exp(log_gamma)
     print(tvgamma)
-    
-    
-    ###########################################
-    ## PYNUMDIFF VS DERIVATIVE LIBRARY TESTS###
-    ###########################################
-    
-    names = [ 'iterative finite diff', 'smooth finite diff (mean)', 'smooth finite diff (mean) opt']
+
+    ################
+    ## PYNUMDIFF ###
+    ################
+
+    names = ['iterated fd', 'smooth mean fd',
+             'smooth butter fd',  # 'smooth spline fd'
+             'lm savgol']
     derivates = []
-    # 1. Finite differences with central differencing using 3 points. - TOO NOISY 
-    #result1 = dxdt(y, x, kind="finite_difference", k=2)
-    #derivates.append(result1)
-    # 2. Savitzky-Golay using cubic polynomials to fit in a centered window of length 1 - TOO NOISY 
-    #result2 = dxdt(y, x, kind="savitzky_golay", left=3*dx, right=3*dx, order=3)
-    #derivates.append(result2)
-    # 3. Spectral derivative - TOO NOISY 
-    #result3 = dxdt(y, x, kind="spectral")
-    #derivates.append(result3)
-    # 4. Spline derivative with smoothing set to 0.01 - TOO NOISY 
-    #result4 = dxdt(y, x, kind="spline", s=1e-2)
-    #derivates.append(result4)
-    # 5. Total variational derivative with regularization set to 0.01 - UNSTABLE AT THE END
-    #result5 = dxdt(y, x, kind="trend_filtered", order=0, alpha=0.01) 
-    #derivates.append(result5)
-    
-    '''Observations: derivative library is MUCH slower and gives very noisy results. 
-    #for this, we will use the pynumdiff library, which is much faster at computing 
-    #numerical derivatives of noisy data and offers an optimization procedure to find optimal 
-    #parameters for given numerical derivative method. '''
-    
-    #1.finite difference
-    x_hat, dxdt_hat = pynumdiff.finite_difference.first_order(y, dx, params = [1000], options={'iterate': True})
-    derivates.append(dxdt_hat)
-    params = [20, 4]
-    #2. smooth finite difference - meandiff
-    x_hat1, dxdt_hat1 = pynumdiff.smooth_finite_difference.meandiff(y, dx, params, options={'iterate': True})
-    derivates.append(dxdt_hat1)
-    
-    #3. smooth finite difference - meandiff (finds optimised paramterers and uses them to compute deriv)
-    params, val = pynumdiff.optimize.finite_difference.first_order(y, dx, params=None, 
-                                                                          options={'iterate': True},
-                                                                          tvgamma=tvgamma,
-                                                                          dxdt_truth=None)
-    
+
+    # FINITE DIFFERENCES
+
+    # finite difference first order -> too noisy
+    # finite difference second order -> too noisy
+    # iternative finite difference first order
+    params, val = pynumdiff.optimize.finite_difference.first_order(y, dx, params=None,
+                                                                   options={
+                                                                       'iterate': True},
+                                                                   tvgamma=tvgamma,
+                                                                   dxdt_truth=None)
+
+    # SMOOTH FINITE DIFFERENCES
+
+    # median smoothing -> too noisy
+    # mean smoothing
+    params1, val1 = pynumdiff.optimize.smooth_finite_difference.meandiff(y, dx, params=None,
+                                                                         options={
+                                                                             'iterate': True},
+                                                                         tvgamma=tvgamma,
+                                                                         dxdt_truth=None)
+
+    # Gaussian smoothing -> similar to mean smoothing
+    # Friedrichs smoothing -> similar to mean smoothing
+    # Butterworth smoothing
+    params2, val2 = pynumdiff.optimize.smooth_finite_difference.butterdiff(y, dx, params=None,
+                                                                           options={
+                                                                               'iterate': True},
+                                                                           tvgamma=tvgamma,
+                                                                           dxdt_truth=None)
+
+    # Spline smoothing -> very very slow
+    # params3, val3 = pynumdiff.optimize.smooth_finite_difference.splinediff(y, dx, params=None,
+    #                                                                        options={
+    #                                                                            'iterate': True},
+    #                                                                        tvgamma=tvgamma,
+    #                                                                        dxdt_truth=None)
+
+    # TVR MODELS: computationally expensive, so not worh to try
+
+    # LINEAR MODELS
+
+    # Sav-gol filter
+    params4, val4 = pynumdiff.optimize.linear_model.savgoldiff(
+        y, dx, params=None, tvgamma=tvgamma, dxdt_truth=None, options={'smooth': True})
+
+    # KALAM SMOOTHING
+
     print(params)
-  
-    x_hat2, dxdt_hat2 = pynumdiff.finite_difference.first_order(y, dx, params, options={'iterate': True})
+    print(params1)
+    print(params2)
+    # print(params3)
+    print(params4)
+
+    x_hat, dxdt_hat = pynumdiff.finite_difference.first_order(
+        y, dx, params, options={'iterate': True})
+    derivates.append(dxdt_hat)
+
+    x_hat1, dxdt_hat1 = pynumdiff.smooth_finite_difference.meandiff(
+        y, dx, params1, options={'iterate': True})
+    derivates.append(dxdt_hat1)
+
+    x_hat2, dxdt_hat2 = pynumdiff.smooth_finite_difference.butterdiff(
+        y, dx, params2, options={'iterate': True})
     derivates.append(dxdt_hat2)
-    
-    
-    from matplotlib import pyplot as plt
-    
+
+    # x_hat3, dxdt_hat3 = pynumdiff.smooth_finite_difference.splinediff(
+    #     y, dx, params3, options={'iterate': True})
+    # derivates.append(dxdt_hat3)
+
+    x_hat4, dxdt_hat4 = pynumdiff.linear_model.savgoldiff(
+        y, dx, params4, options={'smooth': True})
+    derivates.append(dxdt_hat4)
+
     fig = plt.figure(figsize=(3, 3))
     plt.loglog(freqs, psd)
-    plt.title('PSD: power spectral density', fontsize= 10, y = 1.05 )
+    plt.title('PSD: power spectral density', fontsize=10, y=1.05)
     plt.xlabel('Frequency [Hz]')
-    plt.vlines(cutoff_frequency, 0, 8e6, color = 'red', lw = 3)
+    plt.ylabel('Power')
+    plt.vlines(cutoff_frequency, 0, 8e6, color='red', lw=3)
     fig.tight_layout()
-    
-    fig = plt.figure(figsize=(10,5))
-    orig=[]
-    #integrating derivatives
+
+    fig = plt.figure(figsize=(10, 5))
+    orig = []
+    # integrating derivatives
     for i in range(len(derivates)):
-        orig.append(cumtrapz(derivates[i], dx=dx, initial=0) )
-        
+        orig.append(cumtrapz(derivates[i], dx=dx, initial=0))
+
     plt.subplot(121)
     for i in range(len(derivates)):
-        plt.plot(x[1:],derivates[i][1:],label=names[i],alpha=0.8) #indexing from 1 avoids bit undershoot that badly re-scales plot
+        # indexing from 1 avoids bit undershoot that badly re-scales plot
+        plt.plot(x[0:], derivates[i][0:], '-',
+                 lw=2,  label=names[i], alpha=0.5)
     plt.legend()
-    
+
     plt.subplot(122)
-    plt.plot(x,y,'k', label='src', ms =1, alpha = 0.8)
+    plt.plot(x, y, 'k', label='original data', ms=0.1, alpha=0.8)
     for i in range(len(derivates)):
-        plt.plot(x,orig[i],'-',label=names[i], alpha = 0.8)
-    
+        plt.plot(x, orig[i], label=names[i], ms=0.1, alpha=0.8)
+
     plt.legend()
     plt.show()

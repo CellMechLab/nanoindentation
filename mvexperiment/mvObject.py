@@ -1,6 +1,6 @@
-import uuid
-import pickle
 import os
+import pickle
+import uuid
 
 
 class MvAbstract(object):
@@ -15,7 +15,7 @@ class MvAbstract(object):
         return len(self._children)
 
     def __cmp__(self, other):
-        if isinstance(self,other):
+        if isinstance(self, other):
             return self.uniqid == other.uniqid
         else:
             return self.uniqid == other
@@ -27,7 +27,7 @@ class MvAbstract(object):
         return False
 
     def __getitem__(self, index):
-        if isinstance(index,int):
+        if isinstance(index, int):
             return self._children[index]
         else:
             for child in self:
@@ -37,22 +37,23 @@ class MvAbstract(object):
                     found = self.search(index)
                     if found is not False:
                         return found
-            raise KeyError("ID {} not found in the descending leaves".format(index))
+            raise KeyError(
+                "ID {} not found in the descending leaves".format(index))
 
     def __setitem__(self, key, value):
-        self._children[key]=value
+        self._children[key] = value
 
     def __delitem__(self, key):
         del(self._children[key])
 
-    def append(self,child):
-        if hasattr(child,'parent'):
+    def append(self, child):
+        if hasattr(child, 'parent'):
             child.parent = self
         self._children.append(child)
 
 
 class MvObject(MvAbstract):
-    def __init__(self,parent=None):
+    def __init__(self, parent=None):
         super().__init__()
         self.parent = parent
         self._haystack = None
@@ -71,26 +72,26 @@ class MvObject(MvAbstract):
                     self._haystack.extend(child.haystack)
         return self._haystack
 
-    def add_category(self,name):
+    def add_category(self, name):
         if name not in self.categories:
-            self.categories[name]=None
+            self.categories[name] = None
             if self.is_leaf() is False:
                 for child in self:
                     child.add_category(name)
         self.parent.add_category(name)
 
-    def set_category(self,name,value,recursive = True):
+    def set_category(self, name, value, recursive=True):
         self.add_category(name)
-        self.categories[name]=value
+        self.categories[name] = value
         if recursive is True and self.is_leaf() is False:
             for child in self:
-                child.set_category(name,value,recursive)
+                child.set_category(name, value, recursive)
 
     @haystack.setter
-    def haystack(self,haystack):
+    def haystack(self, haystack):
         self._haystack = None
 
-    def search(self,text):
+    def search(self, text):
         if self.is_leaf() is True:
             return False
         for c in self.haystack:
@@ -104,10 +105,10 @@ class MvObject(MvAbstract):
     def is_empty(self):
         return self._empty
 
-    def save(self, filename = None):
+    def save(self, filename=None):
         if filename is None:
             filename = uuid.uuid1() + '.pickle'
-        fpickle = open(filename,'w')
+        fpickle = open(filename, 'w')
         pickle.dump(self, fpickle)
         fpickle.close()
 

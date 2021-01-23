@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1615</width>
-    <height>908</height>
+    <width>1680</width>
+    <height>932</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -269,6 +269,19 @@
        <widget class="QWidget" name="layoutWidget">
         <layout class="QVBoxLayout" name="verticalLayout_5">
          <item>
+          <spacer name="horizontalSpacer_8">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
           <widget class="PlotWidget" name="g_fdistance"/>
          </item>
          <item>
@@ -283,8 +296,18 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="font">
+         <font>
+          <pointsize>16</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
         <property name="title">
-         <string>Analysis</string>
+         <string>Hertz Analysis</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -292,40 +315,59 @@
         <property name="checked">
          <bool>false</bool>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="3">
+        <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
-          <widget class="QSplitter" name="splitter_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="PlotWidget" name="g_indentation"/>
+           </item>
+           <item>
+            <widget class="PlotWidget" name="g_histo"/>
+           </item>
+           <item>
+            <widget class="PlotWidget" name="g_scatter"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="es_analysis">
+           <property name="enabled">
+            <bool>true</bool>
            </property>
-           <widget class="QWidget" name="layoutWidget">
-            <layout class="QVBoxLayout" name="verticalLayout_6">
-             <item>
-              <widget class="PlotWidget" name="g_indentation"/>
-             </item>
-             <item>
-              <widget class="PlotWidget" name="g_es"/>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="layoutWidget">
-            <layout class="QVBoxLayout" name="verticalLayout_7">
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_11">
-               <item>
-                <widget class="PlotWidget" name="g_histo"/>
-               </item>
-               <item>
-                <widget class="PlotWidget" name="g_scatter"/>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <widget class="PlotWidget" name="g_decay"/>
-             </item>
-            </layout>
-           </widget>
+           <property name="font">
+            <font>
+             <pointsize>16</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
+           <property name="text">
+            <string>Elasticity Spectra Analysis </string>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>15</width>
+             <height>15</height>
+            </size>
+           </property>
           </widget>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <item>
+            <widget class="PlotWidget" name="g_es"/>
+           </item>
+           <item>
+            <widget class="PlotWidget" name="g_decay">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -1045,19 +1087,6 @@
          </item>
         </layout>
        </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_8">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
       </item>
       <item>
        <widget class="QSlider" name="slid_alpha">

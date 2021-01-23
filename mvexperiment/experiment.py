@@ -1,43 +1,48 @@
-from .mvFilesystem import MvNode
 import numpy as np
-from .curve import Segment
-from .curve import MODE_DIRECTION_BACKWARD,MODE_DIRECTION_FORWARD,MODE_DIRECTIONS_PAUSE
+
+from .curve import (MODE_DIRECTION_BACKWARD, MODE_DIRECTION_FORWARD,
+                    MODE_DIRECTIONS_PAUSE, Segment)
+from .mvFilesystem import MvNode
+
 
 class DataSet(MvNode):
     _leaf_ext = ['.txt']
 
-    def __init__(self, filename=None, parent = None):
-        super().__init__(parent=parent,filename=filename)
+    def __init__(self, filename=None, parent=None):
+        super().__init__(parent=parent, filename=filename)
         self._header = None
-        self.cantilever_k = 1.0     #elastic constant of the cantilever in nN/nm
-        self.cantilever_lever = 1.0 #calibration factor InvOls in nm/V
+        self.cantilever_k = 1.0  # elastic constant of the cantilever in nN/nm
+        self.cantilever_lever = 1.0  # calibration factor InvOls in nm/V
         self.cantilever_type = 'Colloidal probe'
-        self.original_filename = None #the name of the file the text output was created from
-        self.tip_radius = 1000.0    #radius of the tip, used for sphere, in nm
-        self.tip_shape = 'sphere'   #onest shapes are 'sphere' , 'cone' , 'flat'
-        self.data = {'time':[],'force':[],'deflection':[],'z':[]} #store for the full time tracks, add additional channels
-        self.protocol = []          #a list of protsegments parameters
-        self.protocol_speed = None  #in case a default speed was set and it is not readable from the segment
+        # the name of the file the text output was created from
+        self.original_filename = None
+        self.tip_radius = 1000.0  # radius of the tip, used for sphere, in nm
+        self.tip_shape = 'sphere'  # onest shapes are 'sphere' , 'cone' , 'flat'
+        # store for the full time tracks, add additional channels
+        self.data = {'time': [], 'force': [], 'deflection': [], 'z': []}
+        self.protocol = []  # a list of protsegments parameters
+        # in case a default speed was set and it is not readable from the segment
+        self.protocol_speed = None
         self.version = None
         self.forwardSegment = 0
         self.hertz = {}
-        self.hertz['threshold']=None
+        self.hertz['threshold'] = None
         self.hertz['thresholdType'] = 'indentation'
         self.xpos = None
         self.ypos = None
         self.valid = True
 
-    def setRadius(self,value,recursive = True):
+    def setRadius(self, value, recursive=True):
         self.tip_radius = value
         if recursive is True:
             for c in self.haystack:
                 c.tip_radius = value
 
-    def setForwardSegment(self,value,recursive=True):
+    def setForwardSegment(self, value, recursive=True):
         self.forwardSegment = value
         if recursive is True:
             for c in self.haystack:
-                c.forwardSegment=value
+                c.forwardSegment = value
 
     def open(self):
         self.header()
@@ -45,11 +50,11 @@ class DataSet(MvNode):
         self.createSegments()
 
     def check(self):
-        #Implement this function to get a signature of the filetype (not only by the extension)
-        return True #True = this is a known file, False otherwise
+        # Implement this function to get a signature of the filetype (not only by the extension)
+        return True  # True = this is a known file, False otherwise
 
     def header(self):
-        #Implement this function to populate the header, see the constructor for critical info
+        # Implement this function to populate the header, see the constructor for critical info
         pass
 
     def load(self):
@@ -63,7 +68,7 @@ class DataSet(MvNode):
 ##### Optics11 Chiaro ############
 ##################################
 
-def cross(x1,x2,th,dth):
+def cross(x1, x2, th, dth):
     th1 = th+dth
     th2 = th-dth
     if np.sign(x1-th1) != np.sign(x2-th1):
@@ -71,6 +76,7 @@ def cross(x1,x2,th,dth):
     if np.sign(x1-th2) != np.sign(x2-th2):
         return True
     return False
+
 
 class ChiaroBase(DataSet):
 
@@ -84,26 +90,35 @@ class ChiaroBase(DataSet):
 
     def header(self):
         f = open(self.filename)
-        targets=['Tip radius (um)','Calibration factor','k (N/m)','SMDuration (s)','Piezo Indentation Sweep Settings','Profile:','E[eff] (Pa)','X-position (um)','Y-position (um)']
+        targets = ['Tip radius (um)', 'Calibration factor', 'k (N/m)', 'SMDuration (s)',
+                   'Piezo Indentation Sweep Settings', 'Profile:', 'E[eff] (Pa)', 'X-position (um)', 'Y-position (um)']
         reading_protocol = False
-         
+
         for line in f:
             if reading_protocol is False:
                 if line[0:len(targets[0])] == targets[0]:
-                    self.tip_radius = float(line.strip().replace(',','.').split('\t')[1])*1000.0 #NB: internal units are nm
+                    self.tip_radius = float(line.strip().replace(',', '.').split('\t')[
+                                            1])*1000.0  # NB: internal units are nm
                 elif line[0:len(targets[1])] == targets[1]:
-                    self.cantilever_lever = float(line.strip().replace(',','.').split('\t')[1]) #NB: so called geometric factor
+                    self.cantilever_lever = float(line.strip().replace(',', '.').split('\t')[
+                                                  1])  # NB: so called geometric factor
                 elif line[0:len(targets[2])] == targets[2]:
-                    self.cantilever_k = float(line.strip().replace(',','.').split('\t')[1])
+                    self.cantilever_k = float(
+                        line.strip().replace(',', '.').split('\t')[1])
                 elif line[0:len(targets[3])] == targets[3]:
-                    delay = float(line.strip().replace(',','.')[len(targets[3]):])
+                    delay = float(line.strip().replace(
+                        ',', '.')[len(targets[3]):])
                     self.protocol.append([0, delay])
                 elif line[0:len(targets[6])] == targets[6]:
-                    self.youngProvided = float(line.strip().replace(',','.').split('\t')[1])/1.0e9 #saved in Pa, internally in GPa; this is Eeff (i.e. including 1-\nu^2)
+                    # saved in Pa, internally in GPa; this is Eeff (i.e. including 1-\nu^2)
+                    self.youngProvided = float(
+                        line.strip().replace(',', '.').split('\t')[1])/1.0e9
                 elif line[0:len(targets[7])] == targets[7]:
-                    self.xpos = float(line[len(targets[7]):].strip().replace(',','.'))
+                    self.xpos = float(
+                        line[len(targets[7]):].strip().replace(',', '.'))
                 elif line[0:len(targets[8])] == targets[8]:
-                    self.ypos = float(line[len(targets[8]):].strip().replace(',','.'))
+                    self.ypos = float(
+                        line[len(targets[8]):].strip().replace(',', '.'))
                 elif line[0:len(targets[5])] == targets[5]:
                     reading_protocol = True
                 elif line[0:len(targets[4])] == targets[4]:
@@ -113,7 +128,7 @@ class ChiaroBase(DataSet):
                     reading_protocol = False
                 else:
                     slices = line.strip().replace(',', '.').split('\t')
-                    self.protocol.append([float(slices[1]),float(slices[3])])
+                    self.protocol.append([float(slices[1]), float(slices[3])])
         f.close()
 
     def load(self):
@@ -126,9 +141,11 @@ class ChiaroBase(DataSet):
                 if riga[0:len(stopLine)] == stopLine:
                     numeric = True
             else:
-                line = riga.strip().replace(',','.').split('\t')
+                line = riga.strip().replace(',', '.').split('\t')
                 # Time (s)	Load (uN)	Indentation (nm)	Cantilever (nm)	Piezo (nm)	Auxiliary
-                data.append([float(line[0]),float(line[1]),float(line[3]),float(line[4])]) #skip 2 = indentation and #5 auxiliary if present
+                # skip 2 = indentation and #5 auxiliary if present
+                data.append([float(line[0]), float(line[1]),
+                             float(line[3]), float(line[4])])
         f.close()
         data = np.array(data)
 
@@ -136,31 +153,32 @@ class ChiaroBase(DataSet):
         self.data['force'] = data[:, 1]*1000.0
         self.data['deflection'] = data[:, 2]
         self.data['z'] = data[:, 3]
-        
-    def toggleIndCal(self,value=False):
+
+    def toggleIndCal(self, value=False):
         for c in self:
             if c.basename == 'Calib' or c.basename == 'Indentations':
                 for s in c.haystack:
                     s.active = value
 
+
 class Chiaro(ChiaroBase):
 
-    def createSegments(self, bias = 30):
+    def createSegments(self, bias=30):
         sign = +1
         actualPos = 1
         nodi = []
         nodi.append(0)
         wait = 0
-        for nextThreshold,nextTime in self.protocol:
-            for j in range(actualPos,len(self.data['z'])):
+        for nextThreshold, nextTime in self.protocol:
+            for j in range(actualPos, len(self.data['z'])):
                 if self.data['time'][j] > wait + nextTime:
-                    if (cross(self.data['z'][j],self.data['z'][j-1],nextThreshold,bias)) is True:
+                    if (cross(self.data['z'][j], self.data['z'][j-1], nextThreshold, bias)) is True:
                         nodi.append(j)
                         wait = self.data['time'][j]
                         break
             actualPos = j
         nodi.append(len(self.data['z'])-1)
-        self.nodi=nodi
+        self.nodi = nodi
         for i in range(len(nodi) - 1):
             z = self.data['z'][nodi[i]:nodi[i + 1]]
             f = self.data['force'][nodi[i]:nodi[i + 1]]
@@ -171,9 +189,10 @@ class Chiaro(ChiaroBase):
             # for future reference maybe worth adding a fit ?
             self[-1].speed = (z[end] - z[beg]) / (t[end] - t[beg])
 
+
 class ChiaroGenova(ChiaroBase):
-    #this procedure works for old text curves from Genova, not last version
-    #waiting for the feedback from Optics11 to get it corrected
+    # this procedure works for old text curves from Genova, not last version
+    # waiting for the feedback from Optics11 to get it corrected
     def createSegments(self):
         vs = self.protocol
         nodi = []
@@ -209,10 +228,10 @@ class ChiaroGenova(ChiaroBase):
             z = self.data['z'][nodi[i]:nodi[i+1]]
             f = self.data['force'][nodi[i]:nodi[i+1]]
             t = self.data['time'][nodi[i]:nodi[i+1]]
-            self.append(Segment(self,z,f))
+            self.append(Segment(self, z, f))
             beg = int(len(z)/3)
             end = int(2*len(z)/3)
-            #for future reference maybe worth adding a fit ?
+            # for future reference maybe worth adding a fit ?
             self[-1].speed = (z[end]-z[beg])/(t[end]-t[beg])
 
 ##################################
@@ -232,45 +251,49 @@ class NanoSurf(DataSet):
 
     def header(self):
         f = open(self.filename)
-        targets=['#Cantilever=','#Spring-Constant=','#Deflection-Sensitivity=','#Filename=','#SpecMap','#SpecMode']
+        targets = ['#Cantilever=', '#Spring-Constant=',
+                   '#Deflection-Sensitivity=', '#Filename=', '#SpecMap', '#SpecMode']
 
         def outNum(text):
             s = ''
             for c in text:
-                if c.isdigit() or c in ['.','e','-','+']:
-                    s+=c
+                if c.isdigit() or c in ['.', 'e', '-', '+']:
+                    s += c
                 else:
                     break
             return float(s)
-        map_dim = [None,None]
-        map_size = [None,None]
+        map_dim = [None, None]
+        map_size = [None, None]
         isMap = False
         for line in f:
-            if line[0:len(targets[2])] == targets[2]: #1.4736e-07m/V
-                self.cantilever_lever = outNum(line[len(targets[2]):])*1e9 #NB: internal units are nm/V
+            if line[0:len(targets[2])] == targets[2]:  # 1.4736e-07m/V
+                # NB: internal units are nm/V
+                self.cantilever_lever = outNum(line[len(targets[2]):])*1e9
             elif line[0:len(targets[1])] == targets[1]:
-                self.cantilever_k = outNum(line[len(targets[1]):]) #NB: internal units are nm/V
+                # NB: internal units are nm/V
+                self.cantilever_k = outNum(line[len(targets[1]):])
             elif line[0:len(targets[0])] == targets[0]:
-                self.cantilever_type = line[len(targets[0]):].strip() #guess the radius
+                self.cantilever_type = line[len(
+                    targets[0]):].strip()  # guess the radius
                 data = self.cantilever_type.strip().split('-')
-                if len(data)>1:
+                if len(data) > 1:
                     if 'um' in data[1]:
-                        radius = float(data[1].replace('um',''))*1000.0
+                        radius = float(data[1].replace('um', ''))*1000.0
                         self.tip_radius = radius
-                    if len(data)>2:
+                    if len(data) > 2:
                         if 'um/s' in data[2]:
                             speed = float(data[1].replace('um/s', '')) * 1000.0
                             self.protocol_speed = speed
             elif line[0:len(targets[3])] == targets[3]:
                 self.original_filename = line[len(targets[3]):].strip()
             elif line[0:len(targets[5])] == targets[5]:
-                if line[line.find('=')+1:].strip()=='Map':
+                if line[line.find('=')+1:].strip() == 'Map':
                     isMap = True
             elif (line[0:len(targets[4])] == targets[4]) and (isMap is True):
                 tp = line[line.find('-')+1:line.find('=')]
                 if tp == 'Dim':
                     map_dim = line[line.find('=')+1:].split(';')
-                elif tp=='Size':
+                elif tp == 'Size':
                     map_size = line[line.find('=')+1:].split(';')
                 elif tp == 'CurIndex':
                     curindex = int(line[line.find('=') + 1:])
@@ -281,8 +304,8 @@ class NanoSurf(DataSet):
                     dy = (float(map_dim[3]) - float(map_dim[2]))/(ny-1)
                     for i in range(nx):
                         for j in range(ny):
-                            coordinates.append((i*dx,j*dy))
-                    self.xpos,self.ypos = coordinates[curindex]
+                            coordinates.append((i*dx, j*dy))
+                    self.xpos, self.ypos = coordinates[curindex]
             elif line[0] != '#':
                 break
         f.close()
@@ -297,10 +320,10 @@ class NanoSurf(DataSet):
                 if line[0:10] == '#Spec-Data':
                     dummy = False
                     self.protocol.append(collected)
-                    #Note the header line
-                    #Spec-Data=Z-Axis Sensor [m];Deflection [V];Z-Axis-Out [m]
-                    #Spec-Data=Z-Axis Sensor [m];Deflection [N];Z-Axis-Out [m]
-                    #Units for Deflection can be either V or N !
+                    # Note the header line
+                    # Spec-Data=Z-Axis Sensor [m];Deflection [V];Z-Axis-Out [m]
+                    # Spec-Data=Z-Axis Sensor [m];Deflection [N];Z-Axis-Out [m]
+                    # Units for Deflection can be either V or N !
                     self.data_channels = line[11:].strip().split(';')
                 elif line[0:11] == '#Spec-Phase':
                     self.append(Segment(self))
@@ -317,19 +340,20 @@ class NanoSurf(DataSet):
                 if line.strip() == '':
                     dummy = True
                 else:
-                    data.append([i for i in map(float,line.strip().split(';'))])
+                    data.append(
+                        [i for i in map(float, line.strip().split(';'))])
                     collected += 1
         self.protocol.append(len(data))
         f.close()
         data = np.array(data)
         # Now get as much information as possible out of the curves
         # Spec-Data=Z-Axis Sensor [m];Deflection [N];Z-Axis-Out [m]
-        #mmmm, try to guess it
+        # mmmm, try to guess it
 
         check = np.abs(np.mean(data[:100, 1])*1e9)
-        if check<1000:
-            self.data['force'] = data[:,1]*1e9
-        else :
+        if check < 1000:
+            self.data['force'] = data[:, 1]*1e9
+        else:
             self.data['force'] = data[:, 1] * self.cantilever_lever
         self.data['z'] = data[:, 0]*1e9
 
@@ -337,20 +361,20 @@ class NanoSurf(DataSet):
         for i in range(len(self.protocol)-1):
             z = self.data['z'][self.protocol[i]:self.protocol[i+1]]
             f = self.data['force'][self.protocol[i]:self.protocol[i+1]]
-            self[i].setData(z,f,reorder=True)
+            self[i].setData(z, f, reorder=True)
 
 
 ##########################
 ###Synthetic Hertz Data###
 ##########################
 
-#Data file: .tsv file with force and displacement colums
-             #only one segment, can add more 
-             #No header, use mother class default parameters for K, R
+# Data file: .tsv file with force and displacement colums
+            # only one segment, can add more
+            # No header, use mother class default parameters for K, R
 
 class Easytsv(DataSet):
     _leaf_ext = ['.tsv']
-    
+
     def check(self):
         f = open(self.filename)
         l1 = f.readline().strip()
@@ -358,21 +382,22 @@ class Easytsv(DataSet):
         if l1 == '#easy_tsv':
             return True
         else:
-            return False 
+            return False
 
     def load(self):
         f = open(self.filename)
         lines = list()
-        for i in range(3): #first three lines of the file
-            lines.append(f.readline().strip()) #strip removes \n
+        for i in range(3):  # first three lines of the file
+            lines.append(f.readline().strip())  # strip removes \n
         f.close()
-        self.cantilever_k = float(lines[1][lines[1].find(':')+1:].strip()) #K value needed by program 
-        self.tip_radius =   float(lines[2][lines[2].find(':')+1:].strip()) #R value needed by program 
-        data = np.loadtxt(self.filename, delimiter='\t', skiprows = 4)
-        self.data['force'] = data[:,1]
+        # K value needed by program
+        self.cantilever_k = float(lines[1][lines[1].find(':')+1:].strip())
+        # R value needed by program
+        self.tip_radius = float(lines[2][lines[2].find(':')+1:].strip())
+        data = np.loadtxt(self.filename, delimiter='\t', skiprows=4)
+        self.data['force'] = data[:, 1]
         self.data['z'] = data[:, 0]
 
     def createSegments(self):
         self.append(Segment(self))
         self[0].setData(self.data['z'], self.data['force'])
-        

@@ -6,12 +6,13 @@ import os
 import posixpath
 import re
 import sys
-from _collections_abc import Sequence
-from errno import EINVAL, ENOENT, ENOTDIR, EBADF, ELOOP
+from errno import EBADF, EINVAL, ELOOP, ENOENT, ENOTDIR
 from operator import attrgetter
-from stat import S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO
+from stat import (S_ISBLK, S_ISCHR, S_ISDIR, S_ISFIFO, S_ISLNK, S_ISREG,
+                  S_ISSOCK)
 from urllib.parse import quote_from_bytes as urlquote_from_bytes
 
+from _collections_abc import Sequence
 
 supports_symlinks = True
 if os.name == 'nt':
@@ -28,7 +29,7 @@ else:
 __all__ = [
     "PurePath", "PurePosixPath", "PureWindowsPath",
     "Path", "PosixPath", "WindowsPath",
-    ]
+]
 
 #
 # Internals
@@ -41,6 +42,7 @@ _IGNORED_WINERRORS = (
     21,  # ERROR_NOT_READY - drive exists but is not accessible
     1921,  # ERROR_CANT_RESOLVE_FILENAME - fix for broken symlink pointing to itself
 )
+
 
 def _ignore_error(exception):
     return (getattr(exception, 'errno', None) in _IGNORED_ERROS or
@@ -134,7 +136,7 @@ class _WindowsFlavour(_Flavour):
         {'CON', 'PRN', 'AUX', 'NUL'} |
         {'COM%d' % i for i in range(1, 10)} |
         {'LPT%d' % i for i in range(1, 10)}
-        )
+    )
 
     # Interesting findings about extended paths:
     # - '\\?\c:\a', '//?/c:\a' and '//?/c:/a' are all supported
@@ -283,6 +285,7 @@ class _WindowsFlavour(_Flavour):
                     userhome = self.join(parts)
         return userhome
 
+
 class _PosixFlavour(_Flavour):
     sep = '/'
     altsep = ''
@@ -319,6 +322,7 @@ class _PosixFlavour(_Flavour):
         sep = self.sep
         accessor = path._accessor
         seen = {}
+
         def _resolve(path, rest):
             if rest.startswith(sep):
                 path = ''
@@ -350,9 +354,9 @@ class _PosixFlavour(_Flavour):
                     # untouched.
                     path = newpath
                 else:
-                    seen[newpath] = None # not resolved symlink
+                    seen[newpath] = None  # not resolved symlink
                     path = _resolve(path, target)
-                    seen[newpath] = path # resolved symlink
+                    seen[newpath] = path  # resolved symlink
 
             return path
         # NOTE: according to POSIX, getcwd() cannot contain path components
@@ -436,7 +440,8 @@ class _NormalAccessor(_Accessor):
             symlink = os.symlink
         else:
             def symlink(a, b, target_is_directory):
-                raise NotImplementedError("symlink() not available on this system")
+                raise NotImplementedError(
+                    "symlink() not available on this system")
     else:
         # Under POSIX, os.symlink() takes two args
         @staticmethod
@@ -463,12 +468,14 @@ def _make_selector(pattern_parts, flavour):
     if pat == '**':
         cls = _RecursiveWildcardSelector
     elif '**' in pat:
-        raise ValueError("Invalid pattern: '**' can only be an entire path component")
+        raise ValueError(
+            "Invalid pattern: '**' can only be an entire path component")
     elif _is_wildcard_pattern(pat):
         cls = _WildcardSelector
     else:
         cls = _PreciseSelector
     return cls(pat, child_parts, flavour)
+
 
 if hasattr(functools, "lru_cache"):
     _make_selector = functools.lru_cache()(_make_selector)
@@ -545,7 +552,6 @@ class _WildcardSelector(_Selector):
                             yield p
         except PermissionError:
             return
-
 
 
 class _RecursiveWildcardSelector(_Selector):
@@ -845,7 +851,7 @@ class PurePath(object):
             raise ValueError("%r has an empty name" % (self,))
         drv, root, parts = self._flavour.parse_parts((name,))
         if (not name or name[-1] in [self._flavour.sep, self._flavour.altsep]
-            or drv or root or len(parts) != 1):
+                or drv or root or len(parts) != 1):
             raise ValueError("Invalid name %r" % (name))
         return self._from_parsed_parts(self._drv, self._root,
                                        self._parts[:-1] + [name])
@@ -986,6 +992,7 @@ class PurePath(object):
             if not fnmatch.fnmatchcase(part, pat):
                 return False
         return True
+
 
 # Can't subclass os.PathLike from PurePath and keep the constructor
 # optimizations in PurePath._parse_args().
@@ -1141,7 +1148,8 @@ class Path(PurePath):
         drv, root, pattern_parts = self._flavour.parse_parts((pattern,))
         if drv or root:
             raise NotImplementedError("Non-relative patterns are unsupported")
-        selector = _make_selector(("**",) + tuple(pattern_parts), self._flavour)
+        selector = _make_selector(
+            ("**",) + tuple(pattern_parts), self._flavour)
         for p in selector.select_from(self):
             yield p
 
@@ -1530,7 +1538,7 @@ class Path(PurePath):
         (as returned by os.path.expanduser)
         """
         if (not (self._drv or self._root) and
-            self._parts and self._parts[0][:1] == '~'):
+                self._parts and self._parts[0][:1] == '~'):
             homedir = self._flavour.gethomedir(self._parts[0][1:])
             return self._from_parts([homedir] + self._parts[1:])
 
@@ -1543,6 +1551,7 @@ class PosixPath(Path, PurePosixPath):
     On a POSIX system, instantiating a Path should return this object.
     """
     __slots__ = ()
+
 
 class WindowsPath(Path, PureWindowsPath):
     """Path subclass for Windows systems.
@@ -1558,4 +1567,5 @@ class WindowsPath(Path, PureWindowsPath):
         raise NotImplementedError("Path.group() is unsupported on this system")
 
     def is_mount(self):
-        raise NotImplementedError("Path.is_mount() is unsupported on this system")
+        raise NotImplementedError(
+            "Path.is_mount() is unsupported on this system")
