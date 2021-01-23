@@ -315,13 +315,7 @@ class Nanoment(object):
         self.ind = Xf - Yf / self.k
         self.touch = Yf
 
-        # if self._ui.es_analysis.isChecked() is False:
-        # return
-        self.set_elasticityspectra()
-
-        # self.set_elasticityspectra()  #need to change this: now, it is called when Analysis is checked,
-        # hoever it does not do anything as it is set to none (box is not ticked at the start). It needs
-        # to be called after the Hertz analysis, when box is ticked
+        self.set_elasticityspectra()  # calling set_elasticity() spectra
 
     def reset_E(self):
         self._E = None

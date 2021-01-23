@@ -23,7 +23,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.collection = None
         self.curve_raw = pg.PlotCurveItem(clickable=False)
         self.curve_raw.setPen(
-            pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2))
+            pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=1))
         self.ui.g_single.plotItem.showGrid(True, True)
         self.ui.g_single.plotItem.addItem(self.curve_raw)
         self.curve_single = pg.PlotCurveItem(clickable=False)
@@ -71,7 +71,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_decay.plotItem.addItem(self.es_band)
 
         def title_style(lab):
-            return '<span style="font-weight:bold; font-size: 8pt;">{}</span>'.format(lab)
+            return '<span style="font-weight:bold; font-size: 15pt;">{}</span>'.format(lab)
 
         def lab_style(lab):
             return '<span style="">{}</span>'.format(lab)
