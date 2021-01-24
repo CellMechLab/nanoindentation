@@ -21,6 +21,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui = view.Ui_MainWindow()
         self.ui.setupUi(self)
         self.collection = None
+        # set plots style
         self.curve_raw = pg.PlotCurveItem(clickable=False)
         self.curve_raw.setPen(
             pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=1))
@@ -35,20 +36,20 @@ class NanoWindow(QtWidgets.QMainWindow):
             0, 0, 255, 150), width=2, style=QtCore.Qt.DashLine))
         self.ui.g_single.plotItem.addItem(self.curve_fit)
         self.histo_data = pg.PlotCurveItem([0, 0], [
-                                           0], clickable=False, stepMode=True, fillLevel=0, brush=pg.mkBrush([0, 0, 255, 50]))
+                                           0], clickable=False, stepMode='center', fillLevel=0, brush=pg.mkBrush([0, 0, 255, 50]))
         self.histo_data.setPen(pg.mkPen(pg.QtGui.QColor(0, 0, 255), width=1))
         self.ui.g_histo.plotItem.addItem(self.histo_data)
         self.histo_esdata = pg.PlotCurveItem([0, 0], [
-                                             0], clickable=False, stepMode=True, fillLevel=0, brush=pg.mkBrush([255, 0, 0, 50]))
+                                             0], clickable=False, stepMode='center', fillLevel=0, brush=pg.mkBrush([255, 0, 0, 50]))
         self.histo_esdata.setPen(pg.mkPen(pg.QtGui.QColor(255, 0, 0), width=1))
         self.ui.g_histo.plotItem.addItem(self.histo_esdata)
         self.histo_fit = pg.PlotCurveItem(clickable=False)
         self.histo_fit.setPen(pg.mkPen(pg.QtGui.QColor(
-            0, 0, 255, 150), width=2, style=QtCore.Qt.DashLine))
+            0, 0, 255, 150), width=5))  # ,  style=QtCore.Qt.DashLine))
         self.ui.g_histo.plotItem.addItem(self.histo_fit)
         self.histo_esfit = pg.PlotCurveItem(clickable=False)
         self.histo_esfit.setPen(pg.mkPen(pg.QtGui.QColor(
-            255, 0, 0, 150), width=2, style=QtCore.Qt.DashLine))
+            255, 0, 0, 150), width=5))  # ,style=QtCore.Qt.DashLine))
         self.ui.g_histo.plotItem.addItem(self.histo_esfit)
         self.es_top = pg.PlotCurveItem(clickable=False)
         self.es_top.setPen(pg.mkPen(pg.QtGui.QColor(

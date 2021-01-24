@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1680, 922)
+        MainWindow.resize(1680, 900)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("../../../../../../../../.designer/backup/ico.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
