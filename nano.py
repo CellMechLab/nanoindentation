@@ -698,7 +698,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         progress = QtWidgets.QProgressDialog(
             "Computing Contact Point", "Abort", 0, len(self.collection))
 
-        for c in self.collection:
+        for i, c in enumerate(self.collection):
             c.setCPFunction(self.contactPoint.calculate)
             c.calculate_contactpoint()
             progress.setValue(i)
