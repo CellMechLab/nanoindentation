@@ -42,7 +42,9 @@ class uiPanel(QtWidgets.QDialog):
         self.p2.linkedViewChanged(self.p1.vb, self.p2.XAxis)
 
     def setPlots(self, x1, y1, x2, y2, x0, y0):
-        self.p1.plot(x1, y1, pen='b')
+        self.p1.plot(x1, y1, pen=pg.mkPen(
+            pg.QtGui.QColor(0, 0, 255, 150), width=5))
         if x0 is not None:
             self.p1.plot([x0], [y0], pen='b', symbol='o')
-        self.p2.addItem(pg.PlotCurveItem(x2, y2, pen='r'))
+        self.p2.addItem(pg.PlotCurveItem(x2, y2, pen=pg.mkPen(
+            pg.QtGui.QColor(255, 0, 0, 150), width=5)))
