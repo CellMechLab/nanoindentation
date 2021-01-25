@@ -222,7 +222,7 @@ class NanoWindow(QtWidgets.QMainWindow):
 
         # important: when adding something new to the gui, need to append slots + append handlers
         slots.append(self.ui.es_analysis.clicked)
-        handlers.append(self.filter_changed)
+        handlers.append(self.es_changed)
 
         slots.append(self.ui.crop.clicked)
         handlers.append(self.crop)
@@ -676,8 +676,16 @@ class NanoWindow(QtWidgets.QMainWindow):
             return
         QtWidgets.QApplication.setOverrideCursor(
             QtGui.QCursor(QtCore.Qt.WaitCursor))
-        for c in self.collection:
+        progress = QtWidgets.QProgressDialog(
+            "Computing Elasticity Spectra", "Abort", 0, len(self.collection))
+
+        for i, c in enumerate(self.collection):
             c.set_elasticityspectra()
+            progress.setValue(i)
+            if progress.wasCanceled():
+                break  # to change
+            QtCore.QCoreApplication.processEvents()
+        progress.setValue(i)
         QtWidgets.QApplication.restoreOverrideCursor()
         self.count()
 
@@ -686,12 +694,19 @@ class NanoWindow(QtWidgets.QMainWindow):
             return
         QtWidgets.QApplication.setOverrideCursor(
             QtGui.QCursor(QtCore.Qt.WaitCursor))
-        # import matplotlib.pyplot as plt
+
+        progress = QtWidgets.QProgressDialog(
+            "Computing Contact Point", "Abort", 0, len(self.collection))
+
         for c in self.collection:
             c.setCPFunction(self.contactPoint.calculate)
             c.calculate_contactpoint()
+            progress.setValue(i)
+            if progress.wasCanceled():
+                break  # to change
+            QtCore.QCoreApplication.processEvents()
+        progress.setValue(i)
         QtWidgets.QApplication.restoreOverrideCursor()
-        # plt.show()
         self.count()
 
     def filter_changed(self):
