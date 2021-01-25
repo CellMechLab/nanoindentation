@@ -258,23 +258,19 @@ class Nanoment(object):
         if option1 is True:
             # Option 1, use the original formula, but with a cleaner derivative
             # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
-            # import matplotlib.pyplot as plt
-            # plt.plot(self.ind,self.touch)
-            # plt.show()
-            dz = np.average(self.z[1:] - self.z[:-1])
             # sorting ind in ascending order (indices)
             odg = np.argsort(self.ind)
             Oind = self.ind[odg]  # sorted indentation
             Ofor = self.touch[odg]  # sorted force
-            # tvgamma = 0.03
-            # params, val = pynumdiff.optimize.finite_difference.first_order(Ofor, dz, params=None,
-            #                                                                options = {
-            #                                                                    'iterate': True},
-            #                                                                tvgamma = tvgamma,
-            #                                                                dxdt_truth = None)
+            dd = np.average(Oind[1:] - Oind[:-1])
+            tvgamma = 0.03  # to change
+            params, val = pynumdiff.optimize.finite_difference.first_order(Ofor, dd, params=None,
+                                                                           options={
+                                                                               'iterate': True},
+                                                                           tvgamma=tvgamma,
+                                                                           dxdt_truth=None)
             F_hat, dFdd = pynumdiff.finite_difference.first_order(
-                Ofor, dz,  # params = params
-                params=[500], options={'iterate': True})
+                Ofor, dd, params=params, options={'iterate': True})
             Ex = np.sqrt(self.R * Oind)
             Ey = 3*dFdd[Ex > 0]/8/Ex[Ex > 0]
             Ex = Ex[Ex > 0]
@@ -460,11 +456,11 @@ class Nanoment(object):
         except (RuntimeError, ValueError):
             return
 
-    @property
+    @ property
     def selected(self):
         return self._selected
 
-    @selected.setter
+    @ selected.setter
     def selected(self, x):
         if x == self._selected:
             return
@@ -473,22 +469,22 @@ class Nanoment(object):
             self._ui.mainlist.setCurrentItem(self._tree)
         self.update_view()
 
-    @property
+    @ property
     def alpha(self):
         return self._alpha
 
-    @alpha.setter
+    @ alpha.setter
     def alpha(self, x):
         if x == self._alpha:
             return
         self._alpha = x
         self.update_view()
 
-    @property
+    @ property
     def active(self):
         return self._state == ST_BLK
 
-    @active.setter
+    @ active.setter
     def active(self, x):
         if x is False:
             if self._state < ST_BLK:
@@ -501,11 +497,11 @@ class Nanoment(object):
             self._tree.setCheckState(0, QtCore.Qt.Checked)
         self.update_view()
 
-    @property
+    @ property
     def included(self):
         return self._state > ST_RED
 
-    @included.setter
+    @ included.setter
     def included(self, x):
         if x is False:
             if self._state == ST_RED:
@@ -520,79 +516,79 @@ class Nanoment(object):
             self._tree.setCheckState(0, QtCore.Qt.Checked)
         self.update_view()
 
-    @property
+    @ property
     def E(self):
         if self._E is None:
             self.fitHertz()
         return self._E
 
-    @E.setter
+    @ E.setter
     def E(self, x):
         if self._E == x:
             return
         self._E = x
         self.update_view()
 
-    @property
+    @ property
     def x_contact_point(self):
         if self._contactpoint is None:
             return None
         return self._contactpoint[0]
 
-    @x_contact_point.setter
+    @ x_contact_point.setter
     def x_contact_point(self, x):
         if self._contactpoint[0] == x:
             return
         self._contactpoint[0] = x
         self.set_indentation()
 
-    @property
+    @ property
     def y_contact_point(self):
         if self._contactpoint is None:
             return None
         return self._contactpoint[1]
 
-    @y_contact_point.setter
+    @ y_contact_point.setter
     def y_contact_point(self, x):
         if self._contactpoint[1] == x:
             returnF
         self._contactpoint[1] = x
         self.set_indentation()
 
-    @property
+    @ property
     def z_raw(self):
         if self._z_raw is None:
             return None
         return self._z_raw - self.x_contact_point
 
-    @z_raw.setter
+    @ z_raw.setter
     def z_raw(self, x):
         if x is not None:
             x = np.array(x)
         self._z_raw = x
         self.z = x
 
-    @property
+    @ property
     def f_raw(self):
         if self._f_raw is None:
             return None
         return self._f_raw - self.y_contact_point
 
-    @f_raw.setter
+    @ f_raw.setter
     def f_raw(self, x):
         if x is not None:
             x = np.array(x)
         self._f_raw = x
         self.force = x
 
-    @property
+    @ property
     def z(self):
         if self._z is None or self.x_contact_point is None:
             return None
         delta = self._z - self.x_contact_point
         return delta
 
-    @z.setter
+    @ z.setter
     def z(self, x):
         if sames(self._z, x) is False:
             if x is None:
@@ -602,13 +598,13 @@ class Nanoment(object):
             self._z = x
             self.filter_all()
 
-    @property
+    @ property
     def force(self):
         if self._f is None or self.y_contact_point is None:
             return None
         return self._f - self.y_contact_point
 
-    @force.setter
+    @ force.setter
     def force(self, x):
         if sames(self._f, x) is False:
             if x is not None:
@@ -617,11 +613,11 @@ class Nanoment(object):
             self.update_view()
             self.filter_all()
 
-    @property
+    @ property
     def Ex(self):
         return self._ex
 
-    @Ex.setter
+    @ Ex.setter
     def Ex(self, x):
         if sames(self._ex, x) is False:
             if x is not None:
@@ -629,11 +625,11 @@ class Nanoment(object):
             self._ex = x
             self.update_view()
 
-    @property
+    @ property
     def Ey(self):
         return self._ey
 
-    @Ey.setter
+    @ Ey.setter
     def Ey(self, x):
         if sames(self._ey, x) is False:
             if x is not None:
@@ -641,11 +637,11 @@ class Nanoment(object):
             self._ey = x
             self.update_view()
 
-    @property
+    @ property
     def ind(self):
         return self._ind
 
-    @ind.setter
+    @ ind.setter
     def ind(self, x):
         if sames(self._ind, x) is False:
             if x is not None:
@@ -653,11 +649,11 @@ class Nanoment(object):
             self._ind = x
             self.update_view()
 
-    @property
+    @ property
     def touch(self):
         return self._touch
 
-    @touch.setter
+    @ touch.setter
     def touch(self, x):
         if sames(self._touch, x) is False:
             if x is not None:

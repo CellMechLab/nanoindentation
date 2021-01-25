@@ -45,7 +45,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_histo.plotItem.addItem(self.histo_esdata)
         self.histo_fit = pg.PlotCurveItem(clickable=False)
         self.histo_fit.setPen(pg.mkPen(pg.QtGui.QColor(
-            0, 0, 255, 150), width=5))  # ,  style=QtCore.Qt.DashLine))
+            0, 0, 255, 150), width=5))  # ,style=QtCore.Qt.DashLine))
         self.ui.g_histo.plotItem.addItem(self.histo_fit)
         self.histo_esfit = pg.PlotCurveItem(clickable=False)
         self.histo_esfit.setPen(pg.mkPen(pg.QtGui.QColor(
