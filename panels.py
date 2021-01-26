@@ -4,7 +4,6 @@ import pyqtgraph as pg
 from PyQt5 import QtGui, QtWidgets
 from scipy.optimize import curve_fit
 from scipy.signal import savgol_filter
-
 import popup
 
 ALL = []

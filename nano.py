@@ -33,7 +33,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_single.plotItem.addItem(self.curve_single)
         self.curve_fit = pg.PlotCurveItem(clickable=False)
         self.curve_fit.setPen(pg.mkPen(pg.QtGui.QColor(
-            0, 0, 255, 150), width=2, style=QtCore.Qt.DashLine))
+            0, 0, 255, 255), width=5, style=QtCore.Qt.DashLine))
         self.ui.g_single.plotItem.addItem(self.curve_fit)
         self.histo_data = pg.PlotCurveItem([0, 0], [
                                            0], clickable=False, stepMode='center', fillLevel=0, brush=pg.mkBrush([0, 0, 255, 50]))
@@ -83,7 +83,8 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_es.plotItem.setTitle(title_style('Elasticity Spectra'))
         self.ui.g_scatter.plotItem.setTitle(title_style('Elasticity values'))
         self.ui.g_single.plotItem.setTitle(title_style('Current curve'))
-        self.ui.g_histo.plotItem.setTitle(title_style('Elasticity stats'))
+        # empty title (elasticity stats)
+        self.ui.g_histo.plotItem.setTitle(title_style(''))
         self.ui.g_decay.plotItem.setTitle(title_style('Bilayer model'))
 
         self.ui.g_fdistance.plotItem.setLabel('left', lab_style('Force [nN]'))
@@ -301,11 +302,11 @@ class NanoWindow(QtWidgets.QMainWindow):
 
         self.fdistance_fit = pg.PlotCurveItem(clickable=False)
         self.fdistance_fit.setPen(pg.mkPen(pg.QtGui.QColor(
-            0, 0, 255, 150), width=2, style=QtCore.Qt.DashLine))
+            0, 0, 255, 255), width=5, style=QtCore.Qt.DashLine))
         self.ui.g_fdistance.plotItem.addItem(self.fdistance_fit)
         self.indentation_fit = pg.PlotCurveItem(clickable=False)
         self.indentation_fit.setPen(pg.mkPen(pg.QtGui.QColor(
-            0, 0, 255, 150), width=2, style=QtCore.Qt.DashLine))
+            0, 0, 255, 255), width=5, style=QtCore.Qt.DashLine))
         self.ui.g_indentation.plotItem.addItem(self.indentation_fit)
         self.es_average = pg.PlotCurveItem(clickable=False)
         self.es_average.setPen(pg.mkPen(pg.QtGui.QColor(
@@ -677,13 +678,13 @@ class NanoWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.setOverrideCursor(
             QtGui.QCursor(QtCore.Qt.WaitCursor))
         progress = QtWidgets.QProgressDialog(
-            "Computing Elasticity Spectra", "Abort", 0, len(self.collection))
+            "Computing Elasticity Spectra...", "Abort", 0, len(self.collection))
 
         for i, c in enumerate(self.collection):
             c.set_elasticityspectra()
             progress.setValue(i)
             if progress.wasCanceled():
-                break  # to change
+                return  # to change
             QtCore.QCoreApplication.processEvents()
         progress.setValue(i)
         QtWidgets.QApplication.restoreOverrideCursor()
@@ -696,14 +697,14 @@ class NanoWindow(QtWidgets.QMainWindow):
             QtGui.QCursor(QtCore.Qt.WaitCursor))
 
         progress = QtWidgets.QProgressDialog(
-            "Computing Contact Point", "Abort", 0, len(self.collection))
+            "Computing Contact Point...", "Abort", 0, len(self.collection))
 
         for i, c in enumerate(self.collection):
             c.setCPFunction(self.contactPoint.calculate)
             c.calculate_contactpoint()
             progress.setValue(i)
             if progress.wasCanceled():
-                break  # to change
+                return  # to change
             QtCore.QCoreApplication.processEvents()
         progress.setValue(i)
         QtWidgets.QApplication.restoreOverrideCursor()
