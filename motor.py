@@ -1,7 +1,6 @@
 import numpy as np
 import pyqtgraph as pg
-# derivative package
-import pynumdiff
+# import pynumdiff
 from PyQt5 import QtCore, QtGui, QtWidgets
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
@@ -268,47 +267,132 @@ class Nanoment():
         if len(self.z) != len(self.force) is None:
             return
 
-        option1 = True
-        # Calculate a clean area a
+        option1 = False
+        # Option 1, use the original formula
+        # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
         if option1 is True:
-            # Option 1, use the original formula, but with a cleaner derivative
-            # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
-            # sorting ind in ascending order (indices)
-            odg = np.argsort(self.ind)
-            Oind = self.ind[odg]  # sorted indentation
-            Ofor = self.touch[odg]  # sorted force
-            dd = np.average(Oind[1:] - Oind[:-1])
-            tvgamma = 0.03  # to change
-            params, val = pynumdiff.optimize.finite_difference.first_order(Ofor, dd, params=None,
-                                                                           options={
-                                                                               'iterate': True},
-                                                                           tvgamma=tvgamma,
-                                                                           dxdt_truth=None)
-            F_hat, dFdd = pynumdiff.finite_difference.first_order(
-                Ofor, dd, params=params, options={'iterate': True})
-            Ex = np.sqrt(self.R * Oind)
-            Ey = 3*dFdd[Ex > 0]/8/Ex[Ex > 0]
-            Ex = Ex[Ex > 0]
+            x = self.ind
+            y = self.touch
+
+            if(len(x)) < 1:
+                return
+
+            interp = self._ui.es_interpolate.isChecked()
+            if interp is True:
+                yi = interp1d(x, y)
+                max_x = np.max(x)
+                min_x = 1
+                if np.min(x) > min_x:
+                    min_x = np.min(x)
+                xx = np.arange(min_x, max_x, 1.0)
+                yy = yi(xx)
+                ddt = 1.0
+            else:
+                xx = x[1:]
+                yy = y[1:]
+                ddt = (x[-1]-x[1])/(len(x)-2)
+
+            area = np.pi * xx * self.R
+            contactradius = np.sqrt(xx * self.R)
+            coeff = 3 * np.sqrt(np.pi) / 8 / np.sqrt(area)
+            win = int(self._ui.es_win.value())
+            if win % 2 == 0:
+                win += 1
+            if len(yy) <= win:
+                return None, None
+            order = int(self._ui.es_order.value())
+            deriv = savgol_filter(yy, win, order, delta=ddt, deriv=1)
+            Ey = coeff * deriv
+            dwin = int(win - 1)
+            Ex = contactradius[dwin:-dwin]
+            Ey = Ey[dwin:-dwin]
+
+            self.Ex = np.array(Ex)
+            self.Ey = np.array(Ey)
+
         else:
             # Option2 use the prime function
             # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
-            dz = np.average(self.z[1:] - self.z[:-1])
-            jcp = np.argmin(self.z ** 2)  # z is already z-z_CP
-            tvgamma = 0.03
-            params, val = pynumdiff.optimize.finite_difference.first_order(self.force, dz, params=None,
-                                                                           options={
-                                                                               'iterate': True},
-                                                                           tvgamma=tvgamma,
-                                                                           dxdt_truth=None)
-            S_hat, dSdz_hat = pynumdiff.finite_difference.first_order(
-                self.force, dz, params=params, options={'iterate': True})
-            nonull = self.ind > 0
-            Ex = np.sqrt(self.R * self.ind[nonull])
-            S = dSdz_hat[jcp:]
-            Ey = 3*S[nonull]/(1-S[nonull]/self.k)/8/Ex
 
-        self.Ex = np.array(Ex)
-        self.Ey = np.array(Ey)
+            x = self.z
+            y = self.force
+            ind = self.ind
+
+            if(len(x)) < 1:
+                return
+
+            interp = self._ui.es_interpolate.isChecked()
+            if interp is True:
+                yi = interp1d(x, y)
+                max_x = np.max(x)
+                min_x = 1
+                if np.min(x) > min_x:
+                    min_x = np.min(x)
+                xx = np.arange(min_x, max_x, 1.0)
+                yy = yi(xx)
+                ddt = 1.0
+            else:
+                xx = x[1:]
+                yy = y[1:]
+                ddt = (x[-1]-x[1])/(len(x)-2)
+
+            jcp = np.argmin(self.z ** 2)
+            win = int(self._ui.es_win.value())
+            if win % 2 == 0:
+                win += 1
+            if len(yy) <= win:
+                return None, None
+            order = int(self._ui.es_order.value())
+            dfdz = savgol_filter(self.force, win, order, delta=ddt, deriv=1)
+            S = dfdz[jcp:]
+            S = S[ind > 0]
+            Ex = np.sqrt(self.R * ind[ind > 0])
+            Ey = 3*S/(1-S/self.k)/8/Ex
+
+            self.Ex = np.array(Ex)
+            self.Ey = np.array(Ey)
+
+            # option1 = True
+            # # Calculate a clean area a
+            # if option1 is True:
+            #     # Option 1, use the original formula, but with a cleaner derivative
+            #     # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
+            #     # sorting ind in ascending order (indices)
+            #     odg = np.argsort(self.ind)
+            #     Oind = self.ind[odg]  # sorted indentation
+            #     Ofor = self.touch[odg]  # sorted force
+            #     dd = np.average(Oind[1:] - Oind[:-1])
+            #     tvgamma = 0.03  # to change
+            #     params, val = pynumdiff.optimize.finite_difference.first_order(Ofor, dd, params=None,
+            #                                                                    options={
+            #                                                                        'iterate': True},
+            #                                                                    tvgamma=tvgamma,
+            #                                                                    dxdt_truth=None)
+            #     F_hat, dFdd = pynumdiff.finite_difference.first_order(
+            #         Ofor, dd, params=params, options={'iterate': True})
+            #     Ex = np.sqrt(self.R * Oind)
+            #     Ey = 3*dFdd[Ex > 0]/8/Ex[Ex > 0]
+            #     Ex = Ex[Ex > 0]
+            # else:
+            #     # Option2 use the prime function
+            #     # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
+            #     dz = np.average(self.z[1:] - self.z[:-1])
+            #     jcp = np.argmin(self.z ** 2)  # z is already z-z_CP
+            #     tvgamma = 0.03
+            #     params, val = pynumdiff.optimize.finite_difference.first_order(self.force, dz, params=None,
+            #                                                                    options={
+            #                                                                        'iterate': True},
+            #                                                                    tvgamma=tvgamma,
+            #                                                                    dxdt_truth=None)
+            #     S_hat, dSdz_hat = pynumdiff.finite_difference.first_order(
+            #         self.force, dz, params=params, options={'iterate': True})
+            #     nonull = self.ind > 0
+            #     Ex = np.sqrt(self.R * self.ind[nonull])
+            #     S = dSdz_hat[jcp:]
+            #     Ey = 3*S[nonull]/(1-S[nonull]/self.k)/8/Ex
+
+            # self.Ex = np.array(Ex)
+            # self.Ey = np.array(Ey)
 
     def set_indentation(self):
         if self._ui.analysis.isChecked() is False:

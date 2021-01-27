@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1680, 932)
+        MainWindow.resize(1680, 906)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("../../../../../../../../.designer/backup/ico.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -415,7 +415,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.CP_box)
         self.gridLayout.addLayout(self.verticalLayout, 0, 4, 1, 1)
         self.groupBox_6 = QtWidgets.QGroupBox(self.centralwidget)
-        self.groupBox_6.setEnabled(False)
+        self.groupBox_6.setEnabled(True)
         self.groupBox_6.setObjectName("groupBox_6")
         self.formLayout_2 = QtWidgets.QFormLayout(self.groupBox_6)
         self.formLayout_2.setObjectName("formLayout_2")
