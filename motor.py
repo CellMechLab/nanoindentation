@@ -1,17 +1,19 @@
 import numpy as np
-import pynumdiff
 import pyqtgraph as pg
-# derivative packages
-from derivative import dxdt
+# derivative package
+import pynumdiff
 from PyQt5 import QtCore, QtGui, QtWidgets
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
 from scipy.signal import find_peaks, medfilt, savgol_filter
 
+# Plotting pens
 PEN_GREEN = pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2)
 ST_RED = 1
 ST_BLU = 2
 ST_BLK = 3
+
+# Function checking if two arrays are the same
 
 
 def sames(ar1, ar2):
@@ -21,17 +23,24 @@ def sames(ar1, ar2):
         return False
     ar1 = np.array(ar1)
     ar2 = np.array(ar2)
-    if np.sum(ar1-ar2) == 0:
+    if np.sum(ar1-ar2) == 0:  # returns true if each element of ar1 is the same as that in ar2
         return True
     return False
+
+# Hertz model with poisson 0.5 (incompressible material)
 
 
 def hertz(x, E, R, poisson=0.5):
     return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
 
+# Gauss function
+
 
 def Gauss(x, x0, w, A):
     return A*np.exp(-((x-x0)/w)**2)
+
+# Calculation of Hertz model:
+# returns x (indentation), y (force), z (cantilever displacement)
 
 
 def calc_hertz(E, R, k, maxvalue):
@@ -39,6 +48,9 @@ def calc_hertz(E, R, k, maxvalue):
     y = hertz(x, E/1e9, R)
     z = x + y/k
     return x, y, z
+
+# Calculating gaussian fit
+# returns peak centre (x0), width (w), amp (A), nx (range), Gaussian fit computed with optimal parameters (Gauss(nx, *popt))
 
 
 def gauss_fit(x, y):
@@ -51,8 +63,9 @@ def gauss_fit(x, y):
     return x0, w, A, nx, Gauss(nx, *popt)
 
 
-class Nanoment(object):
+class Nanoment():
     def __init__(self, curve=None):
+        # attributes
         self.basename = None
         self._contactpoint = [0, 0]
         self._z = None
@@ -83,6 +96,8 @@ class Nanoment(object):
             self.R = curve.tip_radius
             self.k = curve.cantilever_k
             self.basename = curve.basename
+
+    # Methods
 
     def connect(self, nanowin, node=False):
         self._ui = nanowin.ui
@@ -164,7 +179,10 @@ class Nanoment(object):
             if self.Ex is not None and self.Ey is not None:
                 if len(self.Ex) == len(self.Ey):
                     self._g_es.setData(self.Ex**2/self.R, self.Ey*1e9)
-            self._g_es.setPen(self.getPen('es'))
+                    self._g_es.setPen(self.getPen('es'))
+
+            else:
+                self._g_es.setPen(None)
 
         if self._g_scatter is not None:
             if self.active is True and self.E is not None:
@@ -250,9 +268,6 @@ class Nanoment(object):
         if len(self.z) != len(self.force) is None:
             return
 
-        # implementing derivative with optimisation (see pynumdiff_test.py) may be too slow
-        # since we are interested in global phenomenon (stiffening/softening) we could input parameter manually,
-        # so that we have a smooth derivative (might lose some info) but gain speed
         option1 = True
         # Calculate a clean area a
         if option1 is True:
@@ -311,7 +326,7 @@ class Nanoment(object):
         self.ind = Xf - Yf / self.k
         self.touch = Yf
 
-        self.set_elasticityspectra()  # calling set_elasticity() spectra
+        self.set_elasticityspectra()  # calling set_elasticityspectra()
 
     def reset_E(self):
         self._E = None
@@ -326,6 +341,8 @@ class Nanoment(object):
         self._z = self._z_raw
         self._f = self._f_raw
         self._E = None
+        self._Ex = None
+        self._Ey = None
 
     def reset_data(self):
         self._z = None
@@ -343,7 +360,7 @@ class Nanoment(object):
         self.f_raw = y
         self._E = None
 
-    def filter_all(self):
+    def filter_all(self, recalculate_cp=True):
         self.rewind_data()
         if self._ui.prominency.isChecked() is True:
             pro = float(self._ui.prominency_prominency.value()) / 100.0
@@ -356,7 +373,12 @@ class Nanoment(object):
             if self._ui.fsmooth_median.isChecked() is True:
                 method = 'MM'
             self.filter_fsmooth(win, method)
-        self.calculate_contactpoint()
+        if recalculate_cp is True:
+            self.calculate_contactpoint()
+        else:
+            # set indentation calls set_elasticityspectra() if self.ui.analysis_es is clicked
+            self.set_indentation()
+            self.update_view()
 
     def filter_prominence(self, pro=0.2, winperc=1, threshold=25):
         if self.included is False:
@@ -551,7 +573,7 @@ class Nanoment(object):
     @ y_contact_point.setter
     def y_contact_point(self, x):
         if self._contactpoint[1] == x:
-            returnF
+            return
         self._contactpoint[1] = x
         self.set_indentation()
 

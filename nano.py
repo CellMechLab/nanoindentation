@@ -158,6 +158,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.experiment = None
         self.collection = []
 
+    # connecting all GUI events (signals) to respective slots (functions)
     def connect_all(self, connect=True):
         slots = []
         handlers = []
@@ -219,7 +220,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         handlers.append(self.include_exclude_all)
 
         slots.append(self.ui.analysis.clicked)
-        handlers.append(self.filter_changed)
+        handlers.append(self.hertz_changed)
 
         # important: when adding something new to the gui, need to append slots + append handlers
         slots.append(self.ui.es_analysis.clicked)
@@ -672,24 +673,6 @@ class NanoWindow(QtWidgets.QMainWindow):
         for c in self.collection:
             c.alpha = num
 
-    def es_changed(self):
-        if self.collection is None:
-            return
-        QtWidgets.QApplication.setOverrideCursor(
-            QtGui.QCursor(QtCore.Qt.WaitCursor))
-        progress = QtWidgets.QProgressDialog(
-            "Computing Elasticity Spectra...", "Abort", 0, len(self.collection))
-
-        for i, c in enumerate(self.collection):
-            c.set_elasticityspectra()
-            progress.setValue(i)
-            if progress.wasCanceled():
-                return  # to change
-            QtCore.QCoreApplication.processEvents()
-        progress.setValue(i)
-        QtWidgets.QApplication.restoreOverrideCursor()
-        self.count()
-
     def cpoint_changed(self):
         if self.collection is None:
             return
@@ -718,10 +701,36 @@ class NanoWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.restoreOverrideCursor()
         self.count()
 
+    def hertz_changed(self):
+        QtWidgets.QApplication.setOverrideCursor(
+            QtGui.QCursor(QtCore.Qt.WaitCursor))
+        for c in self.collection:
+            c.filter_all(False)  # False does not re-compute contact point
+        QtWidgets.QApplication.restoreOverrideCursor()
+        self.count()
+
+    def es_changed(self):
+        if self.collection is None:
+            return
+        QtWidgets.QApplication.setOverrideCursor(
+            QtGui.QCursor(QtCore.Qt.WaitCursor))
+        progress = QtWidgets.QProgressDialog(
+            "Computing Elasticity Spectra...", "Abort", 0, len(self.collection))
+
+        for i, c in enumerate(self.collection):
+            c.filter_all(False)
+            progress.setValue(i)
+            if progress.wasCanceled():
+                return  # to change
+            QtCore.QCoreApplication.processEvents()
+        progress.setValue(i)
+        QtWidgets.QApplication.restoreOverrideCursor()
+        self.count()
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    app.setApplicationName('Nano2021')
+    app.setApplicationName('Nano2020')
     chiaro = NanoWindow()
     chiaro.show()
     # QtCore.QObject.connect( app, QtCore.SIGNAL( 'lastWindowClosed()' ), app, QtCore.SLOT( 'quit()' ) )
