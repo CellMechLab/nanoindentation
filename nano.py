@@ -3,12 +3,13 @@ import sys
 import numpy as np
 import pyqtgraph as pg
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 import motor
 import mvexperiment.experiment as experiment
 import nano_view as view
 import panels
 import popup
+import filter_panel
+
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
@@ -121,6 +122,10 @@ class NanoWindow(QtWidgets.QMainWindow):
             QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         self.ui.CP_box.setLayout(layout)
         self.changeCP(0)
+
+        # for obj in filter_panel.ALL_FILTERS:
+        #     self.ui.comboFilter.addItem(obj['label'])
+        # self.filter = None
 
         self.workingdir = './'
         self.collection = []
@@ -260,6 +265,8 @@ class NanoWindow(QtWidgets.QMainWindow):
             exp = experiment.NanoSurf(fname)
         elif self.ui.open_easy_tsv.isChecked() is True:
             exp = experiment.Easytsv(fname)
+        elif self.ui.jpk_open.isChecked() is True:
+            exp = experiment.Jpk(fname)
 
         exp.browse()
         if len(exp) == 0:
@@ -338,6 +345,9 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.contactPoint.createUI(self.ui.CP_box.layout())
         self.contactPoint.connect(self.cpoint_changed)
         self.cpoint_changed()
+
+    def changeFilter(self, index):
+        pass
 
     def include_exclude_all(self):
         if self.ui.reset_activate.isChecked() is True:

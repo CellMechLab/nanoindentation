@@ -451,6 +451,7 @@ class Nanoment():
             winperc = int(self._ui.prominency_band.value())
             threshold = int(self._ui.prominency_minfreq.value())
             self.filter_prominence(pro, winperc, threshold)
+        # 454-460 to change
         if self._ui.fsmooth.isChecked() is True:
             win = int(self._ui.fsmooth_window.value())
             method = 'SG'
