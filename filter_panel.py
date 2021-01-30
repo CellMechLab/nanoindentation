@@ -149,7 +149,6 @@ class SavGolFilter(Filter):  # SavGol Filter
         self.addParameter(self.polyorder)
 
     def calculate(self, c):
-        x = c._z
         y = c._f
         win = self.win.getValue()
         polyorder = self.polyorder.getValue()
@@ -160,7 +159,7 @@ class SavGolFilter(Filter):  # SavGol Filter
 
         y_smooth = savgol_filter(y, win, polyorder)
 
-        return y_smooth, x
+        return y_smooth
 
 
 class MedianFilter(Filter):
@@ -170,13 +169,12 @@ class MedianFilter(Filter):
         self.addParameter(self.win)
 
     def calculate(self, c):
-        x = c._z
         y = c._f
         win = self.win.getValue()
         if win % 2 == 0:
             win += 1
         y_smooth = medfilt(y, win)
-        return y_smooth, x
+        return y_smooth
 
 
 ALL_FILTERS.append({'label': 'Savitzky Golay', 'method': SavGolFilter})

@@ -4,7 +4,7 @@ import pyqtgraph as pg
 from PyQt5 import QtCore, QtGui, QtWidgets
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
-from scipy.signal import find_peaks, medfilt, savgol_filter
+from scipy.signal import find_peaks, savgol_filter
 
 # Plotting pens
 PEN_GREEN = pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2)
@@ -91,6 +91,7 @@ class Nanoment():
         self._ui = None
         self._Eindex = 0
         self._cpfunction = None
+        self._filter = None
         if curve is not None:
             self.R = curve.tip_radius
             self.k = curve.cantilever_k
@@ -247,6 +248,9 @@ class Nanoment():
         if self.selected is True:
             pen = PEN_GREEN
         return pen
+
+    def setFilterFunction(self, cf):
+        self._filter = cf
 
     def setCPFunction(self, cf):
         self._cpfunction = cf
@@ -453,18 +457,12 @@ class Nanoment():
             threshold = int(self._ui.prominency_minfreq.value())
             self.filter_prominence(pro, winperc, threshold)
         # 454-460 to change
-        if self._ui.fsmooth.isChecked() is True:
-            win = int(self._ui.fsmooth_window.value())
-            method = 'SG'
-            if self._ui.fsmooth_median.isChecked() is True:
-                method = 'MM'
-            self.filter_fsmooth(win, method)
+        if self._filter is not None:
+            self._f = self._filter(self)
         if recalculate_cp is True:
             self.calculate_contactpoint()
-        else:
-            # set indentation calls set_elasticityspectra() if self.ui.analysis_es is clicked
-            self.set_indentation()
-            self.update_view()
+        self.set_indentation()
+        self.update_view()
 
     def filter_prominence(self, pro=0.2, winperc=1, threshold=25):
         if self.included is False:
@@ -493,21 +491,6 @@ class Nanoment():
         ff.real = yinterpreal(xf)
         ff.imag = yinterpimag(xf)
         self._f = np.fft.irfft(ff, n=len(y))
-
-    def filter_fsmooth(self, win, method):
-        if self.included is False:
-            return
-        if win % 2 == 0:
-            win += 1
-        y = self._f
-        df = np.fft.rfft(y)
-        if method == 'SG':
-            df.real[win:-win] = savgol_filter(df.real, win, 3)[win:-win]
-            df.imag[win:-win] = savgol_filter(df.imag, win, 3)[win:-win]
-        elif method == 'MM':
-            df.real[win:-win] = medfilt(df.real, win)[win:-win]
-            df.imag[win:-win] = medfilt(df.imag, win)[win:-win]
-        self._f = np.fft.irfft(df, n=len(y))
 
     def calculate_contactpoint(self):
         self.reset_contactpoint()

@@ -7,8 +7,8 @@ import motor
 import mvexperiment.experiment as experiment
 import nano_view as view
 import panels
+import filter_panel as panfilter
 import popup
-import filter_panel
 
 
 pg.setConfigOption('background', 'w')
@@ -117,15 +117,20 @@ class NanoWindow(QtWidgets.QMainWindow):
             self.ui.comboCP.addItem(obj['label'])
         self.contactPoint = None
 
+        self.ui.comboFsmooth.addItem('-- None --')
+        for obj in panfilter.ALL_FILTERS:
+            self.ui.comboFsmooth.addItem(obj['label'])
+        self.filterMethod = None
+
         layout = QtWidgets.QFormLayout()
-        layout.setFieldGrowthPolicy(
-            QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         self.ui.CP_box.setLayout(layout)
         self.changeCP(0)
 
-        # for obj in filter_panel.ALL_FILTERS:
-        #     self.ui.comboFilter.addItem(obj['label'])
-        # self.filter = None
+        layout2 = QtWidgets.QFormLayout()
+        layout2.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        self.ui.FSmooth_box.setLayout(layout2)
+        self.changeFS(0)
 
         self.workingdir = './'
         self.collection = []
@@ -134,6 +139,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         # connect load and open, other connections after load/open
         self.ui.open_selectfolder.clicked.connect(self.open_folder)
         self.ui.comboCP.currentIndexChanged.connect(self.changeCP)
+        self.ui.comboFsmooth.currentIndexChanged.connect(self.changeFS)
 
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -182,17 +188,6 @@ class NanoWindow(QtWidgets.QMainWindow):
 
         slots.append(self.ui.quickView.clicked)
         handlers.append(self.quickCP)
-
-        cli = [self.ui.prominency, self.ui.fsmooth,
-               self.ui.fsmooth_savitzky, self.ui.fsmooth_median]
-        vch = [self.ui.prominency_minfreq, self.ui.prominency_band,
-               self.ui.prominency_prominency, self.ui.fsmooth_window]
-        for click in cli:
-            slots.append(click.clicked)
-            handlers.append(self.filter_changed)
-        for chan in vch:
-            slots.append(chan.valueChanged)
-            handlers.append(self.filter_changed)
 
         slots.append(self.ui.fit_indentation.valueChanged)
         handlers.append(self.redostat)
@@ -338,6 +333,18 @@ class NanoWindow(QtWidgets.QMainWindow):
                 a.setPlots(c._z, c._f, *self.contactPoint.quickTest(c), x0, y0)
                 a.exec()
 
+    def changeFS(self, index):
+        if self.filterMethod is not None:
+            self.filterMethod.disconnect()
+        if index == 0:
+            self.filterMethod = None
+        else:
+            self.filterMethod = panfilter.ALL_FILTERS[index-1]['method']()
+            self.filterMethod.createUI(self.ui.FSmooth_box.layout())
+            self.filterMethod.connect(self.fmethod_changed)
+            self.fmethod_changed()
+
+
     def changeCP(self, index):
         if self.contactPoint is not None:
             self.contactPoint.disconnect()
@@ -345,9 +352,6 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.contactPoint.createUI(self.ui.CP_box.layout())
         self.contactPoint.connect(self.cpoint_changed)
         self.cpoint_changed()
-
-    def changeFilter(self, index):
-        pass
 
     def include_exclude_all(self):
         if self.ui.reset_activate.isChecked() is True:
@@ -411,7 +415,7 @@ class NanoWindow(QtWidgets.QMainWindow):
                 except IndexError:
                     QtWidgets.QMessageBox.information(
                         self, 'Empty curve', 'Problem detected with curve {}, not populated'.format(c.basename))
-            self.filter_changed()
+            self.fmethod_changed()
         else:
             return
 
@@ -424,7 +428,7 @@ class NanoWindow(QtWidgets.QMainWindow):
             except IndexError:
                 QtWidgets.QMessageBox.information(
                     self, 'Empty curve', 'Problem detected with curve {}, not populated'.format(c.basename))
-        self.filter_changed()
+        self.fmethod_changed()
 
     def numbers(self):
         E_array = []
@@ -683,6 +687,20 @@ class NanoWindow(QtWidgets.QMainWindow):
         for c in self.collection:
             c.alpha = num
 
+    def fmethod_changed(self):
+        if self.collection is None:
+            return
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+
+        for c in self.collection:
+            if self.filterMethod is None:
+                c.setFilterFunction(None)
+            else:
+                c.setFilterFunction(self.filterMethod.calculate)
+            c.filter_all()
+        QtWidgets.QApplication.restoreOverrideCursor()
+        self.count()
+
     def cpoint_changed(self):
         if self.collection is None:
             return
@@ -700,14 +718,6 @@ class NanoWindow(QtWidgets.QMainWindow):
                 return  # to change
             QtCore.QCoreApplication.processEvents()
         progress.setValue(i)
-        QtWidgets.QApplication.restoreOverrideCursor()
-        self.count()
-
-    def filter_changed(self):
-        QtWidgets.QApplication.setOverrideCursor(
-            QtGui.QCursor(QtCore.Qt.WaitCursor))
-        for c in self.collection:
-            c.filter_all()
         QtWidgets.QApplication.restoreOverrideCursor()
         self.count()
 
