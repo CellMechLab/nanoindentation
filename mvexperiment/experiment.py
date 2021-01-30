@@ -443,7 +443,5 @@ class Jpk(DataSet):
     def createSegments(self):
         segment = ['forward', 'backward']
         for i in range(len(segment)+1):
-            self.append(
-                Segment(self, self.data['z'], self.data['force']))  # sets segments
-            self[i].setData(self.data['z'][i-1],
-                            self.data['force'][i-1])
+            self.append(Segment(self, self.data['z'], self.data['force']))
+            self[i].setData(self.data['z'][i-1], self.data['force'][i-1])

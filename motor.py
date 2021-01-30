@@ -267,7 +267,7 @@ class Nanoment():
         if len(self.z) != len(self.force) is None:
             return
 
-        option1 = False
+        option1 = True
         # Option 1, use the original formula
         # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
         if option1 is True:
@@ -311,9 +311,10 @@ class Nanoment():
             self.Ey = np.array(Ey)
 
         else:
+
             # Option2 use the prime function
             # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
-
+            # current code needs to be revisited
             x = self.z
             y = self.force
             ind = self.ind

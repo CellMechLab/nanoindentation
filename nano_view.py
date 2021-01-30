@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1680, 896)
+        MainWindow.resize(1680, 909)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("../../../../../../../../.designer/backup/ico.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -648,7 +648,7 @@ class Ui_MainWindow(object):
         self.open_o11new.setText(_translate("MainWindow", "Optics11 - NEW"))
         self.open_o11old.setText(_translate("MainWindow", "Optics11 - OLD"))
         self.open_nanosurf.setText(_translate("MainWindow", "Nanosurf export"))
-        self.jpk_open.setText(_translate("MainWindow", "JpK"))
+        self.jpk_open.setText(_translate("MainWindow", "JPK"))
         self.open_easy_tsv.setText(_translate("MainWindow", "Easy tsv"))
         self.open_selectfolder.setText(_translate("MainWindow", "Load Folder"))
         self.open_selectfolder.setShortcut(_translate("MainWindow", "Ctrl+S"))
