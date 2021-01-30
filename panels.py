@@ -68,7 +68,7 @@ class CPPInt(CPParameter):  # CPPInt inherits CPParameter class
 class CPPFloat(CPParameter):
     def __init__(self, label=None):
         super().__init__(label)
-        self._defaultValue = 0
+        self._defaultValue = 0.0
         self.setType('float')
         widget = QtWidgets.QLineEdit()
         valid = QtGui.QDoubleValidator()
@@ -125,11 +125,11 @@ class ContactPoint:  # Contact point class
     def calculate(self, c):
         pass
 
-    def invalidate(self, c, invalid_thresh, j_cp):
-        y = c._f
-        for i in y[:j_cp]:
-            if i-y[j_cp] <= invalid_thresh:
-                return True
+    # def invalidate(self, c, invalid_thresh, j_cp):
+    #     y = c._f
+    #     for i in y[:j_cp]:
+    #         if i-y[j_cp] <= invalid_thresh:
+    #             return True
 
     def disconnect(self):
         for p in self._parameters:

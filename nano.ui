@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1680</width>
-    <height>932</height>
+    <height>909</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -530,6 +530,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QRadioButton" name="jpk_open">
+           <property name="text">
+            <string>JPK</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QRadioButton" name="open_easy_tsv">
            <property name="text">
             <string>Easy tsv</string>
@@ -779,7 +786,7 @@
       <item row="0" column="5">
        <widget class="QGroupBox" name="groupBox_6">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="title">
          <string>Elasticity Spectra</string>
