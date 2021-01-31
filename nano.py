@@ -123,12 +123,14 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.filterMethod = None
 
         layout = QtWidgets.QFormLayout()
-        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.setFieldGrowthPolicy(
+            QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         self.ui.CP_box.setLayout(layout)
         self.changeCP(0)
 
         layout2 = QtWidgets.QFormLayout()
-        layout2.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout2.setFieldGrowthPolicy(
+            QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         self.ui.FSmooth_box.setLayout(layout2)
         self.changeFS(0)
 
@@ -343,7 +345,6 @@ class NanoWindow(QtWidgets.QMainWindow):
             self.filterMethod.createUI(self.ui.FSmooth_box.layout())
             self.filterMethod.connect(self.fmethod_changed)
             self.fmethod_changed()
-
 
     def changeCP(self, index):
         if self.contactPoint is not None:
@@ -690,7 +691,8 @@ class NanoWindow(QtWidgets.QMainWindow):
     def fmethod_changed(self):
         if self.collection is None:
             return
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        QtWidgets.QApplication.setOverrideCursor(
+            QtGui.QCursor(QtCore.Qt.WaitCursor))
 
         for c in self.collection:
             if self.filterMethod is None:

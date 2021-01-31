@@ -4,7 +4,7 @@ import pyqtgraph as pg
 from PyQt5 import QtCore, QtGui, QtWidgets
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
-from scipy.signal import find_peaks, savgol_filter
+from scipy.signal import find_peaks, savgol_filter, resample
 
 # Plotting pens
 PEN_GREEN = pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2)
@@ -271,7 +271,7 @@ class Nanoment():
         if len(self.z) != len(self.force) is None:
             return
 
-        option1 = True
+        option1 = False
         # Option 1, use the original formula
         # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
         if option1 is True:
@@ -318,10 +318,11 @@ class Nanoment():
 
             # Option2 use the prime function
             # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
-            # current code needs to be revisited
+
             x = self.z
             y = self.force
             ind = self.ind
+            fcontact = self.touch
 
             if(len(x)) < 1:
                 return
@@ -329,30 +330,40 @@ class Nanoment():
             interp = self._ui.es_interpolate.isChecked()
             if interp is True:
                 yi = interp1d(x, y)
+
                 max_x = np.max(x)
                 min_x = 1
+
                 if np.min(x) > min_x:
                     min_x = np.min(x)
+
                 xx = np.arange(min_x, max_x, 1.0)
                 yy = yi(xx)
+                jcp = np.argmin(yy)
+                ind = xx[jcp:]
                 ddt = 1.0
             else:
                 xx = x[1:]
                 yy = y[1:]
+                ind = ind
                 ddt = (x[-1]-x[1])/(len(x)-2)
 
-            jcp = np.argmin(self.z ** 2)
+            jcp = np.argmin(yy ** 2)
             win = int(self._ui.es_win.value())
             if win % 2 == 0:
                 win += 1
             if len(yy) <= win:
                 return None, None
             order = int(self._ui.es_order.value())
-            dfdz = savgol_filter(self.force, win, order, delta=ddt, deriv=1)
+            dfdz = savgol_filter(yy, win, order, delta=ddt, deriv=1)
             S = dfdz[jcp:]
-            S = S[ind > 0]
-            Ex = np.sqrt(self.R * ind[ind > 0])
+            nonull = ind > 0
+            S = S[nonull]
+            Ex = np.sqrt(self.R * ind[nonull])
             Ey = 3*S/(1-S/self.k)/8/Ex
+            dwin = int(win - 1)
+            Ex = Ex[dwin:-dwin]
+            Ey = Ey[dwin:-dwin]
 
             self.Ex = np.array(Ex)
             self.Ey = np.array(Ey)
