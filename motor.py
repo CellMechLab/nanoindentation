@@ -340,7 +340,9 @@ class Nanoment():
                 xx = np.arange(min_x, max_x, 1.0)
                 yy = yi(xx)
                 jcp = np.argmin(yy)
-                ind = xx[jcp:]
+                yy_contact = yy[jcp:]
+                xx_contact = xx[jcp:]
+                ind = xx_contact - yy_contact/self.k
                 ddt = 1.0
             else:
                 xx = x[1:]
