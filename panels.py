@@ -294,7 +294,8 @@ class GoodnessOfFit(ContactPoint):  # Goodness of Fit (GoF)
         Zf = z[iContact: iContact + win] - z[iContact]
         Yf = f[iContact: iContact + win] - f[iContact]
         ind = Zf - Yf / c.k
-        ind = ind[ind <= 0.1*R]  # fit only for small indentations
+        ind = ind[ind <= 0.1*R]
+        Yf = Yf[ind <= 0.1*R]   # fit only for small indentations
         return ind, Yf
 
     def fit(self, c, ind, f):
