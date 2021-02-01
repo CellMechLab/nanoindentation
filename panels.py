@@ -4,6 +4,7 @@ import pyqtgraph as pg
 from PyQt5 import QtGui, QtWidgets
 from scipy.optimize import curve_fit
 from scipy.signal import savgol_filter
+from scipy.interpolate import interp1d
 import popup
 
 ALL = []
@@ -421,10 +422,14 @@ class PrimeFunction(ContactPoint):  # Prime Function
     def getWeight(self, c):  # weight is the prime function
         z = c._z
         f = c._f
-        dz = np.average(z[1:] - z[:-1])
         try:
-            f_smooth, dfdz = pynumdiff.finite_difference.first_order(
-                f, dz, params=[500], options={'iterate': True})
+            # f_smooth, dfdz = pynumdiff.finite_difference.first_order(
+            #     f, dz, params=[500], options={'iterate': True})  #too slow!
+            win = 25  # arbitrary
+            order = 4  # arbitrary
+            dz = np.average(z[1:] - z[:-1])
+            dfdz = savgol_filter(f, win, order, delta=dz,
+                                 deriv=1, mode='interp')
         except:
             return None
         return z, dfdz/(1-dfdz)

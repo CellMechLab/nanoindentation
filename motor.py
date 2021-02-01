@@ -318,11 +318,12 @@ class Nanoment():
 
             # Option2 use the prime function
             # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
+            # #Discuss with Massimo why it gives negative E at times##
 
             x = self.z
             y = self.force
             ind = self.ind
-            fcontact = self.touch
+            #fcontact = self.touch
 
             if(len(x)) < 1:
                 return
@@ -339,7 +340,6 @@ class Nanoment():
 
                 xx = np.arange(min_x, max_x, 1.0)
                 yy = yi(xx)
-                # look at case when change CP; now it crashes as ind is reset but not f-z
                 jcp = np.argmin(xx ** 2)
                 yy_contact = yy[jcp:]
                 xx_contact = xx[jcp:]
