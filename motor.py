@@ -271,7 +271,7 @@ class Nanoment():
         if len(self.z) != len(self.force) is None:
             return
 
-        option1 = False
+        option1 = True
         # Option 1, use the original formula
         # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
         if option1 is True:
@@ -318,11 +318,12 @@ class Nanoment():
 
             # Option2 use the prime function
             # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
+            # #Discuss with Massimo why it gives negative E at times##
 
             x = self.z
             y = self.force
             ind = self.ind
-            fcontact = self.touch
+            #fcontact = self.touch
 
             if(len(x)) < 1:
                 return
@@ -339,7 +340,7 @@ class Nanoment():
 
                 xx = np.arange(min_x, max_x, 1.0)
                 yy = yi(xx)
-                jcp = np.argmin(yy)
+                jcp = np.argmin(xx ** 2)
                 yy_contact = yy[jcp:]
                 xx_contact = xx[jcp:]
                 ind = xx_contact - yy_contact/self.k
@@ -350,7 +351,7 @@ class Nanoment():
                 ind = ind
                 ddt = (x[-1]-x[1])/(len(x)-2)
 
-            jcp = np.argmin(yy ** 2)
+            jcp = np.argmin(xx ** 2)
             win = int(self._ui.es_win.value())
             if win % 2 == 0:
                 win += 1
@@ -369,48 +370,6 @@ class Nanoment():
 
             self.Ex = np.array(Ex)
             self.Ey = np.array(Ey)
-
-            # option1 = True
-            # # Calculate a clean area a
-            # if option1 is True:
-            #     # Option 1, use the original formula, but with a cleaner derivative
-            #     # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
-            #     # sorting ind in ascending order (indices)
-            #     odg = np.argsort(self.ind)
-            #     Oind = self.ind[odg]  # sorted indentation
-            #     Ofor = self.touch[odg]  # sorted force
-            #     dd = np.average(Oind[1:] - Oind[:-1])
-            #     tvgamma = 0.03  # to change
-            #     params, val = pynumdiff.optimize.finite_difference.first_order(Ofor, dd, params=None,
-            #                                                                    options={
-            #                                                                        'iterate': True},
-            #                                                                    tvgamma=tvgamma,
-            #                                                                    dxdt_truth=None)
-            #     F_hat, dFdd = pynumdiff.finite_difference.first_order(
-            #         Ofor, dd, params=params, options={'iterate': True})
-            #     Ex = np.sqrt(self.R * Oind)
-            #     Ey = 3*dFdd[Ex > 0]/8/Ex[Ex > 0]
-            #     Ex = Ex[Ex > 0]
-            # else:
-            #     # Option2 use the prime function
-            #     # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
-            #     dz = np.average(self.z[1:] - self.z[:-1])
-            #     jcp = np.argmin(self.z ** 2)  # z is already z-z_CP
-            #     tvgamma = 0.03
-            #     params, val = pynumdiff.optimize.finite_difference.first_order(self.force, dz, params=None,
-            #                                                                    options={
-            #                                                                        'iterate': True},
-            #                                                                    tvgamma=tvgamma,
-            #                                                                    dxdt_truth=None)
-            #     S_hat, dSdz_hat = pynumdiff.finite_difference.first_order(
-            #         self.force, dz, params=params, options={'iterate': True})
-            #     nonull = self.ind > 0
-            #     Ex = np.sqrt(self.R * self.ind[nonull])
-            #     S = dSdz_hat[jcp:]
-            #     Ey = 3*S[nonull]/(1-S[nonull]/self.k)/8/Ex
-
-            # self.Ex = np.array(Ex)
-            # self.Ey = np.array(Ey)
 
     def set_indentation(self):
         if self._ui.analysis.isChecked() is False:
@@ -469,7 +428,6 @@ class Nanoment():
             winperc = int(self._ui.prominency_band.value())
             threshold = int(self._ui.prominency_minfreq.value())
             self.filter_prominence(pro, winperc, threshold)
-        # 454-460 to change
         if self._filter is not None:
             self._f = self._filter(self)
         if recalculate_cp is True:

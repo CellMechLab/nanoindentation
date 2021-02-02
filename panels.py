@@ -1,9 +1,10 @@
 import numpy as np
-import pynumdiff
+#import pynumdiff
 import pyqtgraph as pg
 from PyQt5 import QtGui, QtWidgets
 from scipy.optimize import curve_fit
 from scipy.signal import savgol_filter
+from scipy.interpolate import interp1d
 import popup
 
 ALL = []
@@ -294,7 +295,8 @@ class GoodnessOfFit(ContactPoint):  # Goodness of Fit (GoF)
         Zf = z[iContact: iContact + win] - z[iContact]
         Yf = f[iContact: iContact + win] - f[iContact]
         ind = Zf - Yf / c.k
-        ind = ind[ind <= 0.1*R]  # fit only for small indentations
+        ind = ind[ind <= 0.1*R]
+        Yf = Yf[ind <= 0.1*R]   # fit only for small indentations
         return ind, Yf
 
     def fit(self, c, ind, f):
@@ -420,10 +422,14 @@ class PrimeFunction(ContactPoint):  # Prime Function
     def getWeight(self, c):  # weight is the prime function
         z = c._z
         f = c._f
-        dz = np.average(z[1:] - z[:-1])
         try:
-            f_smooth, dfdz = pynumdiff.finite_difference.first_order(
-                f, dz, params=[500], options={'iterate': True})
+            # f_smooth, dfdz = pynumdiff.finite_difference.first_order(
+            #     f, dz, params=[500], options={'iterate': True})  #too slow!
+            win = 25  # arbitrary
+            order = 4  # arbitrary
+            dz = np.average(z[1:] - z[:-1])
+            dfdz = savgol_filter(f, win, order, delta=dz,
+                                 deriv=1, mode='interp')
         except:
             return None
         return z, dfdz/(1-dfdz)
