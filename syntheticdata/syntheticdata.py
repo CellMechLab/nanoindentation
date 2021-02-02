@@ -19,17 +19,15 @@ import os
 
 
 class FakeData:
-    # PARAMETERS SPECIFIC TO EACH MODEL: populate under specific model class (e.g. FakeHertzData -> E, v)
-    parameters = {}
-    # 2 nm spacing of data
 
-    def __init__(self,  K=0.0186, R=3500.5, ind0=np.linspace(-5000.0, -1.0, 2500), indc=np.linspace(0, 10000.0, 5000)):
+    def __init__(self,  K=0.0186, R=3500.5, ind0=np.linspace(-5000.0, -1.0, 2500), indc=np.linspace(0, 10000.0, 5000)):  # 2 nm spacing of data
         self.K = K  # nN/nm (cantilever spring constant )
         self.R = R  # nm (probe radious)
         self.ind0 = ind0  # nm (indentation no contact)
         self.indc = indc  # nm (indentation contact)
         self.ind = np.concatenate((ind0, indc))  # total indentation
-        self.params = {}  # specific contact mechanics parameters
+        # specific contact mechanics parameters (e.g., Hertz-> E, v)
+        self.params = {}
 
         def model(self):  # returns z, F arrays for specific model (eg Herz, Oliver Pharr)
             pass
@@ -43,9 +41,9 @@ class FakeData:
 
 
 class FakeDataHertz(FakeData):  # fake Hertzian data
-    # Hertz parameters: E (nN/nm**2) and Poisson's Ratio (v)
 
     def model(self):
+        # Hertz parameters: E (nN/nm**2) and Poisson's Ratio (v)
         self.params = {'E': (5 * 1000 * 10**9 / (10 ** 9)**2), 'v':  0.5}
         F = 4/3 * (self.params['E'] / (1-self.params['v']**2)
                    ) * np.sqrt(self.R) * self.ind**(1.5)  # Hertz nN
