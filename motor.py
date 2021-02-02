@@ -475,6 +475,7 @@ class Nanoment():
         if res is None or res is False:
             self.active = False
             return
+        #res[1]=0.0
         self._contactpoint = res
         self.set_indentation()
         self.update_view()

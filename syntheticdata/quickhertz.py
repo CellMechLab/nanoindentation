@@ -8,7 +8,7 @@ cp = 3.0e-6
 indmax = 7e-6
 cpoint = 1000
 indpoint = 7000
-noiselevel = 1e-9
+noiselevel = 1e-12
 noisewidth = 1e-9
 k = 0.032
 
@@ -26,7 +26,7 @@ for i in range(N):
     f.write('#R: {} \n'.format(R*1e9))
     f.write('#displacement [nm] \t #force [nN] \n')
 
-    realcp = cp + 100.0e-9*np.random.normal(scale=1)
+    realcp = cp #+ 100.0e-9*np.random.normal(scale=1)
     zpre = np.linspace(0,realcp,cpoint)
     Fpre = np.zeros(len(zpre))
 
@@ -37,13 +37,13 @@ for i in range(N):
     noise = noiselevel * np.random.normal(scale=.1,size=F.shape)
     F += noise
 
-    properz = np.linspace(0,max(z),cpoint+indpoint)
+    properz = np.linspace(0,max(z),int(max(z)*1e9))
     properF = np.interp(properz, z, F)
 
-    #plt.plot(properz,properF)
+    plt.plot(properz,properF)
 
     for j in range(len(properz)):
         f.write('{}\t{}\n'.format(properz[j]*1e9,properF[j]*1e9))
     f.close()
 print('Terminated')
-#plt.show()
+plt.show()

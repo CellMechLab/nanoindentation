@@ -406,6 +406,16 @@ class Threshold(ContactPoint):  # Threshold
                 break
         return [x[jcp], y[jcp]]
 
+class Fixed(ContactPoint):  # Threshold
+    def create(self):
+        self.Zcp = CPPFloat('Position of the CP [nm]')
+        self.Zcp.setValue(1000.0)
+        self.addParameter(self.Zcp)
+
+    def calculate(self, c):
+        xth = self.Zcp.getValue()
+        return [xth, c._f[np.argmin((c._z-xth)**2)] ]
+
 
 class PrimeFunction(ContactPoint):  # Prime Function
     def create(self):  # parameters that user inputs in this method for CP calculation
@@ -469,3 +479,4 @@ ALL.append({'label': 'Gooodness of Fit', 'method': GoodnessOfFit})
 ALL.append({'label': 'Ratio of Variances', 'method': ThRov})
 ALL.append({'label': 'Ratio of Variances - First Peak', 'method': ThRovFirst})
 ALL.append({'label': 'Second derivative', 'method': DDer})
+ALL.append({'label': 'Fixed', 'method': Fixed})
