@@ -271,7 +271,7 @@ class Nanoment():
         if len(self.z) != len(self.force) is None:
             return
 
-        option1 = False
+        option1 = True
         # Option 1, use the original formula
         # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
         if option1 is True:

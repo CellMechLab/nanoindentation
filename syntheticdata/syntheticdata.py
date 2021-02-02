@@ -29,6 +29,7 @@ class FakeData:
         self.ind0 = ind0  # nm (indentation no contact)
         self.indc = indc  # nm (indentation contact)
         self.ind = np.concatenate((ind0, indc))  # total indentation
+        self.params = {}  # specific contact mechanics parameters
 
         def model(self):  # returns z, F arrays for specific model (eg Herz, Oliver Pharr)
             pass
@@ -43,10 +44,10 @@ class FakeData:
 
 class FakeDataHertz(FakeData):  # fake Hertzian data
     # Hertz parameters: E (nN/nm**2) and Poisson's Ratio (v)
-    parameters = {'E': (5 * 1000 * 10**9 / (10 ** 9)**2), 'v':  0.5}
 
     def model(self):
-        F = 4/3 * (self.parameters['E'] / (1-self.parameters['v']**2)
+        self.params = {'E': (5 * 1000 * 10**9 / (10 ** 9)**2), 'v':  0.5}
+        F = 4/3 * (self.params['E'] / (1-self.params['v']**2)
                    ) * np.sqrt(self.R) * self.ind**(1.5)  # Hertz nN
         # replaces Nans from negative indentations (ind0) with zeros
         F = np.nan_to_num(F, nan=0.0)
@@ -79,13 +80,13 @@ class FakeDataHertz(FakeData):  # fake Hertzian data
 
 # Saving #numfile files with specific #noise_scale
 FakeDataHertz().gen_data_file()
-#savefilesbilayer = FakeDataBilayer().gen_data_file()
+# savefilesbilayer = FakeDataBilayer().gen_data_file()
 
 # Plotting
-#fakedata1 = FakeDataHertz().add_noise(0,1)
-#fakedataBilayer1 = FakeDataBilayer().add_noise(0,10)
-#plt.plot(fakedataBilayer1[0], fakedataBilayer1[1], 'ok')
-#plt.plot(fakedata1[0],fakedata1[1], 'or', ms = 5, alpha= 0.5)
-#plt.xlabel('Distance [nm]')
-#plt.ylabel('Force [nN]')
+# fakedata1 = FakeDataHertz().add_noise(0,1)
+# fakedataBilayer1 = FakeDataBilayer().add_noise(0,10)
+# plt.plot(fakedataBilayer1[0], fakedataBilayer1[1], 'ok')
+# plt.plot(fakedata1[0],fakedata1[1], 'or', ms = 5, alpha= 0.5)
+# plt.xlabel('Distance [nm]')
+# plt.ylabel('Force [nN]')
 # plt.show()

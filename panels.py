@@ -1,5 +1,5 @@
 import numpy as np
-import pynumdiff
+#import pynumdiff
 import pyqtgraph as pg
 from PyQt5 import QtGui, QtWidgets
 from scipy.optimize import curve_fit
