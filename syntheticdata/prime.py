@@ -166,7 +166,7 @@ myTH = FDcurves[12]
 
 # plt.plot(*Prime(myTH))
 
-if True:
+if False:
     plt.subplot(211)
     plt.title('Direct')
     delta = [-100e-9, -50e-9, 0, 50e-9, 100e-9]
@@ -198,6 +198,104 @@ if False:
 
     plt.legend()
 
+<<<<<<< Updated upstream
 # plt.plot([100e-9],[E],'ro')
+=======
+#plt.plot([100e-9],[E],'ro')
+
+winvector = np.array([10,20,30,40,50,60,70,80,90,100])
+if False:
+    miss=[]
+    for dwin in tqdm(winvector):
+        missing1=[]
+        for th in FDcurves:
+            z,S = Prime(th,win=dwin*1e-9,order=4)
+            space = z[1]-z[0]
+
+            iwin = int(10e-9/space)
+            if iwin%2 == 0:
+                iwin += 1
+
+            Sclean = savgol_filter(S,iwin*50+1, polyorder=4)
+            dClean = savgol_filter(Sclean,iwin, polyorder=4,deriv=1,delta=space)
+
+            missing1.append((z[np.argmax(dClean[iwin:-iwin])+iwin]-th['cp'])*1e9)
+        miss.append(np.average(missing1))
+
+    plt.plot(winvector,miss,'o',label='Prime win')
+
+if False:
+    winvector = np.linspace(10,100,20)
+    miss=[]
+    for dwin in tqdm(winvector):
+        missing1=[]
+        for th in FDcurves:
+            z,S = Prime(th,win=50e-9,order=4)
+            space = z[1]-z[0]
+
+            iwin = int(dwin*1e-9/space)
+            if iwin%2 == 0:
+                iwin += 1
+
+            iwin2 = int(10e-9/space)
+            if iwin2%2 == 0:
+                iwin2 += 1
+
+            Sclean = savgol_filter(S,iwin, polyorder=4)
+            dClean = savgol_filter(Sclean,iwin2, polyorder=4,deriv=1,delta=space)
+
+            missing1.append((z[np.argmax(dClean[iwin:-iwin])+iwin]-th['cp'])*1e9)
+        miss.append(np.average(missing1))
+
+    plt.plot(winvector,miss,'o',label='SClean win')
+
+if False:
+    miss=[]
+    for dwin in tqdm(winvector):
+        missing1=[]
+        for th in FDcurves:
+            z,S = Prime(th,win=50e-9,order=4)
+            space = z[1]-z[0]
+
+            iwin = int(10e-9/space)
+            if iwin%2 == 0:
+                iwin += 1
+
+            iwin2 = int(dwin*1e-9/space)
+            if iwin2%2 == 0:
+                iwin2 += 1
+
+            Sclean = savgol_filter(S,iwin*50+1, polyorder=4)
+            dClean = savgol_filter(Sclean,iwin2, polyorder=4,deriv=1,delta=space)
+
+            missing1.append((z[np.argmax(dClean[iwin:-iwin])+iwin]-th['cp'])*1e9)
+        miss.append(np.average(missing1))
+
+    plt.plot(winvector,miss,'o',label='dClean win')
+
+
+plt.legend()
+
+
+
+if True:
+    myTH = FDcurves[12]
+    z,S = Prime(myTH,win=50e-9,order=4)
+    plt.subplot(211)
+    plt.plot(z*1e9,S)
+
+
+    space = z[1]-z[0]
+    iwin = int(80e-9/space)
+    if iwin%2 == 0:
+        iwin += 1
+    Sclean = savgol_filter(S,iwin*50+1, polyorder=4)
+    plt.plot(z*1e9,Sclean)
+    plt.plot([myTH['cp']*1e9,myTH['cp']*1e9],[0,0],'ro')
+    plt.subplot(212)
+    plt.plot(z*1e9,savgol_filter(Sclean,iwin, polyorder=4,deriv=1,delta=space))
+    plt.plot(z*1e9,savgol_filter(S,iwin*30+1, polyorder=4,deriv=1,delta=space))
+    plt.plot([myTH['cp']*1e9,myTH['cp']*1e9],[0,0],'ro')
+>>>>>>> Stashed changes
 
 plt.show()
