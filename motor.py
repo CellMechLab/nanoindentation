@@ -271,12 +271,17 @@ class Nanoment():
         if len(self.z) != len(self.force) is None:
             return
 
-        option1 = False
+        option1 = True
         # Option 1, use the original formula
         # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
         if option1 is True:
             x = self.ind
             y = self.touch
+            odg = np.argsort(self.ind)
+            x = self.ind[odg]  # sorted indentation
+            y = self.touch[odg]  # sorted force
+            # this is reduntant as interp1d already sorts arrays
+            # problem with oscillations does not depend on this
 
             if(len(x)) < 1:  # check
                 return
@@ -285,6 +290,7 @@ class Nanoment():
             if interp is True:
                 yi = interp1d(x, y)
                 max_x = np.max(x)
+                min_x = 1
 
                 if np.min(x) > 1:
                     min_x = np.min(x)
@@ -318,7 +324,6 @@ class Nanoment():
         else:
             # Option2 use the prime function
             # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
-            # #Discuss with Massimo why it gives negative E at times##
 
             x = self.z
             y = self.force
@@ -357,6 +362,7 @@ class Nanoment():
             dfdz = savgol_filter(yy, win, order, delta=ddt, deriv=1)
             S = dfdz[jcp:]
             nonull = ind > 0
+            nonull = np.sort(nonull)
             S = S[nonull]
             Ex = np.sqrt(self.R * ind[nonull])
             Ey = 3*S/(1-S/self.k)/8/Ex
@@ -747,9 +753,12 @@ def getMedCurve(xar, yar, loose=True, threshold=3, error=False):
         xmax = -np.inf
         deltax = 0
         for x in xar:
-            xmin = np.min([xmin, np.min(x)])
-            xmax = np.max([xmax, np.max(x)])
-            deltax += ((np.max(x) - np.min(x)) / (len(x) - 1))
+            try:
+                xmin = np.min([xmin, np.min(x)])
+                xmax = np.max([xmax, np.max(x)])
+                deltax += ((np.max(x) - np.min(x)) / (len(x) - 1))
+            except TypeError:
+                return
         deltax /= len(xar)
         xnewall = np.linspace(xmin, xmax, int((xmax - xmin) / deltax))
         ynewall = np.zeros(len(xnewall))
