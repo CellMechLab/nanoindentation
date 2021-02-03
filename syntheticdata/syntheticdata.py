@@ -20,12 +20,14 @@ import os
 
 class FakeData:
 
-    def __init__(self,  K=0.0186, R=3500.5, ind0=np.linspace(-5000.0, -1.0, 2500), indc=np.linspace(0, 10000.0, 5000)):  # 2 nm spacing of data
-        self.K = K  # nN/nm (cantilever spring constant )
+    def __init__(self, cpoint=2000, ind_max=7000.0, indpoints=7000, K=0.032, R=3500.5):
+        self.K = K  # nN/nm (cantilever spring constant)
         self.R = R  # nm (probe radious)
-        self.ind0 = ind0  # nm (indentation no contact)
-        self.indc = indc  # nm (indentation contact)
-        self.ind = np.concatenate((ind0, indc))  # total indentation
+        self.cpoint = cpoint  # contact point (nm)
+        self.ind_max = ind_max  # maximum indentation (nm)
+        self.indpoints = indpoints  # number of indentation poitns
+        self.ind_contact = np.linspace(
+            0, ind_max, indpoints)  # indentation in contact (nm)
         # specific contact mechanics parameters (e.g., Hertz-> E, v)
         self.params = {}
 
@@ -43,24 +45,29 @@ class FakeData:
 class FakeDataHertz(FakeData):  # fake Hertzian data
 
     def model(self):
+
         # Hertz parameters: E (nN/nm**2) and Poisson's Ratio (v)
-        self.params = {'E': (5 * 1000 * 10**9 / (10 ** 9)**2), 'v':  0.5}
-        F = 4/3 * (self.params['E'] / (1-self.params['v']**2)
-                   ) * np.sqrt(self.R) * self.ind**(1.5)  # Hertz nN
-        # replaces Nans from negative indentations (ind0) with zeros
-        F = np.nan_to_num(F, nan=0.0)
-        dcantilver = F/self.K
-        z = self.ind + dcantilver
-        z = z + 5000.0  # shifts along x axis to have +ve values
+        self.params = {'E': (5.3 * 1000 * 10**9 / (10 ** 9)**2), 'v':  0.5}
+        F_contact = 4/3 * (self.params['E'] / (1-self.params['v']**2)
+                           ) * np.sqrt(self.R) * self.ind_contact**(1.5)  # Hertz nN
+        z_contact = self.ind_contact + F_contact/self.K
+        cp = self.cpoint
+        z0 = np.linspace(0, cp, cp)
+        F0 = np.zeros(len(z0))
+        F = np.append(F0, F_contact)
+        z = np.append(z0, z_contact+cp)
         return z, F  # returns arrays
 
-    def add_noise(self, noise_baseline=0, noise_scale=3):  # change noise_scale here
+    def add_noise(self, noise_factor=1, noise_baseline=0, noise_scale=1):  # change noise_scale here
         z, F = self.model()
-        noise = np.random.normal(noise_baseline, noise_scale, F.shape)
-        F_noise = F + noise
-        return z, F_noise, noise_scale  # returns arrays
+        noise = noise_factor * \
+            np.random.normal(noise_baseline, noise_scale, F.shape)
+        F = F + noise
+        z_spaced = np.linspace(0, max(z), int(max(z)))
+        F_spaced = np.interp(z_spaced, z, F)
+        return z_spaced, F_spaced, noise_scale  # returns arrays
 
-    def gen_data_file(self, numfile=50):  # easy tsv, change numfile here
+    def gen_data_file(self, numfile=5):  # easy tsv, change numfile here
         for nfiles in range(numfile):
             z, F_noise, noise_scale = self.add_noise()
             folder_path = '/Users/giuseppeciccone/OneDrive - University of Glasgow/PhD/Nanoindentation/Data/Synthetic_Hertz_Data/Fake_Data%d' % noise_scale  # Change Directory Here
@@ -69,7 +76,7 @@ class FakeDataHertz(FakeData):  # fake Hertzian data
             filename = "CurveHertz_%d.tsv" % nfiles
             with open(os.path.join(folder_path, filename), 'w') as f:
                 f.write('#easy_tsv\n')
-                f.write('#k: %.2f \n' % self.K)
+                f.write('#k: {} \n'.format(self.K))
                 f.write('#R: %.2f \n' % self.R)
                 f.write('#displacement [nm] \t #force [nN] \n')
                 tsv_writer = csv.writer(f, delimiter='\t')

@@ -15,48 +15,51 @@ k = 0.032
 
 print(E)
 
-def hertz(x,R,E,nu=0.5):
+
+def hertz(x, R, E, nu=0.5):
     return 4*E/3/(1-nu**2)*np.sqrt(R)*x**1.5
 
-xpost = np.linspace(0,indmax,indpoint)
-Fpost = hertz(xpost,R,E)
+
+xpost = np.linspace(0, indmax, indpoint)
+Fpost = hertz(xpost, R, E)
 zpost = xpost+Fpost/k
 
-Enew=[]
-colors=['c','k','r','y','g','b']
+Enew = []
+colors = ['c', 'k', 'r', 'y', 'g', 'b']
 for i in range(N):
-    col = colors[i%len(colors)]
-    f = open('./tmp/fake_{}_{}.tsv'.format(E,i),'w')
+    col = colors[i % len(colors)]
+    f = open('/Users/giuseppeciccone/OneDrive - University of Glasgow/PhD/Nanoindentation/Nanoindentation Github/nanoindentation/syntheticdata/tmp/fake_{}_{}.tsv'.format(E, i), 'w')
     f.write('#easy_tsv\n')
     f.write('#k: {} \n'.format(k))
     f.write('#R: {} \n'.format(R*1e9))
     f.write('#displacement [nm] \t #force [nN] \n')
 
-    realcp = cp #+ 100.0e-9*np.random.normal(scale=1)
-    zpre = np.linspace(0,realcp,cpoint)
+    realcp = cp  # + 100.0e-9*np.random.normal(scale=1)
+    zpre = np.linspace(0, realcp, cpoint)
     Fpre = np.zeros(len(zpre))
 
-    F = np.append(Fpre,Fpost)
-    z = np.append(zpre,zpost+realcp)
+    F = np.append(Fpre, Fpost)
+    z = np.append(zpre, zpost+realcp)
 
-    #now randomize it
-    noise = noiselevel * np.random.normal(scale=.1,size=F.shape)
+    # now randomize it
+    noise = noiselevel * np.random.normal(scale=.1, size=F.shape)
     F += noise
 
-    properz = np.linspace(0,max(z),int(max(z)*1e9))
+    properz = np.linspace(0, max(z), int(max(z)*1e9))
     properF = np.interp(properz, z, F)
 
-    #plt.plot(properz,properF,'o')
-    iContact = np.argmin((properz-realcp )** 2)
+    plt.plot(properz, properF, 'o')
+    iContact = np.argmin((properz-realcp) ** 2)
     Yf = properF[iContact:]
     Xf = properz[iContact:]-realcp
     ind = Xf - Yf / k
+
     def Hertz(x, E):
         x = np.abs(x)
         poisson = 0.5
         return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
 
-    #plt.plot(ind,Yf,'o',color=col)
+    plt.plot(ind, Yf, 'o', color=col)
 
     indmax = 2000
     jj = np.argmin((ind-indmax)**2)
@@ -64,11 +67,11 @@ for i in range(N):
     # E_std = np.sqrt(pcov[0][0])
     Enew.append(popt[0])
 
-    #plt.plot(ind[:jj],Hertz(ind[:jj],E[-1]),'--',color=col)
+    plt.plot(ind[:jj], Hertz(ind[:jj], Enew[-1]), '--', color=col)
 
     for j in range(len(properz)):
-        f.write('{}\t{}\n'.format(properz[j]*1e9,properF[j]*1e9))
+        f.write('{}\t{}\n'.format(properz[j]*1e9, properF[j]*1e9))
     f.close()
 print('Terminated')
 print(np.average(Enew))
-#plt.show()
+plt.show()

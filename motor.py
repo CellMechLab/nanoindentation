@@ -271,23 +271,24 @@ class Nanoment():
         if len(self.z) != len(self.force) is None:
             return
 
-        option1 = True
+        option1 = False
         # Option 1, use the original formula
         # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
         if option1 is True:
             x = self.ind
             y = self.touch
 
-            if(len(x)) < 1:
+            if(len(x)) < 1:  # check
                 return
 
             interp = self._ui.es_interpolate.isChecked()
             if interp is True:
                 yi = interp1d(x, y)
                 max_x = np.max(x)
-                min_x = 1
-                if np.min(x) > min_x:
+
+                if np.min(x) > 1:
                     min_x = np.min(x)
+
                 xx = np.arange(min_x, max_x, 1.0)
                 yy = yi(xx)
                 ddt = 1.0
@@ -315,7 +316,6 @@ class Nanoment():
             self.Ey = np.array(Ey)
 
         else:
-
             # Option2 use the prime function
             # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
             # #Discuss with Massimo why it gives negative E at times##
@@ -323,10 +323,6 @@ class Nanoment():
             x = self.z
             y = self.force
             ind = self.ind
-            #fcontact = self.touch
-
-            if(len(x)) < 1:
-                return
 
             interp = self._ui.es_interpolate.isChecked()
             if interp is True:
@@ -475,7 +471,7 @@ class Nanoment():
         if res is None or res is False:
             self.active = False
             return
-        #res[1]=0.0
+        res[1] = 0.0  # sets force to zero at CP
         self._contactpoint = res
         self.set_indentation()
         self.update_view()
