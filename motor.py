@@ -4,7 +4,7 @@ import pyqtgraph as pg
 from PyQt5 import QtCore, QtGui, QtWidgets
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
-from scipy.signal import find_peaks, savgol_filter, resample
+from scipy.signal import find_peaks, savgol_filter
 
 # Plotting pens
 PEN_GREEN = pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2)
@@ -277,14 +277,20 @@ class Nanoment():
         if option1 is True:
             x = self.ind
             y = self.touch
+            odg = np.argsort(self.ind)
+            x = self.ind[odg]  # sorted indentation
+            y = self.touch[odg]  # sorted force
+            # this is reduntant as interp1d already sorts arrays
+            # problem with oscillations does not depend on this
 
-            if(len(x)) < 1:  # check
+            if(len(x)) < 1:  # check on length of ind
                 return
 
             interp = self._ui.es_interpolate.isChecked()
             if interp is True:
                 yi = interp1d(x, y)
                 max_x = np.max(x)
+                min_x = 1
 
                 if np.min(x) > 1:
                     min_x = np.min(x)
@@ -318,36 +324,29 @@ class Nanoment():
         else:
             # Option2 use the prime function
             # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
-            # #Discuss with Massimo why it gives negative E at times##
+            # debug for spikes
 
             x = self.z
             y = self.force
-            ind = self.ind
 
             interp = self._ui.es_interpolate.isChecked()
             if interp is True:
                 yi = interp1d(x, y)
-
-                max_x = np.max(x)
-                min_x = 1
-
-                if np.min(x) > min_x:
-                    min_x = np.min(x)
-
-                xx = np.arange(min_x, max_x, 1.0)
+                xx = np.linspace(min(x), max(x), len(x))
                 yy = yi(xx)
+                dz = xx[1]-xx[0]
                 jcp = np.argmin(xx ** 2)
                 yy_contact = yy[jcp:]
                 xx_contact = xx[jcp:]
                 ind = xx_contact - yy_contact/self.k
-                ddt = 1.0
+                ddt = dz
             else:
                 xx = x[1:]
                 yy = y[1:]
-                ind = ind
-                ddt = (x[-1]-x[1])/(len(x)-2)
+                ind = self.ind
+                jcp = np.argmin(xx ** 2)
+                ddt = np.average(xx[1:] - xx[:-1])
 
-            jcp = np.argmin(xx ** 2)
             win = int(self._ui.es_win.value())
             if win % 2 == 0:
                 win += 1
@@ -356,11 +355,16 @@ class Nanoment():
             order = int(self._ui.es_order.value())
             dfdz = savgol_filter(yy, win, order, delta=ddt, deriv=1)
             S = dfdz[jcp:]
+            # sorted ind indexes, reduntant as interp already does it
+            odg = np.argsort(ind)
+            ind = ind[odg]
             nonull = ind > 0
+            S = S[odg]
             S = S[nonull]
-            Ex = np.sqrt(self.R * ind[nonull])
+            ind = ind[nonull]
+            Ex = np.sqrt(self.R * ind)
             Ey = 3*S/(1-S/self.k)/8/Ex
-            dwin = int(win - 1)
+            dwin = int(win)
             Ex = Ex[dwin:-dwin]
             Ey = Ey[dwin:-dwin]
 
@@ -747,9 +751,12 @@ def getMedCurve(xar, yar, loose=True, threshold=3, error=False):
         xmax = -np.inf
         deltax = 0
         for x in xar:
-            xmin = np.min([xmin, np.min(x)])
-            xmax = np.max([xmax, np.max(x)])
-            deltax += ((np.max(x) - np.min(x)) / (len(x) - 1))
+            try:
+                xmin = np.min([xmin, np.min(x)])
+                xmax = np.max([xmax, np.max(x)])
+                deltax += ((np.max(x) - np.min(x)) / (len(x) - 1))
+            except TypeError:
+                return
         deltax /= len(xar)
         xnewall = np.linspace(xmin, xmax, int((xmax - xmin) / deltax))
         ynewall = np.zeros(len(xnewall))

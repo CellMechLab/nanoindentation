@@ -506,7 +506,12 @@ class NanoWindow(QtWidgets.QMainWindow):
                 Radius.append(c.R)
                 E_data_x.append(c.Ex)
                 E_data_y.append(c.Ey)
-        x, y, er = motor.getMedCurve(E_data_x, E_data_y, error=True)
+        try:
+            x, y, er = motor.getMedCurve(E_data_x, E_data_y, error=True)
+        except TypeError:
+            return
+        except ValueError:
+            return
 
         self.es_average.setData(x, y*1e9)
         self.ES_array_x = x
