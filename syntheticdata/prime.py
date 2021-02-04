@@ -42,7 +42,6 @@ for i in range(N):
     this['F'] = properF
     this['cp'] = realcp
     FDcurves.append(this)
-    print(FDcurves)
 
 
 def setCP(th, delta=0):
@@ -198,11 +197,6 @@ if False:
 
     plt.legend()
 
-<<<<<<< Updated upstream
-# plt.plot([100e-9],[E],'ro')
-=======
-#plt.plot([100e-9],[E],'ro')
-
 winvector = np.array([10,20,30,40,50,60,70,80,90,100])
 if False:
     miss=[]
@@ -273,12 +267,7 @@ if False:
 
     plt.plot(winvector,miss,'o',label='dClean win')
 
-
-plt.legend()
-
-
-
-if True:
+if False:
     myTH = FDcurves[12]
     z,S = Prime(myTH,win=50e-9,order=4)
     plt.subplot(211)
@@ -296,6 +285,13 @@ if True:
     plt.plot(z*1e9,savgol_filter(Sclean,iwin, polyorder=4,deriv=1,delta=space))
     plt.plot(z*1e9,savgol_filter(S,iwin*30+1, polyorder=4,deriv=1,delta=space))
     plt.plot([myTH['cp']*1e9,myTH['cp']*1e9],[0,0],'ro')
->>>>>>> Stashed changes
+
+
+from ..mvexperiment import experiment
+exp = experiment.Chiaro('../../tmpdata/matrix_scan01/')
+exp.browse()
+for c in exp.haystack:
+    c.open()
+
 
 plt.show()
