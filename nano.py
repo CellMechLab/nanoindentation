@@ -510,6 +510,8 @@ class NanoWindow(QtWidgets.QMainWindow):
             x, y, er = motor.getMedCurve(E_data_x, E_data_y, error=True)
         except TypeError:
             return
+        except ValueError:
+            return
 
         self.es_average.setData(x, y*1e9)
         self.ES_array_x = x

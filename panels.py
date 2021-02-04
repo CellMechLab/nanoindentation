@@ -1,5 +1,5 @@
 import numpy as np
-#import pynumdiff
+# import pynumdiff
 import pyqtgraph as pg
 from PyQt5 import QtGui, QtWidgets
 from scipy.optimize import curve_fit
@@ -193,7 +193,10 @@ class ThRov(ContactPoint):  # Ratio of Variances
     def calculate(self, c):
         z = c._z
         f = c._f
-        zz_x, rov = self.getWeight(c)
+        try:
+            zz_x, rov = self.getWeight(c)
+        except TypeError:
+            return
         rov_best_ind = np.argmax(rov)
         j_rov = np.argmin((z-zz_x[rov_best_ind])**2)
         return [z[j_rov], f[j_rov]]
@@ -383,7 +386,7 @@ class Threshold(ContactPoint):  # Threshold
         x = c._z
         y = c._f
         if yth > np.max(y) or yth < np.min(y):
-            return None
+            return False
         jrov = 0
         for j in range(len(y)-1, 1, -1):
             if y[j] > yth and y[j-1] < yth:
@@ -406,6 +409,7 @@ class Threshold(ContactPoint):  # Threshold
                 break
         return [x[jcp], y[jcp]]
 
+
 class Fixed(ContactPoint):  # Threshold
     def create(self):
         self.Zcp = CPPFloat('Position of the CP [nm]')
@@ -414,7 +418,7 @@ class Fixed(ContactPoint):  # Threshold
 
     def calculate(self, c):
         xth = self.Zcp.getValue()
-        return [xth, c._f[np.argmin((c._z-xth)**2)] ]
+        return [xth, c._f[np.argmin((c._z-xth)**2)]]
 
 
 class PrimeFunction(ContactPoint):  # Prime Function
@@ -433,23 +437,26 @@ class PrimeFunction(ContactPoint):  # Prime Function
         z = c._z
         f = c._f
         try:
-            # f_smooth, dfdz = pynumdiff.finite_difference.first_order(
-            #     f, dz, params=[500], options={'iterate': True})  #too slow!
-            win = 25  # arbitrary
-            order = 4  # arbitrary
-            dz = np.average(z[1:] - z[:-1])
-            dfdz = savgol_filter(f, win, order, delta=dz,
-                                 deriv=1, mode='interp')
+            win = 31  # arbitrary (insert as input parameter?)
+            order = 4  # arbitrary (insert as input parameter?)
+            fi = interp1d(z, f)
+            zz = np.linspace(min(z), max(z), len(z))
+            ff = fi(zz)
+            dz = z[1]-z[0]
+            dfdz = savgol_filter(ff, win, order, delta=dz,
+                                 deriv=1)
+            S = dfdz / (1-dfdz)  # c.k in denominator makes it unstable
         except:
-            return None
-        return z, dfdz/(1-dfdz)
+            return False
+        return zz, S
 
     def calculate(self, c):  # calculates CP baed on prime function threshold
         primeth = self.Athreshold.getValue()
         z, prime = self.getWeight(c)
-        f = c._f
+        fi = interp1d(c._z, c._f)
+        f = fi(z)
         if primeth > np.max(prime) or primeth < np.min(prime):
-            return None
+            return False
         jrov = 0
         for j in range(len(prime)-1, 1, -1):
             if prime[j] > primeth and prime[j-1] < primeth:
@@ -473,8 +480,53 @@ class PrimeFunction(ContactPoint):  # Prime Function
         return [z[jcp], f[jcp]]
 
 
+# Second derivative, revisited (prime)
+class PrimeFunctionDerivative(ContactPoint):
+    def create(self):  # parameters that user inputs in this method for CP calculation
+        self.window = CPPInt('Filter/Derivative win [nN/nm]')
+        self.window.setValue(51)
+        self.order = CPPInt('Filter/Derivative Polynomial Order (Int)')
+        self.order.setValue(4)
+        self.addParameter(self.window)
+        self.addParameter(self.order)
+
+    def getWeight(self, c):
+        z = c._z
+        f = c._f
+        rz = np.linspace(min(z), max(z), len(z))
+        rF = np.interp(rz, z, f)
+        space = rz[1] - rz[0]
+        win = self.window.getValue()
+        order = self.order.getValue()
+        iwin = int(win/space)
+        if iwin % 2 == 0:
+            iwin += 1
+        if iwin > order:
+            return False
+        S = savgol_filter(rF, iwin, order, deriv=1, delta=space)
+        S = S / (1-S)
+        # clean first derivative
+        S_clean = savgol_filter(S, iwin*50+1, polyorder=4)  # window length?
+        # second derivtive
+        ddS = savgol_filter(S_clean, iwin,
+                            polyorder=4, deriv=1, delta=space)
+        return rz, ddS
+
+    def calculate(self, c):
+        # define f
+        z = c._z
+        f = c._f
+        rz = np.linspace(min(z), max(z), len(z))
+        f = np.interp(rz, z, f)
+        z, ddS = self.getWeight(c)
+        best_ind = np.argmax(ddS**2)
+        jcp = np.argmin((z - z[best_ind])**2)
+        return [z[jcp], f[jcp]]
+
+
 ALL.append({'label': 'Threshold', 'method': Threshold})
-ALL.append({'label': 'Prime Funcion', 'method': PrimeFunction})
+ALL.append({'label': 'Prime Funcion Threshold', 'method': PrimeFunction})
+ALL.append({'label': 'Prime Funcion Deriv', 'method': PrimeFunctionDerivative})
 ALL.append({'label': 'Gooodness of Fit', 'method': GoodnessOfFit})
 ALL.append({'label': 'Ratio of Variances', 'method': ThRov})
 ALL.append({'label': 'Ratio of Variances - First Peak', 'method': ThRovFirst})
