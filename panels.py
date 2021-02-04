@@ -501,7 +501,7 @@ class PrimeFunctionDerivative(ContactPoint):
         iwin = int(win/space)
         if iwin % 2 == 0:
             iwin += 1
-        if iwin > order:
+        if order > iwin:
             return False
         S = savgol_filter(rF, iwin, order, deriv=1, delta=space)
         S = S / (1-S)
@@ -513,7 +513,6 @@ class PrimeFunctionDerivative(ContactPoint):
         return rz, ddS
 
     def calculate(self, c):
-        # define f
         z = c._z
         f = c._f
         rz = np.linspace(min(z), max(z), len(z))
