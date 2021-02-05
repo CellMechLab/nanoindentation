@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1680</width>
-    <height>883</height>
+    <height>864</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -325,7 +325,7 @@
              <property name="font">
               <font>
                <family>Arial</family>
-               <pointsize>13</pointsize>
+               <pointsize>11</pointsize>
                <weight>75</weight>
                <bold>true</bold>
               </font>
@@ -398,7 +398,7 @@
              <property name="font">
               <font>
                <family>Arial</family>
-               <pointsize>13</pointsize>
+               <pointsize>11</pointsize>
                <weight>75</weight>
                <bold>true</bold>
               </font>
@@ -450,7 +450,7 @@
             <property name="font">
              <font>
               <family>Arial</family>
-              <pointsize>13</pointsize>
+              <pointsize>11</pointsize>
               <weight>75</weight>
               <italic>false</italic>
               <bold>true</bold>
