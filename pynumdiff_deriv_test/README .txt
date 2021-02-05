@@ -1,1 +1,0 @@
-In this folder, .txt data provided is used
