@@ -1,5 +1,5 @@
 import numpy as np
-import afmformats
+#import afmformats
 
 from .curve import (MODE_DIRECTION_BACKWARD, MODE_DIRECTION_FORWARD,
                     MODE_DIRECTIONS_PAUSE, Segment)
