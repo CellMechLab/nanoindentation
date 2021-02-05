@@ -604,6 +604,8 @@ class NanoWindow(QtWidgets.QMainWindow):
             f.write('# Working folder {}\n'.format(self.workingdir))
             f.write('# Tip radius {} nm\n'.format(self.collection[0].R))
             f.write('# Elastic constant {} N/m\n'.format(self.collection[0].k))
+            f.write('# Max indentation (Hertz Fit) {} nm\n'.format(
+                float(self.ui.fit_indentation.value())))
             f.write('# \n')
             f.write(
                 '# Young\'s Modulus Hertz, Gaussian Average {} Pa\n'.format(self.Yav))
