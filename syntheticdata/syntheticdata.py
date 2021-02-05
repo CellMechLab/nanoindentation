@@ -20,7 +20,7 @@ import os
 
 class FakeData:
 
-    def __init__(self, cpoint=2000, ind_max=7000.0, indpoints=7000, K=0.032, R=3500.5):
+    def __init__(self, cpoint=3000, ind_max=7000.0, indpoints=7000, K=0.032, R=3400):
         self.K = K  # nN/nm (cantilever spring constant)
         self.R = R  # nm (probe radious)
         self.cpoint = cpoint  # contact point (nm)
@@ -67,7 +67,7 @@ class FakeDataHertz(FakeData):  # fake Hertzian data
         F_spaced = np.interp(z_spaced, z, F)
         return z_spaced, F_spaced, noise_scale  # returns arrays
 
-    def gen_data_file(self, numfile=5):  # easy tsv, change numfile here
+    def gen_data_file(self, numfile=50):  # easy tsv, change numfile here
         for nfiles in range(numfile):
             z, F_noise, noise_scale = self.add_noise()
             folder_path = '/Users/giuseppeciccone/OneDrive - University of Glasgow/PhD/Nanoindentation/Data/Synthetic_Hertz_Data/Fake_Data%d' % noise_scale  # Change Directory Here
@@ -77,7 +77,7 @@ class FakeDataHertz(FakeData):  # fake Hertzian data
             with open(os.path.join(folder_path, filename), 'w') as f:
                 f.write('#easy_tsv\n')
                 f.write('#k: {} \n'.format(self.K))
-                f.write('#R: %.2f \n' % self.R)
+                f.write('#R: {} \n'.format(self.R))  # change
                 f.write('#displacement [nm] \t #force [nN] \n')
                 tsv_writer = csv.writer(f, delimiter='\t')
                 tsv_writer.writerows(zip(z, F_noise))

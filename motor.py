@@ -271,17 +271,12 @@ class Nanoment():
         if len(self.z) != len(self.force) is None:
             return
 
-        option1 = False
+        option1 = True
         # Option 1, use the original formula
         # E = 3*dFdd/8a ; dFdd = derivative of force vs delta
         if option1 is True:
             x = self.ind
             y = self.touch
-            odg = np.argsort(self.ind)
-            x = self.ind[odg]  # sorted indentation
-            y = self.touch[odg]  # sorted force
-            # this is reduntant as interp1d already sorts arrays
-            # problem with oscillations does not depend on this
 
             if(len(x)) < 1:  # check on length of ind
                 return
@@ -324,7 +319,8 @@ class Nanoment():
         else:
             # Option2 use the prime function
             # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
-            # debug for spikes
+            # Note that this option is currently not in use as noise
+            # in the curves causes singularity in the term S/(1-S/K) when S/K -> 1
 
             x = self.z
             y = self.force
@@ -354,7 +350,7 @@ class Nanoment():
                 return None, None
             order = int(self._ui.es_order.value())
             dfdz = savgol_filter(yy, win, order, delta=ddt, deriv=1)
-            S = dfdz[jcp:]
+            S = dfdz[jcp:]  # need to remove zeros
             # sorted ind indexes, reduntant as interp already does it
             odg = np.argsort(ind)
             ind = ind[odg]

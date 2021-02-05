@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1680</width>
-    <height>909</height>
+    <height>883</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -324,7 +324,8 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>15</pointsize>
+               <family>Arial</family>
+               <pointsize>13</pointsize>
                <weight>75</weight>
                <bold>true</bold>
               </font>
@@ -396,7 +397,8 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>15</pointsize>
+               <family>Arial</family>
+               <pointsize>13</pointsize>
                <weight>75</weight>
                <bold>true</bold>
               </font>
@@ -447,9 +449,12 @@
            <widget class="QLabel" name="label_14">
             <property name="font">
              <font>
-              <pointsize>15</pointsize>
+              <family>Arial</family>
+              <pointsize>13</pointsize>
               <weight>75</weight>
+              <italic>false</italic>
               <bold>true</bold>
+              <underline>false</underline>
              </font>
             </property>
             <property name="text">

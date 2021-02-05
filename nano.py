@@ -73,7 +73,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_decay.plotItem.addItem(self.es_band)
 
         def title_style(lab):
-            return '<span style="font-weight:bold; font-size: 15pt;">{}</span>'.format(lab)
+            return '<span style="font-family: Arial; font-weight:bold; font-size: 12pt;">{}</span>'.format(lab)
 
         def lab_style(lab):
             return '<span style="">{}</span>'.format(lab)
