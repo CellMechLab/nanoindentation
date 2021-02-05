@@ -267,8 +267,8 @@ class NanoWindow(QtWidgets.QMainWindow):
             exp = experiment.NanoSurf(fname)
         elif self.ui.open_easy_tsv.isChecked() is True:
             exp = experiment.Easytsv(fname)
-        elif self.ui.jpk_open.isChecked() is True:
-            exp = experiment.Jpk(fname)
+        # elif self.ui.jpk_open.isChecked() is True:
+            #exp = experiment.Jpk(fname)
 
         exp.browse()
         if len(exp) == 0:

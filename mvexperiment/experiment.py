@@ -404,44 +404,46 @@ class Easytsv(DataSet):
         self[0].setData(self.data['z'], self.data['force'])
 
 
-class Jpk(DataSet):
-    _leaf_ext = ['.jpk-force']
+# JPK not used as metadata does not contain tip radius
 
-    def check(self):
-        return True
+# class Jpk(DataSet):
+#     _leaf_ext = ['.jpk-force']
 
-    '''
-    def check(self):
-        f = open(self.filename)
-        l1 = f.readline().strip()
-        f.close()
-        if l1 == '#easy_tsv':
-            return True
-        else:
-            return False
-    '''
+#     def check(self):
+#         return True
 
-    def load(self):
-        f = afmformats.load_data(self.filename)
+#     '''
+#     def check(self):
+#         f = open(self.filename)
+#         l1 = f.readline().strip()
+#         f.close()
+#         if l1 == '#easy_tsv':
+#             return True
+#         else:
+#             return False
+#     '''
 
-        # inspect the columns
-        print(f[0].columns)
+#     def load(self):
+#         f = afmformats.load_data(self.filename)
 
-        fd = afmformats.afm_fdist.AFMForceDistance(
-            f[0]._raw_data, f[0].metadata, diskcache=False)
+#         # inspect the columns
+#         print(f[0].columns)
 
-        self.data['force'] = [fd.appr['force']*1e9, fd.retr['force']*1e9]
-        self.data['z'] = [
-            np.flip(fd.appr['height (piezo)']*1e9), np.flip(fd.retr['height (piezo)']*1e9)]
+#         fd = afmformats.afm_fdist.AFMForceDistance(
+#             f[0]._raw_data, f[0].metadata, diskcache=False)
 
-        metadata = fd.metadata
-        print(fd.metadata)
-        self.cantilever_k = metadata['spring constant']
-        # need to give user chance to input tip radius in interface when jpk is clicked
-        self.tip_radius = 0.003
+#         self.data['force'] = [fd.appr['force']*1e9, fd.retr['force']*1e9]
+#         self.data['z'] = [
+#             np.flip(fd.appr['height (piezo)']*1e9), np.flip(fd.retr['height (piezo)']*1e9)]
 
-    def createSegments(self):
-        segment = ['forward', 'backward']
-        for i in range(len(segment)+1):
-            self.append(Segment(self, self.data['z'], self.data['force']))
-            self[i].setData(self.data['z'][i-1], self.data['force'][i-1])
+#         metadata = fd.metadata
+#         print(fd.metadata)
+#         self.cantilever_k = metadata['spring constant']
+#         # need to give user chance to input tip radius in interface when jpk is clicked
+#         self.tip_radius = 5000  # nm
+
+#     def createSegments(self):
+#         segment = ['forward', 'backward']
+#         for i in range(len(segment)+1):
+#             self.append(Segment(self, self.data['z'], self.data['force']))
+#             self[i].setData(self.data['z'][i-1], self.data['force'][i-1])

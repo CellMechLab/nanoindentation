@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1680</width>
-    <height>864</height>
+    <height>881</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -905,13 +905,6 @@
            </property>
            <property name="checked">
             <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="jpk_open">
-           <property name="text">
-            <string>JPK</string>
            </property>
           </widget>
          </item>
