@@ -446,15 +446,19 @@ class PrimeFunction(ContactPoint):  # Prime Function
             dfdz = savgol_filter(ff, win, order, delta=dz,
                                  deriv=1)
             S = dfdz / (1-dfdz)  # c.k in denominator makes it unstable
+            win = int(win-1)
         except:
             return False
-        return zz, S
+        return zz[win:-win], S[win:-win]
 
     def calculate(self, c):  # calculates CP baed on prime function threshold
         primeth = self.Athreshold.getValue()
         z, prime = self.getWeight(c)
         fi = interp1d(c._z, c._f)
         f = fi(z)
+        win = 31
+        win = int(win-1)
+        f = f[win:-win]
         if primeth > np.max(prime) or primeth < np.min(prime):
             return False
         jrov = 0
@@ -471,7 +475,7 @@ class PrimeFunction(ContactPoint):  # Prime Function
         else:
             jxalignLeft = np.argmin((z-(x0-dx-ddx))**2)
             jxalignRight = np.argmin((z-(x0-dx+ddx))**2)
-            df0 = np.average(prime[jxalignLeft:jxalignRight])
+            df0 = np.average(prime[jxalignLeft+win:jxalignRight-win])
         jcp = jrov
         for j in range(jrov, 1, -1):
             if prime[j] > df0 and prime[j-1] < df0:
@@ -510,14 +514,25 @@ class PrimeFunctionDerivative(ContactPoint):
         # second derivtive
         ddS = savgol_filter(S_clean, iwin,
                             polyorder=4, deriv=1, delta=space)
-        return rz, ddS
+        iwin_big = iwin*10  # avoids extrem spikes (arbitrary)
+        return rz[iwin_big:-iwin_big], ddS[iwin_big:-iwin_big]
 
     def calculate(self, c):
         z = c._z
         f = c._f
         rz = np.linspace(min(z), max(z), len(z))
         f = np.interp(rz, z, f)
+        space = rz[1] - rz[0]
+        win = self.window.getValue()
+        order = self.order.getValue()
+        iwin = int(win/space)
+        if iwin % 2 == 0:
+            iwin += 1
+        if order > iwin:
+            return False
+        iwin_big = iwin*5
         z, ddS = self.getWeight(c)
+        f = f[iwin_big:-iwin_big]
         best_ind = np.argmax(ddS**2)
         jcp = np.argmin((z - z[best_ind])**2)
         return [z[jcp], f[jcp]]
