@@ -446,18 +446,18 @@ class PrimeFunction(ContactPoint):  # Prime Function
             dfdz = savgol_filter(ff, win, order, delta=dz,
                                  deriv=1)
             S = dfdz / (1-dfdz)  # c.k in denominator makes it unstable
-            win = int(win-1)
         except:
             return False
-        return zz[win:-win], S[win:-win]
+        return z[win:-win], S[win:-win]
 
     def calculate(self, c):  # calculates CP baed on prime function threshold
         primeth = self.Athreshold.getValue()
-        z, prime = self.getWeight(c)
+        z_False, prime = self.getWeight(c)
         fi = interp1d(c._z, c._f)
+        z = np.linspace(min(c._z), max(c._z), len(c._z))
         f = fi(z)
         win = 31
-        win = int(win-1)
+        z = z[win:-win]
         f = f[win:-win]
         if primeth > np.max(prime) or primeth < np.min(prime):
             return False
@@ -475,7 +475,7 @@ class PrimeFunction(ContactPoint):  # Prime Function
         else:
             jxalignLeft = np.argmin((z-(x0-dx-ddx))**2)
             jxalignRight = np.argmin((z-(x0-dx+ddx))**2)
-            df0 = np.average(prime[jxalignLeft+win:jxalignRight-win])
+            df0 = np.average(prime[jxalignLeft:jxalignRight])
         jcp = jrov
         for j in range(jrov, 1, -1):
             if prime[j] > df0 and prime[j-1] < df0:
