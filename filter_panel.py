@@ -8,6 +8,8 @@ import popup
 
 ALL_FILTERS = []
 
+# return False in case of error!
+
 
 class FilterParameter:  # FilterParameters
     def __init__(self, label=None):
@@ -212,12 +214,18 @@ class DetrendFilter(Filter):  # DetrendFilter
             if y[j] > f0 and y[j-1] < f0:
                 jcp = j
                 break
-        x_base = x[:jcp]
-        y_base = y[:jcp]
+        if jcp > 2:
+            x_base = x[:jcp]
+            y_base = y[:jcp]
+        else:
+            return False
         return x_base, y_base
 
     def get_trendline(self, c):
-        x_base, y_base = self.get_baseline(c)
+        try:
+            x_base, y_base = self.get_baseline(c)
+        except TypeError:
+            return False
 
         def lin_fit(x, a, b):
             return a*x + b

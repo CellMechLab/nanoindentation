@@ -425,6 +425,9 @@ class Nanoment():
             self.filter_prominence(pro, winperc, threshold)
         if self._filter is not None:
             self._f = self._filter(self)
+        if self._filter is False:
+            self.active = False
+            return
         if recalculate_cp is True:
             self.calculate_contactpoint()
         self.set_indentation()
