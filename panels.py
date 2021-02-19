@@ -283,9 +283,12 @@ class GoodnessOfFit(ContactPoint):  # Goodness of Fit (GoF)
         R_squared = []
         j_x = np.arange(jmin, jmax)
         for j in j_x:
-            ind, Yf = self.get_indentation(c, j, win)
-            E_std = self.fit(c, ind, Yf)
-            R_squared.append(E_std)
+            try:
+                ind, Yf = self.get_indentation(c, j, win)
+                E_std = self.fit(c, ind, Yf)
+                R_squared.append(E_std)
+            except TypeError:
+                return False
         return c._z[jmin:jmax], R_squared
 
     # Retunrs indentation (ind) and f from z vs f data
@@ -325,7 +328,10 @@ class GoodnessOfFit(ContactPoint):  # Goodness of Fit (GoF)
     def calculate(self, c):
         z = c._z
         f = c._f
-        zz_x, R_squared = self.getWeight(c)
+        try:
+            zz_x, R_squared = self.getWeight(c)
+        except TypeError:
+            return False
         R_best_ind = np.argmax(R_squared)
         j_GoF = np.argmin((z-zz_x[R_best_ind])**2)
         return [z[j_GoF], f[j_GoF]]
