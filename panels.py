@@ -471,20 +471,20 @@ class PrimeFunction(ContactPoint):  # Prime Function
         ddx = self.Fthreshold.getValue()
         if ddx <= 0:
             jxalign = np.argmin((z - (x0 - dx)) ** 2)
-            df0 = prime[jxalign]
+            dS0 = prime[jxalign]
         else:
             jxalignLeft = np.argmin((z-(x0-dx-ddx))**2)
             jxalignRight = np.argmin((z-(x0-dx+ddx))**2)
-            df0 = np.average(prime[jxalignLeft:jxalignRight])
+            dS0 = np.average(prime[jxalignLeft:jxalignRight])
         jcp = jrov
         for j in range(jrov, 1, -1):
-            if prime[j] > df0 and prime[j-1] < df0:
+            if prime[j] > dS0 and prime[j-1] < dS0:
                 jcp = j
                 break
         return [z[jcp], f[jcp]]
-
-
 # Second derivative, revisited (prime)
+
+
 class PrimeFunctionDerivative(ContactPoint):
     def create(self):  # parameters that user inputs in this method for CP calculation
         self.window = CPPInt('Filter/Derivative win [nN/nm]')

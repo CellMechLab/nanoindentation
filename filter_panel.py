@@ -1,7 +1,9 @@
 import numpy as np
 import pyqtgraph as pg
 from PyQt5 import QtGui, QtWidgets
-from scipy.signal import savgol_filter, medfilt
+from scipy.signal import savgol_filter, medfilt, detrend
+from scipy.optimize import curve_fit
+from scipy.interpolate import interp1d
 import popup
 
 ALL_FILTERS = []
@@ -177,5 +179,73 @@ class MedianFilter(Filter):
         return y_smooth
 
 
+class DetrendFilter(Filter):  # DetrendFilter
+
+    def calculate(self, c):
+        trendline = self.get_trendline(c)
+        y_clean = c._f - trendline
+        return y_clean
+
+    def get_baseline(self, c):  # returns baseline based on threshold CP method
+        yth = 10.0
+        x = c._z
+        y = c._f
+        if yth > np.max(y) or yth < np.min(y):
+            return False
+        jrov = 0
+        for j in range(len(y)-1, 1, -1):
+            if y[j] > yth and y[j-1] < yth:
+                jrov = j
+                break
+        x0 = x[jrov]
+        dx = 2000.0  # arbitrary
+        ddx = 100.0  # arbitrary
+        if ddx <= 0:  # useless
+            jxalign = np.argmin((x - (x0 - dx)) ** 2)
+            f0 = y[jxalign]
+        else:
+            jxalignLeft = np.argmin((x-(x0-dx-ddx))**2)
+            jxalignRight = np.argmin((x-(x0-dx+ddx))**2)
+            f0 = np.average(y[jxalignLeft:jxalignRight])
+        jcp = jrov
+        for j in range(jrov, 1, -1):
+            if y[j] > f0 and y[j-1] < f0:
+                jcp = j
+                break
+        x_base = x[:jcp]
+        y_base = y[:jcp]
+        return x_base, y_base
+
+    def get_trendline(self, c):
+        x_base, y_base = self.get_baseline(c)
+
+        def lin_fit(x, a, b):
+            return a*x + b
+
+        popt, pcov = curve_fit(lin_fit, x_base, y_base, maxfev=10000)
+        z_lin = np.linspace(min(c._z), max(c._z), len(c._z))
+        y_trendline = lin_fit(z_lin, *popt)
+        return y_trendline  # calculated over whole z range
+
+
+class DentrendFilterSimple(Filter):  # Do Not Use
+    def create(self):
+        self.max = FilterFloat('Upper Boundary [nm]')
+        self.max.setValue(5000.0)
+        self.addParameter(self.max)
+
+    def calculate(self, c):
+        up_to = min(c._z) + self.max.getValue()
+        up_to_ind = np.argmin((c._z - up_to)**2)
+        f_base = c._f[:up_to_ind]
+        f_base_clean = detrend(f_base, type='linear')
+        f_top = c._f[up_to_ind:]
+        f_clean = np.concatenate((f_base_clean, f_top))
+        return f_clean
+
+
 ALL_FILTERS.append({'label': 'Savitzky Golay', 'method': SavGolFilter})
 ALL_FILTERS.append({'label': 'Median Filter', 'method': MedianFilter})
+ALL_FILTERS.append({'label': 'Baseline Detrend', 'method': DetrendFilter})
+ALL_FILTERS.append({'label': 'Baseline Detrend Simple',
+                    'method': DentrendFilterSimple})
