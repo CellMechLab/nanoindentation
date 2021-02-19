@@ -236,24 +236,6 @@ class DetrendFilter(Filter):  # DetrendFilter
         return y_trendline  # calculated over whole z range
 
 
-class DentrendFilterSimple(Filter):  # Do Not Use
-    def create(self):
-        self.max = FilterFloat('Upper Boundary [nm]')
-        self.max.setValue(5000.0)
-        self.addParameter(self.max)
-
-    def calculate(self, c):
-        up_to = min(c._z) + self.max.getValue()
-        up_to_ind = np.argmin((c._z - up_to)**2)
-        f_base = c._f[:up_to_ind]
-        f_base_clean = detrend(f_base, type='linear')
-        f_top = c._f[up_to_ind:]
-        f_clean = np.concatenate((f_base_clean, f_top))
-        return f_clean
-
-
 ALL_FILTERS.append({'label': 'Savitzky Golay', 'method': SavGolFilter})
 ALL_FILTERS.append({'label': 'Median Filter', 'method': MedianFilter})
 ALL_FILTERS.append({'label': 'Baseline Detrend', 'method': DetrendFilter})
-ALL_FILTERS.append({'label': 'Baseline Detrend Simple',
-                    'method': DentrendFilterSimple})
