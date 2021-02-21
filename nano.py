@@ -764,7 +764,8 @@ class NanoWindow(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    app.setApplicationName('Nano2020')
+    app.setApplicationName('Nano2021')
+    app.setStyle('Fusion')
     chiaro = NanoWindow()
     chiaro.show()
     # QtCore.QObject.connect( app, QtCore.SIGNAL( 'lastWindowClosed()' ), app, QtCore.SLOT( 'quit()' ) )

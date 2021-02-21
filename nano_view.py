@@ -607,7 +607,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Nano2020"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Nano2021"))
         self.Curve.setTitle(_translate("MainWindow", "Curve"))
         self.label.setText(_translate("MainWindow", "Segment"))
         self.crop.setText(_translate("MainWindow", "crop 50nm"))
