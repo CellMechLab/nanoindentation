@@ -294,7 +294,7 @@ class GoodnessOfFit(ContactPoint):  # Goodness of Fit (GoF)
     # Retunrs indentation (ind) and f from z vs f data
     def get_indentation(self, c, iContact, win):
         z = c._z
-        f = c._z
+        f = c._f
         R = c.R
         if (iContact + win) > len(z):
             return False
