@@ -372,18 +372,18 @@
             </widget>
            </item>
            <item>
-            <widget class="PlotWidget" name="g_scatter">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="PlotWidget" name="avg_hertz">
              <property name="enabled">
               <bool>true</bool>
              </property>
              <property name="interactive">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="PlotWidget" name="g_scatter">
+             <property name="enabled">
               <bool>true</bool>
              </property>
             </widget>

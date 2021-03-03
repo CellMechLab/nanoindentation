@@ -129,7 +129,7 @@ class NanoWindow(QtWidgets.QMainWindow):
             'bottom', lab_style('Young\'s modulus [Pa]'))
         self.ui.g_decay.plotItem.setLabel(
             'bottom', lab_style('Contact radius [nm]'))
-        self.ui.avg_hertz.plotItem.setTitle(title_style('Average Hertz'))
+        self.ui.avg_hertz.plotItem.setTitle(title_style('Average F-Ind'))
         self.ui.avg_hertz.plotItem.setLabel(
             'bottom', lab_style('average indentation [nm]') )
         self.ui.avg_hertz.plotItem.setLabel(
