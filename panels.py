@@ -374,7 +374,6 @@ class DDer(ContactPoint):  # Second Derivative
         jdd = np.argmin((z - zz_x[ddf_best_ind])**2)
         return [c._z[jdd], c._f[jdd]]
 
-
 class Threshold(ContactPoint):  # Threshold
     def create(self):
         self.Athreshold = CPPFloat('Align Threshold [nN]')
@@ -489,7 +488,6 @@ class PrimeFunction(ContactPoint):  # Prime Function
                 break
         return [z[jcp], f[jcp]]
 # Second derivative, revisited (prime)
-
 
 class PrimeFunctionDerivative(ContactPoint):
     def create(self):  # parameters that user inputs in this method for CP calculation

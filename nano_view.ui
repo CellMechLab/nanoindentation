@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1680</width>
-    <height>897</height>
+    <height>1115</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,12 +18,9 @@
     <normaloff>../../../../.designer/backup/ico.svg</normaloff>../../../../.designer/backup/ico.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_12">
+   <layout class="QVBoxLayout" name="verticalLayout_8">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_10">
-      <property name="sizeConstraint">
-       <enum>QLayout::SetDefaultConstraint</enum>
-      </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_8">
       <item>
        <widget class="QGroupBox" name="Curve">
         <property name="enabled">
@@ -218,20 +215,31 @@
         <property name="title">
          <string>Save</string>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_8">
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="QPushButton" name="save_dataHertz">
-           <property name="text">
-            <string>Hertz</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="save_dataES">
-           <property name="text">
-            <string>ES</string>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QPushButton" name="save_dataHertz">
+             <property name="text">
+              <string>Hertz</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="save_avg_hertz">
+             <property name="text">
+              <string>Avg Hertz</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="save_dataES">
+             <property name="text">
+              <string>ES</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -316,7 +324,7 @@
           <property name="title">
            <string/>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_8">
+          <layout class="QVBoxLayout" name="verticalLayout_5">
            <item>
             <widget class="QCheckBox" name="analysis">
              <property name="enabled">
@@ -345,37 +353,40 @@
             </widget>
            </item>
            <item>
-            <layout class="QVBoxLayout" name="verticalLayout_5">
-             <property name="spacing">
-              <number>0</number>
+            <widget class="PlotWidget" name="g_indentation">
+             <property name="enabled">
+              <bool>true</bool>
              </property>
-             <item>
-              <widget class="PlotWidget" name="g_indentation">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="font">
-                <font>
-                 <weight>75</weight>
-                 <bold>true</bold>
-                </font>
-               </property>
-               <property name="acceptDrops">
-                <bool>true</bool>
-               </property>
-               <property name="interactive">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="PlotWidget" name="g_scatter">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="acceptDrops">
+              <bool>true</bool>
+             </property>
+             <property name="interactive">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="PlotWidget" name="g_scatter">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="PlotWidget" name="avg_hertz">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="interactive">
+              <bool>true</bool>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>

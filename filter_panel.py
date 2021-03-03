@@ -189,7 +189,7 @@ class DetrendFilter(Filter):  # DetrendFilter
         return y_clean
 
     def get_baseline(self, c):  # returns baseline based on threshold CP method
-        yth = 10.0
+        yth = 10.0  # arbitrary
         x = c._z
         y = c._f
         if yth > np.max(y) or yth < np.min(y):
