@@ -134,8 +134,6 @@ class NanoWindow(QtWidgets.QMainWindow):
             'bottom', lab_style('average indentation [nm]') )
         self.ui.avg_hertz.plotItem.setLabel(
             'left', lab_style('average force [nN]'))
-        self.ui.avg_hertz.plotItem.setLabel(
-            'left', lab_style('average force [nm]'))
 
         for obj in panels.ALL:
             self.ui.comboCP.addItem(obj['label'])
