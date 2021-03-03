@@ -683,7 +683,7 @@ class NanoWindow(QtWidgets.QMainWindow):
             f.write('Max indentation (Hertz Fit) {} nm\n'.format(
                 float(self.ui.fit_indentation.value())))
             f.write(
-                'Avg Indentation [nm] \t Avg Force [N]\n')
+                'Avg Indentation [nm] \t Avg Force [nN]\n')
             for x in zip(*[self.x_hertz_average, self.y_hertz_average]):
                 f.write("{0}\t{1}\n".format(*x))
         f.close()
