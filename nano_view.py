@@ -659,7 +659,7 @@ class Ui_MainWindow(object):
         self.toggle_activated.setText(_translate("MainWindow", "Activated"))
         self.groupBox_5.setTitle(_translate("MainWindow", "Save"))
         self.save_dataHertz.setText(_translate("MainWindow", "Hertz"))
-        self.save_avg_hertz.setText(_translate("MainWindow", "Avg Hertz"))
+        self.save_avg_hertz.setText(_translate("MainWindow", "Avg F-Ind"))
         self.save_dataES.setText(_translate("MainWindow", "ES"))
         self.mainlist.setSortingEnabled(False)
         self.mainlist.headerItem().setText(0, _translate("MainWindow", "Files"))

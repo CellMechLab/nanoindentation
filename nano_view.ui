@@ -228,7 +228,7 @@
            <item>
             <widget class="QPushButton" name="save_avg_hertz">
              <property name="text">
-              <string>Avg Hertz</string>
+              <string>Avg F-Ind</string>
              </property>
             </widget>
            </item>
