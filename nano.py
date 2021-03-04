@@ -536,10 +536,10 @@ class NanoWindow(QtWidgets.QMainWindow):
                 self.x_hertz_average = x_hertz
                 self.y_hertz_average = y_hertz
                 self.hertz_average.setData(x_hertz, y_hertz)
-                jmax_hertz = np.argmin((x_hertz-indmax)**2)
-                self.hertz_average.setData(x_hertz[:jmax_hertz], y_hertz[:jmax_hertz])
-                self.hertz_average_top.setData(x_hertz[:jmax_hertz], (y_hertz[:jmax_hertz]+er_hertz[:jmax_hertz]/2))
-                self.hertz_average_bottom.setData(x_hertz[:jmax_hertz], (y_hertz[:jmax_hertz]-er_hertz[:jmax_hertz]/2))
+                #jmax_hertz = np.argmin((x_hertz-indmax)**2)
+                self.hertz_average.setData(x_hertz, y_hertz)
+                self.hertz_average_top.setData(x_hertz, (y_hertz+er_hertz/2))
+                self.hertz_average_bottom.setData(x_hertz, (y_hertz-er_hertz/2))
             except:
                 self.histo_fit.setData(None)
                 self.indentation_fit.setData(None)
@@ -676,10 +676,12 @@ class NanoWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.setOverrideCursor(
             QtGui.QCursor(QtCore.Qt.WaitCursor))
         with open(fname[0], 'w') as f:
-            f.write('Tip radius {} nm\n'.format(self.collection[0].R))
-            f.write('Elastic constant {} N/m\n'.format(self.collection[0].k))
-            f.write('Max indentation (Hertz Fit) {} nm\n'.format(
+            f.write(
+                'Mean Young\'s Modulus Hertz [Pa] # {} \n'.format(self.Yav))
+            f.write('Max indentation (Hertz Fit)[nm] # {} \n'.format(
                 float(self.ui.fit_indentation.value())))
+            f.write('Tip radius [nm] # {} \n'.format(self.collection[0].R))
+            f.write('Elastic constant [N/m] #{}\n'.format(self.collection[0].k))
             f.write(
                 'Avg Indentation [nm] \t Avg Force [nN]\n')
             for x in zip(*[self.x_hertz_average, self.y_hertz_average]):
