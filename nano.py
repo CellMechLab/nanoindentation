@@ -567,6 +567,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ES_array_x = x
         self.ES_array_y = y*1e9
         self.es_average.setData(x**2/np.average(Radius), y*1e9)
+        indmax = float(self.ui.fit_indentation.value())
         rmax = np.sqrt(indmax * np.average(Radius))
         jmax = np.argmin((x - rmax)**2)
     
