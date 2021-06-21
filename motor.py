@@ -13,7 +13,6 @@ ST_BLK = 3
 
 # Function checking if two arrays are the same
 
-
 def sames(ar1, ar2):
     if (ar1 is None) or (ar2 is None):
         return False
@@ -95,6 +94,7 @@ class Nanoment():
             self.R = curve.tip_radius
             self.k = curve.cantilever_k
             self.basename = curve.basename
+            self.xposition = curve.xpos
 
     # Methods
 
@@ -473,7 +473,7 @@ class Nanoment():
         if res is None or res is False:
             self.active = False
             return
-        # res[1] = 0.0  # sets force to zero at CP
+        #res[1] = 0.0  # sets force to zero at CP
         self._contactpoint = res
         self.set_indentation()
         self.update_view()
