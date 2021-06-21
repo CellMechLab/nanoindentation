@@ -92,12 +92,13 @@ class ChiaroBase(DataSet):
     def header(self):
         f = open(self.filename)
         targets = ['Tip radius (um)', 'Calibration factor', 'k (N/m)', 'SMDuration (s)',
-                   'Piezo Indentation Sweep Settings', 'Profile:', 'E[eff] (Pa)', 'X-position (um)', 'Y-position (um)','Software version','Time (s)']
+                   'Piezo Indentation Sweep Settings', 'Profile:', 'E[eff] (Pa)', 'X-position (um)', 'Y-position (um)',
+                   'Software version','Time (s)','Measurement','Loading / unloading time (s)','Depth (nm)']
         reading_protocol = False
         self.version = 'old'
-
+        self.DMA = False
         for line in f:
-            if reading_protocol is False:
+            if reading_protocol is False or self.DMA is True:
                 if line[0:len(targets[0])] == targets[0]:
                     self.tip_radius = float(line.strip().replace(',', '.').split('\t')[
                                             1])*1000.0  # NB: internal units are nm
@@ -108,9 +109,13 @@ class ChiaroBase(DataSet):
                     self.cantilever_k = float(
                         line.strip().replace(',', '.').split('\t')[1])
                 elif line[0:len(targets[3])] == targets[3]:
-                    delay = float(line.strip().replace(
-                        ',', '.')[len(targets[3]):])
+                    delay = float(line.strip().replace(',', '.')[len(targets[3]):])
                     self.protocol.append([0, delay])
+                elif line[0:len(targets[12])] == targets[12]:
+                    cv_time = float(line.strip().replace(',', '.')[len(targets[12]):])
+                    self.protocol.append([cv_depth, cv_time])
+                elif line[0:len(targets[13])] == targets[13]:
+                    cv_depth = float(line.strip().replace(',', '.')[len(targets[13]):])
                 elif line[0:len(targets[6])] == targets[6]:
                     # saved in Pa, internally in GPa; this is Eeff (i.e. including 1-\nu^2)
                     self.youngProvided = float(
@@ -127,6 +132,10 @@ class ChiaroBase(DataSet):
                     reading_protocol = True
                 elif line[0:len(targets[9])] == targets[9]:
                     self.version = line[len(targets[9])+1:].strip()
+                elif line[0:len(targets[11])] == targets[11]:
+                    meas = line[len(targets[11])+1:].strip()
+                    if meas == 'DMA':
+                        self.DMA = True
                 elif line[0:len(targets[10])] == targets[10]:
                     break
             else:
@@ -178,7 +187,7 @@ class Chiaro(ChiaroBase):
         for nextThreshold, nextTime in self.protocol:
             for j in range(actualPos, len(self.data['z'])):
                 if self.data['time'][j] > wait + nextTime:
-                    if self.version != 'old' or  (cross(self.data['z'][j], self.data['z'][j-1], nextThreshold, bias)) is True:
+                    if self.version != 'old' or self.DMA is True or  (cross(self.data['z'][j], self.data['z'][j-1], nextThreshold, bias)) is True:
                         nodi.append(j)
                         wait = self.data['time'][j]
                         break
