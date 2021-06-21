@@ -10,10 +10,8 @@ import panels
 import filter_panel as panfilter
 import popup
 
-
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
-
 
 class NanoWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
@@ -52,6 +50,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.histo_esfit.setPen(pg.mkPen(pg.QtGui.QColor(
             255, 0, 0, 150), width=5))  # ,style=QtCore.Qt.DashLine))
         self.ui.g_histo.plotItem.addItem(self.histo_esfit)
+
         self.es_top = pg.PlotCurveItem(clickable=False)
         self.es_top.setPen(pg.mkPen(pg.QtGui.QColor(
             255, 0, 0, 150), width=1, style=QtCore.Qt.SolidLine))
@@ -71,7 +70,23 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.es_band = pg.FillBetweenItem(self.es_bottom, self.es_top)
         self.es_band.setBrush(pg.mkBrush(pg.QtGui.QColor(255, 0, 0, 50)))
         self.ui.g_decay.plotItem.addItem(self.es_band)
-
+        #average hertz data
+        self.hertz_average = pg.PlotCurveItem(clickable=False)
+        self.hertz_average.setPen(pg.mkPen(pg.QtGui.QColor(
+            0, 0, 255, 150), width=3, style=QtCore.Qt.SolidLine))
+        self.ui.avg_hertz.plotItem.addItem(self.hertz_average)
+        self.hertz_average_top= pg.PlotCurveItem(clickable=False)
+        self.hertz_average_top.setPen(pg.mkPen(pg.QtGui.QColor(
+            0, 0, 255, 150), width=3, style=QtCore.Qt.SolidLine))
+        self.ui.avg_hertz.plotItem.addItem(self.hertz_average_top)
+        self.hertz_average_bottom= pg.PlotCurveItem(clickable=False)
+        self.hertz_average_bottom.setPen(pg.mkPen(pg.QtGui.QColor(
+            0, 0, 255, 150), width=3, style=QtCore.Qt.SolidLine))
+        self.ui.avg_hertz.plotItem.addItem(self.hertz_average_bottom)
+        self.hertz_band = pg.FillBetweenItem(self.hertz_average_bottom, self.hertz_average_top)
+        self.hertz_band.setBrush(pg.mkBrush(pg.QtGui.QColor(0, 0, 255, 50)))
+        self.ui.avg_hertz.plotItem.addItem(self.hertz_band)
+    
         def title_style(lab):
             return '<span style="font-family: Arial; font-weight:bold; font-size: 10pt;">{}</span>'.format(lab)
 
@@ -112,6 +127,11 @@ class NanoWindow(QtWidgets.QMainWindow):
             'bottom', lab_style('Young\'s modulus [Pa]'))
         self.ui.g_decay.plotItem.setLabel(
             'bottom', lab_style('Contact radius [nm]'))
+        self.ui.avg_hertz.plotItem.setTitle(title_style('Average F-Ind'))
+        self.ui.avg_hertz.plotItem.setLabel(
+            'bottom', lab_style('average indentation [nm]') )
+        self.ui.avg_hertz.plotItem.setLabel(
+            'left', lab_style('average force [nN]'))
 
         for obj in panels.ALL:
             self.ui.comboCP.addItem(obj['label'])
@@ -170,6 +190,9 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.es_bottom.setData(None)
         self.es_averageZoom.setData(None)
         self.es_averageFit.setData(None)
+        self.hertz_average.setData(None)
+        self.hertz_average_bottom.setData(None)
+        self.hertz_average_top.setData(None)
         self.curve_raw.setData(None)
         self.curve_single.setData(None)
         self.curve_fit.setData(None)
@@ -219,6 +242,9 @@ class NanoWindow(QtWidgets.QMainWindow):
 
         slots.append(self.ui.save_dataHertz.clicked)
         handlers.append(self.save_dataHertz)
+
+        slots.append(self.ui.save_avg_hertz.clicked)
+        handlers.append(self.save_hertz_average)
 
         slots.append(self.ui.save_dataES.clicked)
         handlers.append(self.save_dataES)
@@ -438,9 +464,15 @@ class NanoWindow(QtWidgets.QMainWindow):
 
     def numbers(self):
         E_array = []
+        F_data = []
+        ind_data = []
+
         for c in self.collection:
             if c.active is True and c.E is not None:
                 E_array.append(c.E)
+                #Average Hertz
+                F_data.append(c.touch)
+                ind_data.append(c.ind)
         if len(E_array) < 2:
             self.ui.data_average.setText('0.00')
             self.ui.data_std.setText('0.00')
@@ -491,37 +523,53 @@ class NanoWindow(QtWidgets.QMainWindow):
                     self.ui.fit_indentation.value()))
                 self.indentation_fit.setData(x, y)
                 self.fdistance_fit.setData(z, y)
-
+                try:
+                    x_hertz, y_hertz, er_hertz = motor.getMedCurve(ind_data, F_data, error=True )
+                except TypeError:
+                    return
+                except ValueError:
+                    return
+                #Setting average hertz data
+                indmax = float(self.ui.fit_indentation.value())
+                self.x_hertz_average = x_hertz
+                self.y_hertz_average = y_hertz
+                self.hertz_average.setData(x_hertz, y_hertz)
+                #jmax_hertz = np.argmin((x_hertz-indmax)**2)
+                self.hertz_average.setData(x_hertz, y_hertz)
+                self.hertz_average_top.setData(x_hertz, (y_hertz+er_hertz/2))
+                self.hertz_average_bottom.setData(x_hertz, (y_hertz-er_hertz/2))
             except:
                 self.histo_fit.setData(None)
                 self.indentation_fit.setData(None)
                 self.fdistance_fit.setData(None)
                 pass
-
+        #Elasticity Spectra
         E_data_x = []
         E_data_y = []
         Radius = []
         for c in self.collection:
             if c.active is True and c.E is not None:
+                #Elasticity Spectra
                 Radius.append(c.R)
                 E_data_x.append(c.Ex)
                 E_data_y.append(c.Ey)
         try:
             x, y, er = motor.getMedCurve(E_data_x, E_data_y, error=True)
+            #x_hertz, y_hertz, er_hertz = motor.getMedCurve(ind_data, F_data, error=True )
         except TypeError:
             return
         except ValueError:
             return
-
+        
         self.es_average.setData(x, y*1e9)
         self.ES_array_x = x
         self.ES_array_y = y*1e9
         self.es_average.setData(x**2/np.average(Radius), y*1e9)
-
         indmax = float(self.ui.fit_indentation.value())
         rmax = np.sqrt(indmax * np.average(Radius))
         jmax = np.argmin((x - rmax)**2)
-
+    
+        #setting average elasticity spectra data
         self.es_top.setData(x[:jmax], (y[:jmax]+er[:jmax]/2)*1e9)
         self.es_bottom.setData(x[:jmax], (y[:jmax]-er[:jmax]/2)*1e9)
         self.es_averageZoom.setData(x[:jmax], y[:jmax]*1e9)
@@ -586,9 +634,11 @@ class NanoWindow(QtWidgets.QMainWindow):
 
     def save_dataHertz(self):
         E_array = []
+        x_pos = []
         for c in self.collection:
             if c.active is True and c.E is not None:
                 E_array.append(c.E)
+                x_pos.append(c.xposition)
 
         fname = QtWidgets.QFileDialog.getSaveFileName(
             self, 'Select the file to export your Hertzian E data', self.workingdir, "Tab Separated Values (*.tsv)")
@@ -612,14 +662,35 @@ class NanoWindow(QtWidgets.QMainWindow):
             f.write(
                 '# Young\'s Modulus Hertz Gaussian STD {} Pa\n'.format(self.Yav_std))
             f.write('# \n')
-            f.write('# Young\'s Modulus [Pa]\n')
-            for e in E_array:
-                f.write('{}\n'.format(e))
+            f.write('# Young\'s Modulus [Pa]\t X Position [um]\n')
+            for x in zip(*[E_array, x_pos]):
+                f.write("{0}\t{1}\n".format(*x))
+        f.close()
+        f.close()
+        QtWidgets.QApplication.restoreOverrideCursor()
+    
+    def save_hertz_average(self):
+        fname = QtWidgets.QFileDialog.getSaveFileName(
+            self, 'Select the file to export your average hertz data', self.workingdir, "Tab Separated Values (*.tsv)")
+        if fname[0] == '':
+            return
+        QtWidgets.QApplication.setOverrideCursor(
+            QtGui.QCursor(QtCore.Qt.WaitCursor))
+        with open(fname[0], 'w') as f:
+            f.write(
+                'Mean Young\'s Modulus Hertz [Pa] # {} \n'.format(self.Yav))
+            f.write('Max indentation (Hertz Fit)[nm] # {} \n'.format(
+                float(self.ui.fit_indentation.value())))
+            f.write('Tip radius [nm] # {} \n'.format(self.collection[0].R))
+            f.write('Elastic constant [N/m] #{}\n'.format(self.collection[0].k))
+            f.write(
+                'Avg Indentation [nm] \t Avg Force [nN]\n')
+            for x in zip(*[self.x_hertz_average, self.y_hertz_average]):
+                f.write("{0}\t{1}\n".format(*x))
         f.close()
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def save_dataES(self):
-
         fname = QtWidgets.QFileDialog.getSaveFileName(
             self, 'Select the file to export your Elasticity Spectra data', self.workingdir, "Tab Separated Values (*.tsv)")
         if fname[0] == '':
