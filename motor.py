@@ -91,7 +91,7 @@ class Nanoment():
         self._cpfunction = None
         self._filter = None
         if curve is not None:
-            self.R = curve.tip['radius']
+            self.R = curve.tip['radius']*1e9
             self.k = curve.spring_constant
             self.basename = curve.filename
             #self.xposition = curve.xpos
