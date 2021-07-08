@@ -24,7 +24,7 @@
       <item>
        <widget class="QGroupBox" name="Curve">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -39,7 +39,7 @@
          <item>
           <widget class="QLabel" name="label">
            <property name="enabled">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -260,7 +260,6 @@
        </property>
        <property name="font">
         <font>
-         <weight>50</weight>
          <italic>false</italic>
          <bold>false</bold>
         </font>
@@ -334,7 +333,6 @@
               <font>
                <family>Arial</family>
                <pointsize>11</pointsize>
-               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -359,7 +357,6 @@
              </property>
              <property name="font">
               <font>
-               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -393,7 +390,6 @@
          <widget class="QGroupBox" name="es_group_box">
           <property name="font">
            <font>
-            <weight>50</weight>
             <bold>false</bold>
            </font>
           </property>
@@ -410,7 +406,6 @@
               <font>
                <family>Arial</family>
                <pointsize>11</pointsize>
-               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -462,7 +457,6 @@
              <font>
               <family>Arial</family>
               <pointsize>11</pointsize>
-              <weight>75</weight>
               <italic>false</italic>
               <bold>true</bold>
               <underline>false</underline>
@@ -522,6 +516,9 @@
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
             <widget class="QRadioButton" name="open_o11new">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Optics11 New</string>
              </property>
@@ -532,6 +529,9 @@
            </item>
            <item>
             <widget class="QRadioButton" name="open_o11old">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Optics11 Old</string>
              </property>
@@ -539,6 +539,9 @@
            </item>
            <item>
             <widget class="QRadioButton" name="open_nanosurf">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Nanosurf export</string>
              </property>
@@ -549,6 +552,9 @@
            </item>
            <item>
             <widget class="QRadioButton" name="open_easy_tsv">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Easy tsv</string>
              </property>
@@ -558,12 +564,11 @@
             <widget class="QPushButton" name="open_selectfolder">
              <property name="font">
               <font>
-               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
              <property name="text">
-              <string>Load Folder</string>
+              <string>Load Experiment</string>
              </property>
              <property name="shortcut">
               <string>Ctrl+S</string>

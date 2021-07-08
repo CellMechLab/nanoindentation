@@ -1,14 +1,15 @@
-import sys
+import sys,os
 
 import numpy as np
 import pyqtgraph as pg
 from PyQt5 import QtCore, QtGui, QtWidgets
 import motor
-import mvexperiment.experiment as experiment
 import nano_view as view
 import panels
 import filter_panel as panfilter
 import popup
+import json
+import engine
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
@@ -159,7 +160,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.experiment = None
 
         # connect load and open, other connections after load/open
-        self.ui.open_selectfolder.clicked.connect(self.open_folder)
+        self.ui.open_selectfolder.clicked.connect(self.loadExperiment)
         self.ui.comboCP.currentIndexChanged.connect(self.changeCP)
         self.ui.comboFsmooth.currentIndexChanged.connect(self.changeFS)
 
@@ -274,67 +275,48 @@ class NanoWindow(QtWidgets.QMainWindow):
     def disconnect_all(self):
         self.connect_all(False)
 
-    def open_folder(self):
-        fname = QtWidgets.QFileDialog.getExistingDirectory(
-            self, 'Select the root dir', './')
-        if fname == '' or fname is None or fname[0] == '':
+    def loadExperiment(self):
+        fOpener = QtWidgets.QFileDialog.getOpenFileName(self,"Open Experiment File",self.workingdir,"JSON curve files (*.json)")
+        if fOpener[0]=='' or fOpener[0] is None:
             return
-
-        QtWidgets.QApplication.setOverrideCursor(
-            QtGui.QCursor(QtCore.Qt.WaitCursor))
-        self.workingdir = fname
-
+        self.redraw = False
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        filename = fOpener[0]
+        self.workingdir = os.path.dirname(filename)
+        
         exp = None
-        if self.ui.open_o11new.isChecked() is True:
-            exp = experiment.Chiaro(fname)
-        elif self.ui.open_o11old.isChecked() is True:
-            exp = experiment.ChiaroGenova(fname)
-        elif self.ui.open_nanosurf.isChecked() is True:
-            exp = experiment.NanoSurf(fname)
-        elif self.ui.open_easy_tsv.isChecked() is True:
-            exp = experiment.Easytsv(fname)
-        # elif self.ui.jpk_open.isChecked() is True:
-            #exp = experiment.Jpk(fname)
-
-        exp.browse()
-        if len(exp) == 0:
-            QtWidgets.QApplication.restoreOverrideCursor()
-            QtWidgets.QMessageBox.information(
-                self, 'Empty folder', 'I did not find any valid file in the folder, please check file format and folder')
-            return
+        engine.haystack=[]
+        structure = json.load(open(filename))
+        for cv in structure['curves']:
+            engine.haystack.append(engine.curve(cv))
+        QtWidgets.QApplication.restoreOverrideCursor()
 
         self.disconnect_all()
         self.clear()
-        self.experiment = exp
-
-        progress = QtWidgets.QProgressDialog(
-            "Opening files...", "Cancel opening", 0, len(self.experiment.haystack))
+        self.experiment = engine
 
         def attach(node, parent):
             myself = QtWidgets.QTreeWidgetItem(parent)
             node.myTree = myself
-            myself.setText(0, node.basename)
+            myself.setText(0, node.filename)
             myself.curve = node
             myself.setFlags(
                 myself.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
             myself.setCheckState(0, QtCore.Qt.Checked)
-            for mychild in node:
-                attach(mychild, myself)
-        for node in self.experiment:
+            #for mychild in node:
+            #    attach(mychild, myself)
+        for node in self.experiment.haystack:
             attach(node, self.ui.mainlist)
 
         for c in self.experiment.haystack:
-            c.open()
             node = motor.Nanoment(c)
             node.setCPFunction(self.contactPoint.calculate)
             node.connect(self, c.myTree)
             c.myTree.nano = node
             self.collection.append(node)
-            progress.setValue(progress.value() + 1)
             QtCore.QCoreApplication.processEvents()
-
-        progress.setValue(len(self.experiment.haystack))
-        QtWidgets.QApplication.restoreOverrideCursor()
+        self.refresh()
+        
 
         self.fdistance_fit = pg.PlotCurveItem(clickable=False)
         self.fdistance_fit.setPen(pg.mkPen(pg.QtGui.QColor(
@@ -349,11 +331,13 @@ class NanoWindow(QtWidgets.QMainWindow):
             255, 0, 0, 150), width=2, style=QtCore.Qt.SolidLine))
         self.ui.g_es.plotItem.addItem(self.es_average)
 
-        self.ui.curve_segment.setMaximum(len(self.experiment.haystack[0])-1)
-        if len(self.experiment.haystack[0]) > 1:
-            self.ui.curve_segment.setValue(1)
+        #self.ui.curve_segment.setMaximum(len(self.experiment.haystack[0])-1)
+        #if len(self.experiment.haystack[0]) > 1:
+        #    self.ui.curve_segment.setValue(1)
         self.connect_all()
         self.refill()
+
+        QtWidgets.QApplication.restoreOverrideCursor()
 
     def quickCP(self):
         for c in self.collection:
@@ -452,11 +436,12 @@ class NanoWindow(QtWidgets.QMainWindow):
             return
 
     def refill(self):
-        indicator = int(self.ui.curve_segment.value())
+        #indicator = int(self.ui.curve_segment.value())
         for i in range(len(self.collection)):
             c = self.experiment.haystack[i]
             try:
-                self.collection[i].set_XY(c[indicator].z, c[indicator].f)
+                #self.collection[i].set_XY(c[indicator].z, c[indicator].f)
+                self.collection[i].set_XY(c._Z*1e9, c._F*1e9)
             except IndexError:
                 QtWidgets.QMessageBox.information(
                     self, 'Empty curve', 'Problem detected with curve {}, not populated'.format(c.basename))
