@@ -8,70 +8,62 @@ R = 3400e-9
 cp = 3.0e-6
 indmax = 7e-6
 cpoint = 1000
-indpoint = 7000
-noiselevel = 1e-12
-noisewidth = 1e-9
+indpoint = 2000
+Enoiselevel = 500
+Fnoiselevel = 1e-10
+Znoiselevel = 100e-9
 k = 0.032
-
-print(E)
-
+show = True
 
 def hertz(x, R, E, nu=0.5):
     return 4*E/3/(1-nu**2)*np.sqrt(R)*x**1.5
 
+def getCurve(E,indmax,indpoint,R,k):
+    xpost = np.linspace(0, indmax, indpoint)
+    Fpost = hertz(xpost, R, E)
+    zpost = xpost+Fpost/k
+    zero = np.zeros(1000)
+    zres = np.linspace(0,max(zpost),indpoint)
+    fres = np.interp(zres, zpost, Fpost)
+    delta = zres[1]-zres[0]
+    z = np.append( np.linspace(-1000*delta,-delta,1000) , zres )
+    F = np.append(np.zeros(1000),fres)
+    return z,F
 
-xpost = np.linspace(0, indmax, indpoint)
-Fpost = hertz(xpost, R, E)
-zpost = xpost+Fpost/k
-
-Enew = []
-colors = ['c', 'k', 'r', 'y', 'g', 'b']
-for i in range(N):
-    col = colors[i % len(colors)]
-    f = open('/Users/giuseppeciccone/OneDrive - University of Glasgow/PhD/Nanoindentation/Nanoindentation Github/nanoindentation/syntheticdata/tmp/fake_{}_{}.tsv'.format(E, i), 'w')
+def saveCurve(x,y,filename,R,k,E0):
+    f = open(filename, 'w')
     f.write('#easy_tsv\n')
     f.write('#k: {} \n'.format(k))
-    f.write('#R: {} \n'.format(R*1e9))
-    f.write('#displacement [nm] \t #force [nN] \n')
+    f.write('#R: {} \n'.format(R))
+    f.write('#E: {} \n'.format(E0))
+    f.write('#displacement [m] \t #force [N] \n')
+    for xi,yi in zip(x,y):
+        f.write('{}\t{}\n'.format(xi,yi))
+    f.close()
 
-    realcp = cp  # + 100.0e-9*np.random.normal(scale=1)
-    zpre = np.linspace(0, realcp, cpoint)
-    Fpre = np.zeros(len(zpre))
 
-    F = np.append(Fpre, Fpost)
-    z = np.append(zpre, zpost+realcp)
 
+#folder = '/Users/giuseppeciccone/OneDrive - University of Glasgow/PhD/Nanoindentation/Nanoindentation Github/nanoindentation/syntheticdata/tmp/'
+folder ='./syntheticdata/tmp/'
+for i in range(N):
+
+    Enoise = Enoiselevel * np.random.normal() 
+    E0 = E + Enoise
+
+    name = 'fake_{}_{}.tsv'.format(E0, i)
+
+    z,F = getCurve(E0,indmax,indpoint,R,k)
     # now randomize it
-    noise = noiselevel * np.random.normal(scale=.1, size=F.shape)
+    noise = Fnoiselevel * np.random.normal(size=F.shape)
     F += noise
 
-    properz = np.linspace(0, max(z), int(max(z)*1e9))
-    properF = np.interp(properz, z, F)
+    znoise = Znoiselevel * np.random.normal(size=F.shape)
+    z += znoise
 
-    plt.plot(properz, properF, 'o')
-    iContact = np.argmin((properz-realcp) ** 2)
-    Yf = properF[iContact:]
-    Xf = properz[iContact:]-realcp
-    ind = Xf - Yf / k
+    if show is True:
+        plt.plot(z,F)
+    saveCurve(z,F,folder+name,R,k,E0)
 
-    def Hertz(x, E):
-        x = np.abs(x)
-        poisson = 0.5
-        return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
-
-    plt.plot(ind, Yf, 'o', color=col)
-
-    indmax = 2000
-    jj = np.argmin((ind-indmax)**2)
-    popt, pcov = curve_fit(Hertz, ind[:jj], Yf[:jj], p0=[3000], maxfev=100000)
-    # E_std = np.sqrt(pcov[0][0])
-    Enew.append(popt[0])
-
-    plt.plot(ind[:jj], Hertz(ind[:jj], Enew[-1]), '--', color=col)
-
-    for j in range(len(properz)):
-        f.write('{}\t{}\n'.format(properz[j]*1e9, properF[j]*1e9))
-    f.close()
+if show is True:
+    plt.show()
 print('Terminated')
-print(np.average(Enew))
-plt.show()
