@@ -619,11 +619,11 @@ class NanoWindow(QtWidgets.QMainWindow):
 
     def save_dataHertz(self):
         E_array = []
-        x_pos = []
+        #x_pos = []
         for c in self.collection:
             if c.active is True and c.E is not None:
                 E_array.append(c.E)
-                x_pos.append(c.xposition)
+                #x_pos.append(c.xposition)
 
         fname = QtWidgets.QFileDialog.getSaveFileName(
             self, 'Select the file to export your Hertzian E data', self.workingdir, "Tab Separated Values (*.tsv)")
@@ -647,9 +647,10 @@ class NanoWindow(QtWidgets.QMainWindow):
             f.write(
                 '# Young\'s Modulus Hertz Gaussian STD {} Pa\n'.format(self.Yav_std))
             f.write('# \n')
-            f.write('# Young\'s Modulus [Pa]\t X Position [um]\n')
-            for x in zip(*[E_array, x_pos]):
-                f.write("{0}\t{1}\n".format(*x))
+            #f.write('# Young\'s Modulus [Pa]\t X Position [um]\n')
+            f.write('# Young\'s Modulus [Pa]\n')
+            for x in E_array:
+                f.write("{0}\n".format(x))
         f.close()
         f.close()
         QtWidgets.QApplication.restoreOverrideCursor()
