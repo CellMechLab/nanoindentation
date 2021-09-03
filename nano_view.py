@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1680, 977)
+        MainWindow.resize(1918, 977)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("../../../../.designer/backup/ico.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -142,7 +142,7 @@ class Ui_MainWindow(object):
         self.splitter_3.setOrientation(QtCore.Qt.Horizontal)
         self.splitter_3.setObjectName("splitter_3")
         self.mainlist = QtWidgets.QTreeWidget(self.splitter_3)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.mainlist.sizePolicy().hasHeightForWidth())
@@ -185,6 +185,7 @@ class Ui_MainWindow(object):
         self.analysis_group_box.setTitle("")
         self.analysis_group_box.setObjectName("analysis_group_box")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.analysis_group_box)
+        self.verticalLayout_5.setSpacing(0)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
         self.analysis = QtWidgets.QCheckBox(self.analysis_group_box)
         self.analysis.setEnabled(True)

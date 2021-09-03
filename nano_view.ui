@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1680</width>
+    <width>1918</width>
     <height>977</height>
    </rect>
   </property>
@@ -257,7 +257,7 @@
        </property>
        <widget class="QTreeWidget" name="mainlist">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+         <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -326,6 +326,9 @@
           <string/>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_5">
+          <property name="spacing">
+           <number>0</number>
+          </property>
           <item>
            <widget class="QCheckBox" name="analysis">
             <property name="enabled">
@@ -402,6 +405,9 @@
           <string/>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_10">
+          <property name="spacing">
+           <number>-1</number>
+          </property>
           <item>
            <widget class="QCheckBox" name="es_analysis">
             <property name="enabled">
