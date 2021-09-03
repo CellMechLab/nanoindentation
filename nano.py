@@ -1,4 +1,5 @@
-import sys,os
+import sys
+import os
 
 import numpy as np
 import pyqtgraph as pg
@@ -13,6 +14,7 @@ import engine
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
+
 
 class NanoWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
@@ -35,22 +37,23 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.curve_fit.setPen(pg.mkPen(pg.QtGui.QColor(
             0, 0, 255, 255), width=5, style=QtCore.Qt.DashLine))
         self.ui.g_single.plotItem.addItem(self.curve_fit)
-        self.histo_data = pg.PlotCurveItem([0, 0], [
-                                           0], clickable=False, stepMode='center', fillLevel=0, brush=pg.mkBrush([0, 0, 255, 50]))
-        self.histo_data.setPen(pg.mkPen(pg.QtGui.QColor(0, 0, 255), width=1))
-        self.ui.g_histo.plotItem.addItem(self.histo_data)
-        self.histo_esdata = pg.PlotCurveItem([0, 0], [
-                                             0], clickable=False, stepMode='center', fillLevel=0, brush=pg.mkBrush([255, 0, 0, 50]))
-        self.histo_esdata.setPen(pg.mkPen(pg.QtGui.QColor(255, 0, 0), width=1))
-        self.ui.g_histo.plotItem.addItem(self.histo_esdata)
-        self.histo_fit = pg.PlotCurveItem(clickable=False)
-        self.histo_fit.setPen(pg.mkPen(pg.QtGui.QColor(
-            0, 0, 255, 150), width=5))  # ,style=QtCore.Qt.DashLine))
-        self.ui.g_histo.plotItem.addItem(self.histo_fit)
-        self.histo_esfit = pg.PlotCurveItem(clickable=False)
-        self.histo_esfit.setPen(pg.mkPen(pg.QtGui.QColor(
-            255, 0, 0, 150), width=5))  # ,style=QtCore.Qt.DashLine))
-        self.ui.g_histo.plotItem.addItem(self.histo_esfit)
+
+        # self.histo_data = pg.PlotCurveItem([0, 0], [
+        #                                    0], clickable=False, stepMode='center', fillLevel=0, brush=pg.mkBrush([0, 0, 255, 50]))
+        # self.histo_data.setPen(pg.mkPen(pg.QtGui.QColor(0, 0, 255), width=1))
+        # self.ui.g_histo.plotItem.addItem(self.histo_data)
+        # self.histo_esdata = pg.PlotCurveItem([0, 0], [
+        #                                      0], clickable=False, stepMode='center', fillLevel=0, brush=pg.mkBrush([255, 0, 0, 50]))
+        # self.histo_esdata.setPen(pg.mkPen(pg.QtGui.QColor(255, 0, 0), width=1))
+        # self.ui.g_histo.plotItem.addItem(self.histo_esdata)
+        # self.histo_fit = pg.PlotCurveItem(clickable=False)
+        # self.histo_fit.setPen(pg.mkPen(pg.QtGui.QColor(
+        #     0, 0, 255, 150), width=5))  # ,style=QtCore.Qt.DashLine))
+        # self.ui.g_histo.plotItem.addItem(self.histo_fit)
+        # self.histo_esfit = pg.PlotCurveItem(clickable=False)
+        # self.histo_esfit.setPen(pg.mkPen(pg.QtGui.QColor(
+        #     255, 0, 0, 150), width=5))  # ,style=QtCore.Qt.DashLine))
+        # self.ui.g_histo.plotItem.addItem(self.histo_esfit)
 
         self.es_top = pg.PlotCurveItem(clickable=False)
         self.es_top.setPen(pg.mkPen(pg.QtGui.QColor(
@@ -71,23 +74,24 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.es_band = pg.FillBetweenItem(self.es_bottom, self.es_top)
         self.es_band.setBrush(pg.mkBrush(pg.QtGui.QColor(255, 0, 0, 50)))
         self.ui.g_decay.plotItem.addItem(self.es_band)
-        #average hertz data
+        # average hertz data
         self.hertz_average = pg.PlotCurveItem(clickable=False)
         self.hertz_average.setPen(pg.mkPen(pg.QtGui.QColor(
             0, 0, 255, 150), width=3, style=QtCore.Qt.SolidLine))
         self.ui.avg_hertz.plotItem.addItem(self.hertz_average)
-        self.hertz_average_top= pg.PlotCurveItem(clickable=False)
+        self.hertz_average_top = pg.PlotCurveItem(clickable=False)
         self.hertz_average_top.setPen(pg.mkPen(pg.QtGui.QColor(
             0, 0, 255, 150), width=3, style=QtCore.Qt.SolidLine))
         self.ui.avg_hertz.plotItem.addItem(self.hertz_average_top)
-        self.hertz_average_bottom= pg.PlotCurveItem(clickable=False)
+        self.hertz_average_bottom = pg.PlotCurveItem(clickable=False)
         self.hertz_average_bottom.setPen(pg.mkPen(pg.QtGui.QColor(
             0, 0, 255, 150), width=3, style=QtCore.Qt.SolidLine))
         self.ui.avg_hertz.plotItem.addItem(self.hertz_average_bottom)
-        self.hertz_band = pg.FillBetweenItem(self.hertz_average_bottom, self.hertz_average_top)
+        self.hertz_band = pg.FillBetweenItem(
+            self.hertz_average_bottom, self.hertz_average_top)
         self.hertz_band.setBrush(pg.mkBrush(pg.QtGui.QColor(0, 0, 255, 50)))
         self.ui.avg_hertz.plotItem.addItem(self.hertz_band)
-    
+
         def title_style(lab):
             return '<span style="font-family: Arial; font-weight:bold; font-size: 10pt;">{}</span>'.format(lab)
 
@@ -101,7 +105,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_scatter.plotItem.setTitle(title_style('Elasticity values'))
         self.ui.g_single.plotItem.setTitle(title_style('Current curve'))
         # empty title (elasticity stats)
-        self.ui.g_histo.plotItem.setTitle(title_style(''))
+        # self.ui.g_histo.plotItem.setTitle(title_style(''))
         self.ui.g_decay.plotItem.setTitle(title_style('Bilayer model'))
 
         self.ui.g_fdistance.plotItem.setLabel('left', lab_style('Force [nN]'))
@@ -111,8 +115,8 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_es.plotItem.setLabel('left', lab_style('Elasticity [Pa]'))
         self.ui.g_scatter.plotItem.setLabel(
             'left', lab_style('Young\'s modulus [Pa]'))
-        self.ui.g_histo.plotItem.setLabel(
-            'left', lab_style('Probability density'))
+        # self.ui.g_histo.plotItem.setLabel(
+        #     'left', lab_style('Probability density'))
         self.ui.g_decay.plotItem.setLabel('left', lab_style('Elasticity [Pa]'))
 
         self.ui.g_fdistance.plotItem.setLabel(
@@ -124,15 +128,15 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_es.plotItem.setLabel(
             'bottom', lab_style('Equivalent indentation [nm]'))
         self.ui.g_scatter.plotItem.setLabel('bottom', lab_style('Curve #'))
-        self.ui.g_histo.plotItem.setLabel(
-            'bottom', lab_style('Young\'s modulus [Pa]'))
+        # self.ui.g_histo.plotItem.setLabel(
+        #     'bottom', lab_style('Young\'s modulus [Pa]'))
         self.ui.g_decay.plotItem.setLabel(
             'bottom', lab_style('Contact radius [nm]'))
         self.ui.avg_hertz.plotItem.setTitle(title_style('Average F-Ind'))
         self.ui.avg_hertz.plotItem.setLabel(
-            'bottom', lab_style('average indentation [nm]') )
+            'bottom', lab_style('Average indentation [nm]'))
         self.ui.avg_hertz.plotItem.setLabel(
-            'left', lab_style('average force [nN]'))
+            'left', lab_style('Average force [nN]'))
 
         for obj in panels.ALL:
             self.ui.comboCP.addItem(obj['label'])
@@ -183,10 +187,10 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_indentation.plotItem.clear()
         self.ui.g_es.plotItem.clear()
         self.ui.g_scatter.plotItem.clear()
-        self.histo_fit.setData(None)
-        self.histo_esfit.setData(None)
-        self.histo_data.setData([0, 0], [0])
-        self.histo_esdata.setData([0, 0], [0])
+        # self.histo_fit.setData(None)
+        # self.histo_esfit.setData(None)
+        # self.histo_data.setData([0, 0], [0])
+        # self.histo_esdata.setData([0, 0], [0])
         self.es_top.setData(None)
         self.es_bottom.setData(None)
         self.es_averageZoom.setData(None)
@@ -194,6 +198,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.hertz_average.setData(None)
         self.hertz_average_bottom.setData(None)
         self.hertz_average_top.setData(None)
+        self.hertz_average_error = None
         self.curve_raw.setData(None)
         self.curve_single.setData(None)
         self.curve_fit.setData(None)
@@ -241,6 +246,8 @@ class NanoWindow(QtWidgets.QMainWindow):
             slots.append(click.clicked)
             handlers.append(self.toggle)
 
+        # important: when adding something new to the gui, need to append slots + append handlers
+
         slots.append(self.ui.save_dataHertz.clicked)
         handlers.append(self.save_dataHertz)
 
@@ -256,7 +263,6 @@ class NanoWindow(QtWidgets.QMainWindow):
         slots.append(self.ui.analysis.clicked)
         handlers.append(self.hertz_changed)
 
-        # important: when adding something new to the gui, need to append slots + append handlers
         slots.append(self.ui.es_analysis.clicked)
         handlers.append(self.es_changed)
 
@@ -276,16 +282,18 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.connect_all(False)
 
     def loadExperiment(self):
-        fOpener = QtWidgets.QFileDialog.getOpenFileName(self,"Open Experiment File",self.workingdir,"JSON curve files (*.json)")
-        if fOpener[0]=='' or fOpener[0] is None:
+        fOpener = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Open Experiment File", self.workingdir, "JSON curve files (*.json)")
+        if fOpener[0] == '' or fOpener[0] is None:
             return
         self.redraw = False
-        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        QtWidgets.QApplication.setOverrideCursor(
+            QtGui.QCursor(QtCore.Qt.WaitCursor))
         filename = fOpener[0]
         self.workingdir = os.path.dirname(filename)
-        
+
         exp = None
-        engine.haystack=[]
+        engine.haystack = []
         structure = json.load(open(filename))
         for cv in structure['curves']:
             engine.haystack.append(engine.curve(cv))
@@ -303,7 +311,7 @@ class NanoWindow(QtWidgets.QMainWindow):
             myself.setFlags(
                 myself.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
             myself.setCheckState(0, QtCore.Qt.Checked)
-            #for mychild in node:
+            # for mychild in node:
             #    attach(mychild, myself)
         for node in self.experiment.haystack:
             attach(node, self.ui.mainlist)
@@ -316,7 +324,6 @@ class NanoWindow(QtWidgets.QMainWindow):
             self.collection.append(node)
             QtCore.QCoreApplication.processEvents()
         self.refresh()
-        
 
         self.fdistance_fit = pg.PlotCurveItem(clickable=False)
         self.fdistance_fit.setPen(pg.mkPen(pg.QtGui.QColor(
@@ -331,8 +338,8 @@ class NanoWindow(QtWidgets.QMainWindow):
             255, 0, 0, 150), width=2, style=QtCore.Qt.SolidLine))
         self.ui.g_es.plotItem.addItem(self.es_average)
 
-        #self.ui.curve_segment.setMaximum(len(self.experiment.haystack[0])-1)
-        #if len(self.experiment.haystack[0]) > 1:
+        # self.ui.curve_segment.setMaximum(len(self.experiment.haystack[0])-1)
+        # if len(self.experiment.haystack[0]) > 1:
         #    self.ui.curve_segment.setValue(1)
         self.connect_all()
         self.refill()
@@ -436,11 +443,11 @@ class NanoWindow(QtWidgets.QMainWindow):
             return
 
     def refill(self):
-        #indicator = int(self.ui.curve_segment.value())
+        # indicator = int(self.ui.curve_segment.value())
         for i in range(len(self.collection)):
             c = self.experiment.haystack[i]
             try:
-                #self.collection[i].set_XY(c[indicator].z, c[indicator].f)
+                # self.collection[i].set_XY(c[indicator].z, c[indicator].f)
                 self.collection[i].set_XY(c._Z*1e9, c._F*1e9)
             except IndexError:
                 QtWidgets.QMessageBox.information(
@@ -455,17 +462,17 @@ class NanoWindow(QtWidgets.QMainWindow):
         for c in self.collection:
             if c.active is True and c.E is not None:
                 E_array.append(c.E)
-                #Average Hertz
+                # Average Hertz
                 F_data.append(c.touch)
                 ind_data.append(c.ind)
         if len(E_array) < 2:
             self.ui.data_average.setText('0.00')
             self.ui.data_std.setText('0.00')
-            self.histo_data.setData([0, 0], [0])
-            self.ui.fit_center.setText('0.00')
-            self.ui.fit_std.setText('0.00')
-            self.histo_fit.setData(None)
-            self.histo_esfit.setData(None)
+            # self.histo_data.setData([0, 0], [0])
+            # self.ui.fit_center.setText('0.00')
+            # self.ui.fit_std.setText('0.00')
+            # self.histo_fit.setData(None)
+            # self.histo_esfit.setData(None)
             self.es_average.setData(None)
             self.indentation_fit.setData(None)
             self.es_averageZoom.setData(None)
@@ -486,66 +493,68 @@ class NanoWindow(QtWidgets.QMainWindow):
         bins = 'auto'
         y, x = np.histogram(eall, bins=bins, density=True)
         if len(y) >= 3:
-            self.histo_data.setData(x, y)
-            self.ui.fit_center.setText('0.00')
-            self.ui.fit_std.setText('0.00')
+            # self.histo_data.setData(x, y)
+            # self.ui.fit_center.setText('0.00')
+            # self.ui.fit_std.setText('0.00')
+            # try:
+            #     x0, w, A, nx, ny = motor.gauss_fit(x, y)
+            #     # self.histo_fit.setData(nx, ny)
+            #     val = str(int(np.average(x0)/10)/100.0)
+            #     try:
+            #         err = str(int(np.average(w)/10)/100.0)
+            #     except:
+            #         err = 0
+            #     # self.ui.fit_center.setText(
+            #     #     '<span>{}&plusmn;{}</span>'.format(val, err))
+            #     self.Ygau = str(int(np.average(x0)))
+            #     self.Ygau_std = str(int(np.average(w)))
+            #     # self.ui.fit_std.setText()
 
+            #     x, y, z = motor.calc_hertz(x0, self.collection[0].R, self.collection[0].k, float(
+            #         self.ui.fit_indentation.value()))
+            #     self.indentation_fit.setData(x, y)
+            #     self.fdistance_fit.setData(z, y)
             try:
-                x0, w, A, nx, ny = motor.gauss_fit(x, y)
-                self.histo_fit.setData(nx, ny)
-                val = str(int(np.average(x0)/10)/100.0)
-                try:
-                    err = str(int(np.average(w)/10)/100.0)
-                except:
-                    err = 0
-                self.ui.fit_center.setText(
-                    '<span>{}&plusmn;{}</span>'.format(val, err))
-                self.Ygau = str(int(np.average(x0)))
-                self.Ygau_std = str(int(np.average(w)))
-                # self.ui.fit_std.setText()
+                x_hertz, y_hertz, er_hertz = motor.getMedCurve(
+                    ind_data, F_data, error=True)
+                self.hertz_average_error = er_hertz
+            except TypeError:
+                return
+            except ValueError:
+                return
+            # Setting average hertz data
+            indmax = float(self.ui.fit_indentation.value())
+            self.x_hertz_average = x_hertz
+            self.y_hertz_average = y_hertz
+            self.hertz_average.setData(x_hertz, y_hertz)
+            # jmax_hertz = np.argmin((x_hertz-indmax)**2)
+            self.hertz_average.setData(x_hertz, y_hertz)
+            self.hertz_average_top.setData(x_hertz, (y_hertz+er_hertz/2))
+            self.hertz_average_bottom.setData(
+                x_hertz, (y_hertz-er_hertz/2))
+            # except:
+            #     self.indentation_fit.setData(None)
+            #     self.fdistance_fit.setData(None)
+            #     pass
 
-                x, y, z = motor.calc_hertz(x0, self.collection[0].R, self.collection[0].k, float(
-                    self.ui.fit_indentation.value()))
-                self.indentation_fit.setData(x, y)
-                self.fdistance_fit.setData(z, y)
-                try:
-                    x_hertz, y_hertz, er_hertz = motor.getMedCurve(ind_data, F_data, error=True )
-                except TypeError:
-                    return
-                except ValueError:
-                    return
-                #Setting average hertz data
-                indmax = float(self.ui.fit_indentation.value())
-                self.x_hertz_average = x_hertz
-                self.y_hertz_average = y_hertz
-                self.hertz_average.setData(x_hertz, y_hertz)
-                #jmax_hertz = np.argmin((x_hertz-indmax)**2)
-                self.hertz_average.setData(x_hertz, y_hertz)
-                self.hertz_average_top.setData(x_hertz, (y_hertz+er_hertz/2))
-                self.hertz_average_bottom.setData(x_hertz, (y_hertz-er_hertz/2))
-            except:
-                self.histo_fit.setData(None)
-                self.indentation_fit.setData(None)
-                self.fdistance_fit.setData(None)
-                pass
-        #Elasticity Spectra
+        # Elasticity Spectra
         E_data_x = []
         E_data_y = []
         Radius = []
         for c in self.collection:
             if c.active is True and c.E is not None:
-                #Elasticity Spectra
+                # Elasticity Spectra
                 Radius.append(c.R)
                 E_data_x.append(c.Ex)
                 E_data_y.append(c.Ey)
         try:
             x, y, er = motor.getMedCurve(E_data_x, E_data_y, error=True)
-            #x_hertz, y_hertz, er_hertz = motor.getMedCurve(ind_data, F_data, error=True )
+            # x_hertz, y_hertz, er_hertz = motor.getMedCurve(ind_data, F_data, error=True )
         except TypeError:
             return
         except ValueError:
             return
-        
+
         self.es_average.setData(x, y*1e9)
         self.ES_array_x = x
         self.ES_array_y = y*1e9
@@ -553,8 +562,8 @@ class NanoWindow(QtWidgets.QMainWindow):
         indmax = float(self.ui.fit_indentation.value())
         rmax = np.sqrt(indmax * np.average(Radius))
         jmax = np.argmin((x - rmax)**2)
-    
-        #setting average elasticity spectra data
+
+        # Setting average elasticity spectra data
         self.es_top.setData(x[:jmax], (y[:jmax]+er[:jmax]/2)*1e9)
         self.es_bottom.setData(x[:jmax], (y[:jmax]-er[:jmax]/2)*1e9)
         self.es_averageZoom.setData(x[:jmax], y[:jmax]*1e9)
@@ -602,28 +611,28 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ESav = str(int(np.average(eall*1e9)))
         self.ESav_std = str(int(np.std(eall*1e9)))
 
-        y, x = np.histogram(eall*1e9, bins=bins, density=True)
-        if len(y) >= 3:
-            self.histo_esdata.setData(x, y)
-            try:
-                x0, w, A, nx, ny = motor.gauss_fit(x, y)
-                self.histo_esfit.setData(nx, ny)
-                val = str(int(np.average(x0) / 10) / 100.0)
-                err = str(int(np.average(w) / 10) / 100.0)
-                self.ui.fit_std.setText(
-                    '<span>{}&plusmn;{}</span>'.format(val, err))
-                self.ESgau = str(int(np.average(x0)))
-                self.ESgau_std = str(int(np.average(w)))
-            except:
-                self.histo_esfit.setData(None)
+        # y, x = np.histogram(eall*1e9, bins=bins, density=True)
+        # if len(y) >= 3:
+        #     # self.histo_esdata.setData(x, y)
+        #     try:
+        #         x0, w, A, nx, ny = motor.gauss_fit(x, y)
+        #         # self.histo_esfit.setData(nx, ny)
+        #         val = str(int(np.average(x0) / 10) / 100.0)
+        #         err = str(int(np.average(w) / 10) / 100.0)
+        #         # self.ui.fit_std.setText(
+        #         #     '<span>{}&plusmn;{}</span>'.format(val, err))
+        #         self.ESgau = str(int(np.average(x0)))
+        #         self.ESgau_std = str(int(np.average(w)))
+        #     except:
+        #         # self.histo_esfit.setData(None)
 
     def save_dataHertz(self):
         E_array = []
-        #x_pos = []
+        # x_pos = []
         for c in self.collection:
             if c.active is True and c.E is not None:
                 E_array.append(c.E)
-                #x_pos.append(c.xposition)
+                # x_pos.append(c.xposition)
 
         fname = QtWidgets.QFileDialog.getSaveFileName(
             self, 'Select the file to export your Hertzian E data', self.workingdir, "Tab Separated Values (*.tsv)")
@@ -643,18 +652,18 @@ class NanoWindow(QtWidgets.QMainWindow):
                 float(self.ui.fit_indentation.value())))
             f.write('# \n')
             f.write(
-                '# Young\'s Modulus Hertz, Gaussian Average {} Pa\n'.format(self.Yav))
+                '# Young\'s Modulus Hertz, Average {} Pa\n'.format(self.Yav))
             f.write(
-                '# Young\'s Modulus Hertz Gaussian STD {} Pa\n'.format(self.Yav_std))
+                '# Young\'s Modulus Hertz, STD {} Pa\n'.format(self.Yav_std))
             f.write('# \n')
-            #f.write('# Young\'s Modulus [Pa]\t X Position [um]\n')
+            # f.write('# Young\'s Modulus [Pa]\t X Position [um]\n')
             f.write('# Young\'s Modulus [Pa]\n')
             for x in E_array:
                 f.write("{0}\n".format(x))
         f.close()
         f.close()
         QtWidgets.QApplication.restoreOverrideCursor()
-    
+
     def save_hertz_average(self):
         fname = QtWidgets.QFileDialog.getSaveFileName(
             self, 'Select the file to export your average hertz data', self.workingdir, "Tab Separated Values (*.tsv)")
@@ -668,11 +677,12 @@ class NanoWindow(QtWidgets.QMainWindow):
             f.write('Max indentation (Hertz Fit)[nm] # {} \n'.format(
                 float(self.ui.fit_indentation.value())))
             f.write('Tip radius [nm] # {} \n'.format(self.collection[0].R))
-            f.write('Elastic constant [N/m] #{}\n'.format(self.collection[0].k))
             f.write(
-                'Avg Indentation [nm] \t Avg Force [nN]\n')
-            for x in zip(*[self.x_hertz_average, self.y_hertz_average]):
-                f.write("{0}\t{1}\n".format(*x))
+                'Elastic constant [N/m] #{}\n'.format(self.collection[0].k))
+            f.write(
+                'Avg Indentation [nm] \t Avg Force [nN] \t Error Force [Pa] \n')
+            for x in zip(*[self.x_hertz_average, self.y_hertz_average, self.hertz_average_error]):
+                f.write("{0}\t{1}\t{2}\n".format(*x))
         f.close()
         QtWidgets.QApplication.restoreOverrideCursor()
 
@@ -694,8 +704,8 @@ class NanoWindow(QtWidgets.QMainWindow):
             f.write('# Number valid curves {}\n'.format(self.Na))
             f.write('# \n')
             f.write(
-                '# Young\'s Modulus ES, Gaussian Average {} Pa\n'.format(self.ESav))
-            f.write('# Young\'s Modulus ES, Gaussian STD {} Pa\n'.format(
+                '# Young\'s Modulus ES, Average {} Pa\n'.format(self.ESav))
+            f.write('# Young\'s Modulus ES, STD {} Pa\n'.format(
                 self.ESav_std))
             f.write('# \n')
             f.write('# E0 from ES fit {} Pa\n'.format(self.E0))
@@ -708,7 +718,7 @@ class NanoWindow(QtWidgets.QMainWindow):
             f.write('# d0 STD {} Pa\n'.format(self.d0_std))
             f.write('# \n')
             f.write(
-                '# Average Elasticity Spectrum: Depth [nm], Young\'s Modulus [Pa]\n')
+                '# Average Elasticity Spectrum: Depth [nm] \t Young\'s Modulus [Pa]\n')
             for x in zip(*[self.ES_array_x, self.ES_array_y]):
                 f.write("{0}\t{1}\n".format(*x))
         f.close()
