@@ -496,24 +496,27 @@ class NanoWindow(QtWidgets.QMainWindow):
             # self.histo_data.setData(x, y)
             # self.ui.fit_center.setText('0.00')
             # self.ui.fit_std.setText('0.00')
-            # try:
-            #     x0, w, A, nx, ny = motor.gauss_fit(x, y)
-            #     # self.histo_fit.setData(nx, ny)
-            #     val = str(int(np.average(x0)/10)/100.0)
-            #     try:
-            #         err = str(int(np.average(w)/10)/100.0)
-            #     except:
-            #         err = 0
-            #     # self.ui.fit_center.setText(
-            #     #     '<span>{}&plusmn;{}</span>'.format(val, err))
-            #     self.Ygau = str(int(np.average(x0)))
-            #     self.Ygau_std = str(int(np.average(w)))
-            #     # self.ui.fit_std.setText()
-
-            #     x, y, z = motor.calc_hertz(x0, self.collection[0].R, self.collection[0].k, float(
-            #         self.ui.fit_indentation.value()))
-            #     self.indentation_fit.setData(x, y)
-            #     self.fdistance_fit.setData(z, y)
+            try:
+                x0, w, A, nx, ny = motor.gauss_fit(x, y)
+                # self.histo_fit.setData(nx, ny)
+                # val = str(int(np.average(x0)/10)/100.0)
+                # try:
+                #     err = str(int(np.average(w)/10)/100.0)
+                # except:
+                #     err = 0
+                # self.ui.fit_center.setText(
+                #     '<span>{}&plusmn;{}</span>'.format(val, err))
+                # self.Ygau = str(int(np.average(x0)))
+                # self.Ygau_std = str(int(np.average(w)))
+                # self.ui.fit_std.setText()
+                x, y, z = motor.calc_hertz(x0, self.collection[0].R, self.collection[0].k, float(
+                    self.ui.fit_indentation.value()))
+                self.indentation_fit.setData(x, y)
+                self.fdistance_fit.setData(z, y)
+            except:
+                self.indentation_fit.setData(None)
+                self.fdistance_fit.setData(None)
+                # self.histo_fit.setData(None)
             try:
                 x_hertz, y_hertz, er_hertz = motor.getMedCurve(
                     ind_data, F_data, error=True)
@@ -532,10 +535,6 @@ class NanoWindow(QtWidgets.QMainWindow):
             self.hertz_average_top.setData(x_hertz, (y_hertz+er_hertz/2))
             self.hertz_average_bottom.setData(
                 x_hertz, (y_hertz-er_hertz/2))
-            # except:
-            #     self.indentation_fit.setData(None)
-            #     self.fdistance_fit.setData(None)
-            #     pass
 
         # Elasticity Spectra
         E_data_x = []
