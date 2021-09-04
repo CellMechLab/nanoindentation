@@ -12,6 +12,7 @@ import popup
 import json
 import engine
 
+
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
@@ -81,11 +82,11 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.avg_hertz.plotItem.addItem(self.hertz_average)
         self.hertz_average_top = pg.PlotCurveItem(clickable=False)
         self.hertz_average_top.setPen(pg.mkPen(pg.QtGui.QColor(
-            0, 0, 255, 150), width=3, style=QtCore.Qt.SolidLine))
+            0, 0, 255, 150), width=1, style=QtCore.Qt.SolidLine))
         self.ui.avg_hertz.plotItem.addItem(self.hertz_average_top)
         self.hertz_average_bottom = pg.PlotCurveItem(clickable=False)
         self.hertz_average_bottom.setPen(pg.mkPen(pg.QtGui.QColor(
-            0, 0, 255, 150), width=3, style=QtCore.Qt.SolidLine))
+            0, 0, 255, 150), width=1, style=QtCore.Qt.SolidLine))
         self.ui.avg_hertz.plotItem.addItem(self.hertz_average_bottom)
         self.hertz_band = pg.FillBetweenItem(
             self.hertz_average_bottom, self.hertz_average_top)
@@ -548,7 +549,6 @@ class NanoWindow(QtWidgets.QMainWindow):
                 E_data_y.append(c.Ey)
         try:
             x, y, er = motor.getMedCurve(E_data_x, E_data_y, error=True)
-            # x_hertz, y_hertz, er_hertz = motor.getMedCurve(ind_data, F_data, error=True )
         except TypeError:
             return
         except ValueError:
