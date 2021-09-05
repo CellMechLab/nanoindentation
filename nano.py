@@ -211,8 +211,8 @@ class NanoWindow(QtWidgets.QMainWindow):
         slots = []
         handlers = []
 
-        slots.append(self.ui.curve_segment.valueChanged)
-        handlers.append(self.refill)
+        # slots.append(self.ui.curve_segment.valueChanged)
+        # handlers.append(self.refill)
 
         slots.append(self.ui.slid_alpha.valueChanged)
         handlers.append(self.set_alpha)
@@ -267,8 +267,8 @@ class NanoWindow(QtWidgets.QMainWindow):
         slots.append(self.ui.es_analysis.clicked)
         handlers.append(self.es_changed)
 
-        slots.append(self.ui.crop.clicked)
-        handlers.append(self.crop)
+        # slots.append(self.ui.crop.clicked)
+        # handlers.append(self.crop)
 
         for i in range(len(slots)):
             if connect is True:
@@ -410,38 +410,38 @@ class NanoWindow(QtWidgets.QMainWindow):
                 self.collection[current].active = False
         self.count()
 
-    def crop(self):
-        left = self.ui.crop_left.isChecked()
-        right = self.ui.crop_right.isChecked()
-        if left is True or right is True:
-            # indicator = int(self.ui.curve_segment.value())
-            for i in range(len(self.collection)):
-                c = self.collection[i]
-                try:
-                    x = c._z_raw
-                    y = c._f_raw
-                    leftLim = np.min(c._z_raw) + 50
-                    rightLim = np.max(c._z_raw) - 50
-                    xnew = []
-                    ynew = []
-                    for k in range(len(x)):
-                        this = True
-                        if left is True:
-                            if x[k] < leftLim:
-                                this = False
-                        if right is True:
-                            if x[k] > rightLim:
-                                this = False
-                        if this is True:
-                            xnew.append(x[k])
-                            ynew.append(y[k])
-                    self.collection[i].set_XY(xnew, ynew)
-                except IndexError:
-                    QtWidgets.QMessageBox.information(
-                        self, 'Empty curve', 'Problem detected with curve {}, not populated'.format(c.basename))
-            self.fmethod_changed()
-        else:
-            return
+    # def crop(self):
+    #     left = self.ui.crop_left.isChecked()
+    #     right = self.ui.crop_right.isChecked()
+    #     if left is True or right is True:
+    #         # indicator = int(self.ui.curve_segment.value())
+    #         for i in range(len(self.collection)):
+    #             c = self.collection[i]
+    #             try:
+    #                 x = c._z_raw
+    #                 y = c._f_raw
+    #                 leftLim = np.min(c._z_raw) + 50
+    #                 rightLim = np.max(c._z_raw) - 50
+    #                 xnew = []
+    #                 ynew = []
+    #                 for k in range(len(x)):
+    #                     this = True
+    #                     if left is True:
+    #                         if x[k] < leftLim:
+    #                             this = False
+    #                     if right is True:
+    #                         if x[k] > rightLim:
+    #                             this = False
+    #                     if this is True:
+    #                         xnew.append(x[k])
+    #                         ynew.append(y[k])
+    #                 self.collection[i].set_XY(xnew, ynew)
+    #             except IndexError:
+    #                 QtWidgets.QMessageBox.information(
+    #                     self, 'Empty curve', 'Problem detected with curve {}, not populated'.format(c.basename))
+    #         self.fmethod_changed()
+    #     else:
+    #         return
 
     def refill(self):
         # indicator = int(self.ui.curve_segment.value())
