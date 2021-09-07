@@ -374,6 +374,7 @@ class DDer(ContactPoint):  # Second Derivative
         jdd = np.argmin((z - zz_x[ddf_best_ind])**2)
         return [c._z[jdd], c._f[jdd]]
 
+
 class Threshold(ContactPoint):  # Threshold
     def create(self):
         self.Athreshold = CPPFloat('Align Threshold [nN]')
@@ -489,6 +490,7 @@ class PrimeFunction(ContactPoint):  # Prime Function
         return [z[jcp], f[jcp]]
 # Second derivative, revisited (prime)
 
+
 class PrimeFunctionDerivative(ContactPoint):
     def create(self):  # parameters that user inputs in this method for CP calculation
         self.window = CPPInt('Filter/Derivative win [nN/nm]')
@@ -543,10 +545,10 @@ class PrimeFunctionDerivative(ContactPoint):
 
 
 ALL.append({'label': 'Threshold', 'method': Threshold})
-ALL.append({'label': 'Prime Funcion Threshold', 'method': PrimeFunction})
-ALL.append({'label': 'Prime Funcion Deriv', 'method': PrimeFunctionDerivative})
+#ALL.append({'label': 'Prime Funcion Threshold', 'method': PrimeFunction})
+#ALL.append({'label': 'Prime Funcion Deriv', 'method': PrimeFunctionDerivative})
 ALL.append({'label': 'Gooodness of Fit', 'method': GoodnessOfFit})
 ALL.append({'label': 'Ratio of Variances', 'method': ThRov})
-ALL.append({'label': 'Ratio of Variances - First Peak', 'method': ThRovFirst})
+#ALL.append({'label': 'Ratio of Variances - First Peak', 'method': ThRovFirst})
 ALL.append({'label': 'Second derivative', 'method': DDer})
-ALL.append({'label': 'Fixed', 'method': Fixed})
+#ALL.append({'label': 'Fixed', 'method': Fixed})
