@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1365</width>
-    <height>891</height>
+    <height>863</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -879,7 +879,7 @@
              <item>
               <widget class="QLabel" name="label_18">
                <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;E&lt;span style=&quot; vertical-align:sub;&quot;&gt;y&lt;/span&gt; [kPa]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;E&lt;span style=&quot; vertical-align:sub;&quot;&gt;y  &lt;/span&gt; &lt;span&gt;&amp;#177;&lt;/span&gt; &lt;span&gt;&amp;sigma;&lt;/span&gt; [kPa]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
               </widget>
              </item>
@@ -899,7 +899,7 @@
              <item>
               <widget class="QLabel" name="label_20">
                <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;E&lt;span style=&quot; vertical-align:sub;&quot;&gt;ES&lt;/span&gt; [kPa]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;E&lt;span style=&quot; vertical-align:sub;&quot;&gt;ES &lt;/span&gt;± σ [kPa]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -946,7 +946,7 @@
              <item>
               <widget class="QLabel" name="label_22">
                <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;E&lt;span style=&quot; vertical-align:sub;&quot;&gt;0&lt;/span&gt; [kPa]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;E&lt;span style=&quot; vertical-align:sub;&quot;&gt;0&lt;/span&gt; &lt;span&gt;&amp;#177;&lt;/span&gt; &lt;span&gt;&amp;sigma;&lt;/span&gt; [kPa]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
               </widget>
              </item>
@@ -966,7 +966,7 @@
              <item>
               <widget class="QLabel" name="label_24">
                <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;E&lt;span style=&quot; vertical-align:sub;&quot;&gt;b&lt;/span&gt; [Pa]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;E&lt;span style=&quot; vertical-align:sub;&quot;&gt;b&lt;/span&gt; &lt;span&gt;&amp;#177;&lt;/span&gt; &lt;span&gt;&amp;sigma;&lt;/span&gt; [Pa]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -989,7 +989,7 @@
              <item>
               <widget class="QLabel" name="label_25">
                <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;d&lt;span style=&quot; vertical-align:sub;&quot;&gt;0&lt;/span&gt; [nm]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;d&lt;span style=&quot; vertical-align:sub;&quot;&gt;0&lt;/span&gt; &lt;span&gt;&amp;#177;&lt;/span&gt; &lt;span&gt;&amp;sigma;&lt;/span&gt;[nm]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

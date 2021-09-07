@@ -13,6 +13,7 @@ ST_BLK = 3
 
 # Function checking if two arrays are the same
 
+
 def sames(ar1, ar2):
     if (ar1 is None) or (ar2 is None):
         return False
@@ -186,8 +187,8 @@ class Nanoment():
         if self._g_scatter is not None:
             if self.active is True and self.E is not None:
                 self._g_scatter.setData(x=[self._Eindex], y=[self.E])
-                self._g_scatter.setSymbolPen('k')
-                self._g_scatter.setSymbolBrush('b')
+                self._g_scatter.setSymbolPen('b')
+                self._g_scatter.setSymbolBrush(pg.QtGui.QColor(0, 0, 255, 50))
             else:
                 self._g_scatter.setSymbolPen(None)
                 self._g_scatter.setSymbolBrush(None)
@@ -473,7 +474,7 @@ class Nanoment():
         if res is None or res is False:
             self.active = False
             return
-        #res[1] = 0.0  # sets force to zero at CP
+        # res[1] = 0.0  # sets force to zero at CP
         self._contactpoint = res
         self.set_indentation()
         self.update_view()
