@@ -238,4 +238,4 @@ class DetrendFilter(Filter):  # DetrendFilter
 
 ALL_FILTERS.append({'label': 'Savitzky Golay', 'method': SavGolFilter})
 ALL_FILTERS.append({'label': 'Median Filter', 'method': MedianFilter})
-ALL_FILTERS.append({'label': 'Baseline Detrend', 'method': DetrendFilter})
+# ALL_FILTERS.append({'label': 'Baseline Detrend', 'method': DetrendFilter})
