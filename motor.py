@@ -5,13 +5,10 @@ from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
 from scipy.signal import find_peaks, savgol_filter
 
-# Plotting pens
 PEN_GREEN = pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2)
 ST_RED = 1
 ST_BLU = 2
 ST_BLK = 3
-
-# Function checking if two arrays are the same
 
 
 def sames(ar1, ar2):
@@ -25,8 +22,6 @@ def sames(ar1, ar2):
         return True
     return False
 
-# Hertz model with poisson 0.5 (incompressible material)
-
 
 def hertz(x, E, R, poisson=0.5):
     return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
@@ -36,9 +31,6 @@ def hertz(x, E, R, poisson=0.5):
 
 def Gauss(x, x0, w, A):
     return A*np.exp(-((x-x0)/w)**2)
-
-# Calculation of Hertz model:
-# returns x (indentation), y (force), z (cantilever displacement)
 
 
 def calc_hertz(E, R, k, maxvalue):
@@ -95,7 +87,7 @@ class Nanoment():
             self.R = curve.tip['radius']*1e9
             self.k = curve.spring_constant
             self.basename = curve.filename
-            #self.xposition = curve.xpos
+            # self.xposition = curve.xpos
 
     # Methods
 
@@ -383,6 +375,8 @@ class Nanoment():
         self.ind = Xf - Yf / self.k
         self.touch = Yf
 
+        if self._ui.es_analysis.isChecked() is False:
+            return
         self.set_elasticityspectra()  # calling set_elasticityspectra()
 
     def reset_E(self):

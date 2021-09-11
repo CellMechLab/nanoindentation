@@ -814,16 +814,15 @@ class NanoWindow(QtWidgets.QMainWindow):
             return
         QtWidgets.QApplication.setOverrideCursor(
             QtGui.QCursor(QtCore.Qt.WaitCursor))
-        progress = QtWidgets.QProgressDialog(
-            "Computing Elasticity Spectra...", "Abort", 0, len(self.collection))
-
+        # progress = QtWidgets.QProgressDialog(
+        #     "Computing Elasticity Spectra...", "Abort", 0, len(self.collection))
         for i, c in enumerate(self.collection):
-            c.filter_all(True)
-            progress.setValue(i)
-            if progress.wasCanceled():
-                return
-            QtCore.QCoreApplication.processEvents()
-        progress.setValue(i)
+            c.filter_all(False)
+        #     progress.setValue(i)
+        #     if progress.wasCanceled():
+        #         return
+        #     QtCore.QCoreApplication.processEvents()
+        # progress.setValue(i)
         QtWidgets.QApplication.restoreOverrideCursor()
         self.count()
 
