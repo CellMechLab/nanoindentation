@@ -787,17 +787,17 @@ class NanoWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.setOverrideCursor(
             QtGui.QCursor(QtCore.Qt.WaitCursor))
 
-        progress = QtWidgets.QProgressDialog(
-            "Computing Contact Point...", "Abort", 0, len(self.collection))
+        # progress = QtWidgets.QProgressDialog(
+        #     "Computing Contact Point...", "Abort", 0, len(self.collection))
 
         for i, c in enumerate(self.collection):
             c.setCPFunction(self.contactPoint.calculate)
             c.calculate_contactpoint()
-            progress.setValue(i)
-            if progress.wasCanceled():
-                return  # to change
-            QtCore.QCoreApplication.processEvents()
-        progress.setValue(i)
+        #     progress.setValue(i)
+        #     if progress.wasCanceled():
+        #         return  # to change
+        #     QtCore.QCoreApplication.processEvents()
+        # progress.setValue(i)
         QtWidgets.QApplication.restoreOverrideCursor()
         self.count()
 
