@@ -266,10 +266,10 @@ class Nanoment():
             return
         if len(self.ind) != len(self.touch):
             return
-        if self.force is None or self.z is None:
-            return
-        if len(self.z) != len(self.force) is None:
-            return
+        # if self.force is None or self.z is None:
+        #     return
+        # if len(self.z) != len(self.force) is None:
+        #     return
 
         option1 = True
         # Option 1, use the original formula
@@ -316,56 +316,56 @@ class Nanoment():
             self.Ex = np.array(Ex)
             self.Ey = np.array(Ey)
 
-        else:
-            # Option2 use the prime function
-            # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
-            # Note that this option is currently not in use as noise
-            # in the curves causes singularity in the term S/(1-S/K) when S/K -> 1
+        # else:
+        #     # Option2 use the prime function
+        #     # E = 3*S/(1-S/k)/8a, S = dfFz, a = sqrt(R delta)
+        #     # Note that this option is currently not in use as noise
+        #     # in the curves causes singularity in the term S/(1-S/K) when S/K -> 1
 
-            x = self.z
-            y = self.force
+        #     x = self.z
+        #     y = self.force
 
-            interp = self._ui.es_interpolate.isChecked()
-            if interp is True:
-                yi = interp1d(x, y)
-                xx = np.linspace(min(x), max(x), len(x))
-                yy = yi(xx)
-                dz = xx[1]-xx[0]
-                jcp = np.argmin(xx ** 2)
-                yy_contact = yy[jcp:]
-                xx_contact = xx[jcp:]
-                ind = xx_contact - yy_contact/self.k
-                ddt = dz
-            else:
-                xx = x[1:]
-                yy = y[1:]
-                ind = self.ind
-                jcp = np.argmin(xx ** 2)
-                ddt = np.average(xx[1:] - xx[:-1])
+        #     interp = self._ui.es_interpolate.isChecked()
+        #     if interp is True:
+        #         yi = interp1d(x, y)
+        #         xx = np.linspace(min(x), max(x), len(x))
+        #         yy = yi(xx)
+        #         dz = xx[1]-xx[0]
+        #         jcp = np.argmin(xx ** 2)
+        #         yy_contact = yy[jcp:]
+        #         xx_contact = xx[jcp:]
+        #         ind = xx_contact - yy_contact/self.k
+        #         ddt = dz
+        #     else:
+        #         xx = x[1:]
+        #         yy = y[1:]
+        #         ind = self.ind
+        #         jcp = np.argmin(xx ** 2)
+        #         ddt = np.average(xx[1:] - xx[:-1])
 
-            win = int(self._ui.es_win.value())
-            if win % 2 == 0:
-                win += 1
-            if len(yy) <= win:
-                return None, None
-            order = int(self._ui.es_order.value())
-            dfdz = savgol_filter(yy, win, order, delta=ddt, deriv=1)
-            S = dfdz[jcp:]  # need to remove zeros
-            # sorted ind indexes, reduntant as interp already does it
-            odg = np.argsort(ind)
-            ind = ind[odg]
-            nonull = ind > 0
-            S = S[odg]
-            S = S[nonull]
-            ind = ind[nonull]
-            Ex = np.sqrt(self.R * ind)
-            Ey = 3*S/(1-S/self.k)/8/Ex
-            dwin = int(win)
-            Ex = Ex[dwin:-dwin]
-            Ey = Ey[dwin:-dwin]
+        #     win = int(self._ui.es_win.value())
+        #     if win % 2 == 0:
+        #         win += 1
+        #     if len(yy) <= win:
+        #         return None, None
+        #     order = int(self._ui.es_order.value())
+        #     dfdz = savgol_filter(yy, win, order, delta=ddt, deriv=1)
+        #     S = dfdz[jcp:]  # need to remove zeros
+        #     # sorted ind indexes, reduntant as interp already does it
+        #     odg = np.argsort(ind)
+        #     ind = ind[odg]
+        #     nonull = ind > 0
+        #     S = S[odg]
+        #     S = S[nonull]
+        #     ind = ind[nonull]
+        #     Ex = np.sqrt(self.R * ind)
+        #     Ey = 3*S/(1-S/self.k)/8/Ex
+        #     dwin = int(win)
+        #     Ex = Ex[dwin:-dwin]
+        #     Ey = Ey[dwin:-dwin]
 
-            self.Ex = np.array(Ex)
-            self.Ey = np.array(Ey)
+        #     self.Ex = np.array(Ex)
+        #     self.Ey = np.array(Ey)
 
     def set_indentation(self):
         if self._ui.analysis.isChecked() is False:
