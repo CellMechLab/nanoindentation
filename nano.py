@@ -11,6 +11,7 @@ import filter_panel as panfilter
 import popup
 import json
 import engine
+from itertools import zip_longest
 
 
 pg.setConfigOption('background', 'w')
@@ -549,10 +550,15 @@ class NanoWindow(QtWidgets.QMainWindow):
                 E_data_y.append(c.Ey)
         try:
             x, y, er = motor.getMedCurve(E_data_x, E_data_y, error=True)
+            self.es_average_error = er*1e9
         except TypeError:
             return
         except ValueError:
             return
+
+        # average E from ES of each curve not accounting ind depth
+        E_no_depth_ES = [np.mean(E_data_y[i]) for i in range(len(E_data_y))]
+        self.E_no_depth_ES = np.array(E_no_depth_ES)*1e9
 
         self.es_average.setData(x, y*1e9)
         self.ES_array_x = x
@@ -612,7 +618,7 @@ class NanoWindow(QtWidgets.QMainWindow):
 
         # y, x = np.histogram(eall*1e9, bins=bins, density=True)
         # if len(y) >= 3:
-        #     # self.histo_esdata.setData(x, y)
+        #     self.histo_esdata.setData(x, y)
         #     try:
         #         x0, w, A, nx, ny = motor.gauss_fit(x, y)
         #         # self.histo_esfit.setData(nx, ny)
@@ -622,8 +628,8 @@ class NanoWindow(QtWidgets.QMainWindow):
         #         #     '<span>{}&plusmn;{}</span>'.format(val, err))
         #         self.ESgau = str(int(np.average(x0)))
         #         self.ESgau_std = str(int(np.average(w)))
-        #     except:
-        #         # self.histo_esfit.setData(None)
+        # except:
+        #     self.histo_esfit.setData(None)
 
     def save_dataHertz(self):
         E_array = []
@@ -717,9 +723,9 @@ class NanoWindow(QtWidgets.QMainWindow):
             f.write('# d0 STD {} Pa\n'.format(self.d0_std))
             f.write('# \n')
             f.write(
-                '# Average Elasticity Spectrum: Depth [nm] \t Young\'s Modulus [Pa]\n')
-            for x in zip(*[self.ES_array_x, self.ES_array_y]):
-                f.write("{0}\t{1}\n".format(*x))
+                '# Mean ES: Equivalent Contact Radius [nm] \t Equivalent Ind [nm] \t Young\'s Modulus [Pa] \t Young\'s Moudlus err [Pa] \t Young\'s Modulus no depth [Pa]\n')
+            for x in zip_longest(*[self.ES_array_x, self.ES_array_x**2 / self.collection[0].R, self.ES_array_y, self.es_average_error, self.E_no_depth_ES]):
+                f.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(*x))
         f.close()
         QtWidgets.QApplication.restoreOverrideCursor()
 
