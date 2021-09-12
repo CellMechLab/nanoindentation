@@ -127,7 +127,10 @@ class Filter:  # Filter class
 
     def disconnect(self):
         for p in self._parameters:
-            p.triggered.disconnect()
+            try:
+                p.triggered.disconnect()
+            except TypeError:
+                pass
 
     def connect(self, callback):
         for p in self._parameters:

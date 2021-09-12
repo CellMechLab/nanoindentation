@@ -170,10 +170,10 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.comboCP.currentIndexChanged.connect(self.changeCP)
         self.ui.comboFsmooth.currentIndexChanged.connect(self.changeFS)
 
-        self.ui.prominency.clicked.connect(self.changeFS)
-        self.ui.prominency_prominency.valueChanged.connect(self.changeFS)
-        self.ui.prominency_minfreq.valueChanged.connect(self.changeFS)
-        self.ui.prominency_band.valueChanged.connect(self.changeFS)
+        self.ui.prominency.clicked.connect(self.fmethod_changed)
+        self.ui.prominency_prominency.valueChanged.connect(self.fmethod_changed)
+        self.ui.prominency_minfreq.valueChanged.connect(self.fmethod_changed)
+        self.ui.prominency_band.valueChanged.connect(self.fmethod_changed)
 
         QtCore.QMetaObject.connectSlotsByName(self)
 
