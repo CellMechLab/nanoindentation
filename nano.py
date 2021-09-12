@@ -787,17 +787,20 @@ class NanoWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.setOverrideCursor(
             QtGui.QCursor(QtCore.Qt.WaitCursor))
 
-        # progress = QtWidgets.QProgressDialog(
-        #     "Computing Contact Point...", "Abort", 0, len(self.collection))
+        if len(self.collection) > 50:
+            progress = QtWidgets.QProgressDialog(
+                "Computing Contact Point...", "Abort", 0, len(self.collection))
 
-        for i, c in enumerate(self.collection):
+        for i in range(len(self.collection)):
+            c = self.collection[i]
             c.setCPFunction(self.contactPoint.calculate)
             c.calculate_contactpoint()
-        #     progress.setValue(i)
-        #     if progress.wasCanceled():
-        #         return  # to change
-        #     QtCore.QCoreApplication.processEvents()
-        # progress.setValue(i)
+            if len(self.collection) > 50:  # only show progress bar for sets with more than 50 curves
+                progress.setValue(progress.value()+1)
+                if progress.wasCanceled():
+                    return
+                if progress.value() % 20 == 0:  # only update progress bar every 20th step
+                    QtCore.QCoreApplication.processEvents()
         QtWidgets.QApplication.restoreOverrideCursor()
         self.count()
 
@@ -814,15 +817,19 @@ class NanoWindow(QtWidgets.QMainWindow):
             return
         QtWidgets.QApplication.setOverrideCursor(
             QtGui.QCursor(QtCore.Qt.WaitCursor))
-        # progress = QtWidgets.QProgressDialog(
-        #     "Computing Elasticity Spectra...", "Abort", 0, len(self.collection))
-        for i, c in enumerate(self.collection):
+
+        if len(self.collection) > 50:
+            progress = QtWidgets.QProgressDialog(
+                "Computing Elasticity Spectra...", "Abort", 0, len(self.collection))
+        for i in range(0, len(self.collection)):
+            c = self.collection[i]
             c.filter_all(False)
-        #     progress.setValue(i)
-        #     if progress.wasCanceled():
-        #         return
-        #     QtCore.QCoreApplication.processEvents()
-        # progress.setValue(i)
+            if len(self.collection) > 50:  # only show progress bar for sets with more than 50 curves
+                progress.setValue(progress.value()+1)
+                if progress.wasCanceled():
+                    return
+                if progress.value() % 20 == 0:  # only update progress bar every 20th step
+                    QtCore.QCoreApplication.processEvents()
         QtWidgets.QApplication.restoreOverrideCursor()
         self.count()
 
