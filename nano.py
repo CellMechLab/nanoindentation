@@ -802,13 +802,12 @@ class NanoWindow(QtWidgets.QMainWindow):
             c = self.collection[i]
             c.setCPFunction(self.contactPoint.calculate)
             c.calculate_contactpoint()
-            # if len(self.collection) > 50:  # only show progress bar for sets with more than 50 curves
-            #     progress.setValue(progress.value()+1)
-            #     if progress.wasCanceled():
-            #         return
-            #     if progress.value() % 20 == 0:  # only update progress bar every 20th step
-            #         QtCore.QCoreApplication.processEvents()
-            # QtCore.QCoreApplication.processEvents()
+            if len(self.collection) > 50:  # only show progress bar for sets with more than 50 curves
+                progress.setValue(progress.value()+1)
+                if progress.wasCanceled():
+                    return
+                if progress.value() % 20 == 0:  # only update progress bar every 20th step
+                    QtCore.QCoreApplication.processEvents()
         QtWidgets.QApplication.restoreOverrideCursor()
         self.count()
 
@@ -832,12 +831,12 @@ class NanoWindow(QtWidgets.QMainWindow):
         for i in range(0, len(self.collection)):
             c = self.collection[i]
             c.filter_all(True)
-            # if len(self.collection) > 50:  # only show progress bar for sets with more than 50 curves
-            #     progress.setValue(progress.value()+1)
-            #     if progress.wasCanceled():
-            #         return
-            #     if progress.value() % 20 == 0:  # only update progress bar every 20th step
-            #         QtCore.QCoreApplication.processEvents()
+            if len(self.collection) > 50:  # only show progress bar for sets with more than 50 curves
+                progress.setValue(progress.value()+1)
+                if progress.wasCanceled():
+                    return
+                if progress.value() % 20 == 0:  # only update progress bar every 20th step
+                    QtCore.QCoreApplication.processEvents()
         QtWidgets.QApplication.restoreOverrideCursor()
         self.count()
 
