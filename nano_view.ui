@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1365</width>
-    <height>835</height>
+    <width>1435</width>
+    <height>921</height>
    </rect>
   </property>
   <property name="font">
@@ -323,6 +323,12 @@
          <enum>Qt::Horizontal</enum>
         </property>
         <widget class="QGroupBox" name="analysis_group_box">
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border-color: rgb(232, 232, 232);</string>
+         </property>
          <property name="title">
           <string/>
          </property>
@@ -401,6 +407,9 @@
            <weight>50</weight>
            <bold>false</bold>
           </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border-color: rgb(232, 232, 232);</string>
          </property>
          <property name="title">
           <string/>

@@ -12,9 +12,11 @@ import popup
 import json
 import engine
 from itertools import zip_longest
+import qtmodern.styles
+import qtmodern.windows
 
 
-pg.setConfigOption('background', 'w')
+pg.setConfigOption('background', (240,240,240))
 pg.setConfigOption('foreground', 'k')
 
 
@@ -842,10 +844,12 @@ class NanoWindow(QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
+    #Change colour of graph boxes in GUI
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName('Nano2021')
     app.setStyle('Fusion')
+    qtmodern.styles.light(app)
     chiaro = NanoWindow()
-    chiaro.show()
-    # QtCore.QObject.connect( app, QtCore.SIGNAL( 'lastWindowClosed()' ), app, QtCore.SLOT( 'quit()' ) )
+    mw = qtmodern.windows.ModernWindow(chiaro)
+    mw.show()
     sys.exit(app.exec_())

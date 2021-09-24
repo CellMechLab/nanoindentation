@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1365, 835)
+        MainWindow.resize(1435, 921)
         font = QtGui.QFont()
         font.setFamily("Arial")
         MainWindow.setFont(font)
@@ -182,6 +182,8 @@ class Ui_MainWindow(object):
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
         self.analysis_group_box = QtWidgets.QGroupBox(self.splitter)
+        self.analysis_group_box.setAutoFillBackground(False)
+        self.analysis_group_box.setStyleSheet("border-color: rgb(232, 232, 232);")
         self.analysis_group_box.setTitle("")
         self.analysis_group_box.setObjectName("analysis_group_box")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.analysis_group_box)
@@ -223,6 +225,7 @@ class Ui_MainWindow(object):
         font.setBold(False)
         font.setWeight(50)
         self.es_group_box.setFont(font)
+        self.es_group_box.setStyleSheet("border-color: rgb(232, 232, 232);")
         self.es_group_box.setTitle("")
         self.es_group_box.setObjectName("es_group_box")
         self.verticalLayout_10 = QtWidgets.QVBoxLayout(self.es_group_box)
