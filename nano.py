@@ -632,9 +632,13 @@ class NanoWindow(QtWidgets.QMainWindow):
                 self.es_averageZoom.setData(None)
                 self.es_averageFit.setData(None)
                 self.es_average.setData(None)
+                self.ui.data_std.setText('0.00')
+                self.ui.decay_e0.setText('0.00')
+                self.ui.decay_d0.setText('0.00')
+                self.ui.decay_eb.setText('0.00')
+
             except:
                 pass
-
 
         # y, x = np.histogram(eall*1e9, bins=bins, density=True)
         # if len(y) >= 3:
