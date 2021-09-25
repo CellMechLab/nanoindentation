@@ -78,6 +78,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.es_band = pg.FillBetweenItem(self.es_bottom, self.es_top)
         self.es_band.setBrush(pg.mkBrush(pg.QtGui.QColor(255, 0, 0, 50)))
         self.ui.g_decay.plotItem.addItem(self.es_band)
+        
         # average hertz data
         self.hertz_average = pg.PlotCurveItem(clickable=False)
         self.hertz_average.setPen(pg.mkPen(pg.QtGui.QColor(
@@ -531,93 +532,109 @@ class NanoWindow(QtWidgets.QMainWindow):
             except ValueError:
                 return
             # Setting average hertz data
-            indmax = float(self.ui.fit_indentation.value())
-            self.x_hertz_average = x_hertz
-            self.y_hertz_average = y_hertz
-            self.hertz_average.setData(x_hertz, y_hertz)
-            # jmax_hertz = np.argmin((x_hertz-indmax)**2)
-            self.hertz_average.setData(x_hertz, y_hertz)
-            self.hertz_average_top.setData(x_hertz, (y_hertz+er_hertz/2))
-            self.hertz_average_bottom.setData(
-                x_hertz, (y_hertz-er_hertz/2))
+            if self.ui.analysis.isChecked() is True:
+                indmax = float(self.ui.fit_indentation.value())
+                self.x_hertz_average = x_hertz
+                self.y_hertz_average = y_hertz
+                self.hertz_average.setData(x_hertz, y_hertz)
+                # jmax_hertz = np.argmin((x_hertz-indmax)**2)
+                self.hertz_average.setData(x_hertz, y_hertz)
+                self.hertz_average_top.setData(x_hertz, (y_hertz+er_hertz/2))
+                self.hertz_average_bottom.setData(
+                    x_hertz, (y_hertz-er_hertz/2))
+            else:
+                self.hertz_average.setData(None)
+                self.hertz_average_top.setData(None)
+                self.hertz_average_bottom.setData(None)
 
         # Elasticity Spectra
-        E_data_x = []
-        E_data_y = []
-        Radius = []
-        for c in self.collection:
-            if c.active is True and c.E is not None:
-                # Elasticity Spectra
-                Radius.append(c.R)
-                E_data_x.append(c.Ex)
-                E_data_y.append(c.Ey)
-        try:
-            x, y, er = motor.getMedCurve(E_data_x, E_data_y, error=True)
-            self.es_average_error = er*1e9
-        except TypeError:
-            return
-        except ValueError:
-            return
-
-        # average E from ES of each curve not accounting ind depth
-        E_no_depth_ES = [np.mean(E_data_y[i]) for i in range(len(E_data_y))]
-        self.E_no_depth_ES = np.array(E_no_depth_ES)*1e9
-
-        self.es_average.setData(x, y*1e9)
-        self.ES_array_x = x
-        self.ES_array_y = y*1e9
-        self.es_average.setData(x**2/np.average(Radius), y*1e9)
-        indmax = float(self.ui.fit_indentation.value())
-        rmax = np.sqrt(indmax * np.average(Radius))
-        jmax = np.argmin((x - rmax)**2)
-
-        # Setting average elasticity spectra data
-        self.es_top.setData(x[:jmax], (y[:jmax]+er[:jmax]/2)*1e9)
-        self.es_bottom.setData(x[:jmax], (y[:jmax]-er[:jmax]/2)*1e9)
-        self.es_averageZoom.setData(x[:jmax], y[:jmax]*1e9)
-        all = motor.fitExpSimple(x[:jmax], y[:jmax], er[:jmax])
-        if all is not None:
-            self.es_averageFit.setData(
-                x[:jmax], motor.TheExp(x[:jmax], *all[0])*1e9)
-            val = str(int((all[0][0]*1e9) / 10) / 100.0)
+        if self.ui.es_analysis.isChecked() is True:
+            E_data_x = []
+            E_data_y = []
+            Radius = []
+            for c in self.collection:
+                if c.active is True and c.E is not None:
+                    # Elasticity Spectra
+                    Radius.append(c.R)
+                    E_data_x.append(c.Ex)
+                    E_data_y.append(c.Ey)
             try:
-                err = str(int((all[1][0]*1e9) / 10) / 100.0)
-                self.ui.decay_e0.setText(
-                    '<span>{}&plusmn;{}</span>'.format(val, err))
-            except OverflowError:
-                err = 0
-                self.ui.decay_e0.setText(
-                    '<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
-            self.E0 = str(int(all[0][0]*1e9))
-            self.E0_std = str(int(all[1][0]*1e9))
-            val = str(int((all[0][1]*1e9)))
-            try:
-                err = str(int((all[1][1]*1e9)))
-                self.ui.decay_eb.setText(
-                    '<span>{}&plusmn;{}</span>'.format(val, err))
-            except OverflowError:
-                err = 0
-                self.ui.decay_eb.setText(
-                    '<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
-            self.Eb = str(int(all[0][1]*1e9))
-            self.Eb_std = str(int(all[1][1]*1e9))
-            val = str(int((all[0][2])))
-            try:
-                err = str(int((all[1][2])))
-                self.ui.decay_d0.setText(
-                    '<span>{}&plusmn;{}</span>'.format(val, err))
-            except OverflowError:
-                self.ui.decay_d0.setText(
-                    '<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
-            self.d0 = str(int(all[0][2]))
-            self.d0_std = str(int(all[1][2]))
+                x, y, er = motor.getMedCurve(E_data_x, E_data_y, error=True)
+                self.es_average_error = er*1e9
+            except TypeError:
+                return
+            except ValueError:
+                return
 
-        eall = y[:jmax]
-        val = str(int(np.average(eall*1e9) / 10) / 100.0)
-        err = str(int(np.std(eall*1e9) / 10) / 100.0)
-        self.ui.data_std.setText('<span>{}&plusmn;{}</span>'.format(val, err))
-        self.ESav = str(int(np.average(eall*1e9)))
-        self.ESav_std = str(int(np.std(eall*1e9)))
+            # average E from ES of each curve not accounting ind depth
+            E_no_depth_ES = [np.mean(E_data_y[i]) for i in range(len(E_data_y))]
+            self.E_no_depth_ES = np.array(E_no_depth_ES)*1e9
+
+            self.es_average.setData(x, y*1e9)
+            self.ES_array_x = x
+            self.ES_array_y = y*1e9
+            self.es_average.setData(x**2/np.average(Radius), y*1e9)
+            indmax = float(self.ui.fit_indentation.value())
+            rmax = np.sqrt(indmax * np.average(Radius))
+            jmax = np.argmin((x - rmax)**2)
+
+            # Setting average elasticity spectra data
+            self.es_top.setData(x[:jmax], (y[:jmax]+er[:jmax]/2)*1e9)
+            self.es_bottom.setData(x[:jmax], (y[:jmax]-er[:jmax]/2)*1e9)
+            self.es_averageZoom.setData(x[:jmax], y[:jmax]*1e9)
+            all = motor.fitExpSimple(x[:jmax], y[:jmax], er[:jmax])
+            if all is not None:
+                self.es_averageFit.setData(
+                    x[:jmax], motor.TheExp(x[:jmax], *all[0])*1e9)
+                val = str(int((all[0][0]*1e9) / 10) / 100.0)
+                try:
+                    err = str(int((all[1][0]*1e9) / 10) / 100.0)
+                    self.ui.decay_e0.setText(
+                        '<span>{}&plusmn;{}</span>'.format(val, err))
+                except OverflowError:
+                    err = 0
+                    self.ui.decay_e0.setText(
+                        '<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
+                self.E0 = str(int(all[0][0]*1e9))
+                self.E0_std = str(int(all[1][0]*1e9))
+                val = str(int((all[0][1]*1e9)))
+                try:
+                    err = str(int((all[1][1]*1e9)))
+                    self.ui.decay_eb.setText(
+                        '<span>{}&plusmn;{}</span>'.format(val, err))
+                except OverflowError:
+                    err = 0
+                    self.ui.decay_eb.setText(
+                        '<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
+                self.Eb = str(int(all[0][1]*1e9))
+                self.Eb_std = str(int(all[1][1]*1e9))
+                val = str(int((all[0][2])))
+                try:
+                    err = str(int((all[1][2])))
+                    self.ui.decay_d0.setText(
+                        '<span>{}&plusmn;{}</span>'.format(val, err))
+                except OverflowError:
+                    self.ui.decay_d0.setText(
+                        '<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
+                self.d0 = str(int(all[0][2]))
+                self.d0_std = str(int(all[1][2]))
+
+            eall = y[:jmax]
+            val = str(int(np.average(eall*1e9) / 10) / 100.0)
+            err = str(int(np.std(eall*1e9) / 10) / 100.0)
+            self.ui.data_std.setText('<span>{}&plusmn;{}</span>'.format(val, err))
+            self.ESav = str(int(np.average(eall*1e9)))
+            self.ESav_std = str(int(np.std(eall*1e9)))
+        else:
+            try:
+                self.es_top.setData(None)
+                self.es_bottom.setData(None)
+                self.es_averageZoom.setData(None)
+                self.es_averageFit.setData(None)
+                self.es_average.setData(None)
+            except:
+                pass
+
 
         # y, x = np.histogram(eall*1e9, bins=bins, density=True)
         # if len(y) >= 3:
@@ -819,6 +836,10 @@ class NanoWindow(QtWidgets.QMainWindow):
         for c in self.collection:
             c.filter_all(False)  # False does not re-compute contact point
         QtWidgets.QApplication.restoreOverrideCursor()
+        if self.ui.analysis.isChecked() is False:
+            self.hertz_average.setData(None)
+            self.hertz_average_top.setData(None)
+            self.hertz_average_bottom.setData(None)
         self.count()
 
     def es_changed(self):

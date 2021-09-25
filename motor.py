@@ -74,6 +74,7 @@ class Nanoment():
         self._curve_fit = None
         self._g_fdistance = None
         self._g_indentation = None
+        self._g_avghertz = None
         self._g_scatter = None
         self._state = ST_BLK = 3
         self._alpha = 100
@@ -216,6 +217,8 @@ class Nanoment():
             if len(self.Ex) != len(self.Ey):
                 return None
             if self.active is False:
+                return None
+            if self._ui.es_analysis.isChecked() is False:
                 return None
             pen = PEN_BLACK
         else:
