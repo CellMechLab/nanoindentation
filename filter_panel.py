@@ -1,3 +1,5 @@
+"""Algorithms for filtering F-z nanoindentation data."""
+
 import numpy as np
 import pyqtgraph as pg
 from PyQt5 import QtGui, QtWidgets
@@ -8,10 +10,13 @@ import popup
 
 ALL_FILTERS = []
 
-# return False in case of error!
+
+#########################################################
+#####################DO NOT CHANGE#######################
+#########################################################
 
 
-class FilterParameter:  # FilterParameters
+class FilterParameter:  
     def __init__(self, label=None):
         self._label = label
         self._defaultValue = None
@@ -46,7 +51,7 @@ class FilterParameter:  # FilterParameters
         pass
 
 
-class FilterInt(FilterParameter):  # FilterInt
+class FilterInt(FilterParameter):  
     def __init__(self, label=None):
         super().__init__(label)
         self._defaultValue = 0
@@ -65,7 +70,7 @@ class FilterInt(FilterParameter):  # FilterInt
         return int(self._widget.text())
 
 
-class FilterFloat(FilterParameter):  # FilterFloat
+class FilterFloat(FilterParameter):  
     def __init__(self, label=None):
         super().__init__(label)
         self._defaultValue = 0.0
@@ -84,7 +89,7 @@ class FilterFloat(FilterParameter):  # FilterFloat
         return float(self._widget.text())
 
 
-class FilterCombo(FilterParameter):  # FilterCombo
+class FilterCombo(FilterParameter): 
     def __init__(self, label, labels, values):
         super().__init__(label)
         self._defaultValue = 0
@@ -108,7 +113,7 @@ class FilterCombo(FilterParameter):  # FilterCombo
         self._widget.setCurrentIndex(num)
 
 
-class Filter:  # Filter class
+class Filter:  
     def __init__(self):
         self._parameters = []
         self.create()
@@ -146,7 +151,15 @@ class Filter:  # Filter class
             layout.addRow(widget.getLabel(), widget.getWidget())
 
 
-class SavGolFilter(Filter):  # SavGol Filter
+#################################################
+#####################Filters#####################
+#################################################
+
+class SavGolFilter(Filter):
+    """
+    Filters with the Savitzky-Golay filter from the Scipy Library.
+    doi: https://doi.org/10.1038/s41592-019-0686-2
+    """  
     def create(self):
         self.win = FilterInt('Window Length [nm]')
         self.win.setValue(25)
@@ -162,14 +175,16 @@ class SavGolFilter(Filter):  # SavGol Filter
         if win % 2 == 0:
             win += 1
         if polyorder > win:
-            return None
-
+            return False
         y_smooth = savgol_filter(y, win, polyorder)
-
         return y_smooth
 
 
 class MedianFilter(Filter):
+     """
+     Filters data with a median filter from the SciPy library.
+     doi: https://doi.org/10.1038/s41592-019-0686-2
+     """  
     def create(self):
         self.win = FilterInt('Window Length [nm]')
         self.win.setValue(25)
@@ -184,8 +199,8 @@ class MedianFilter(Filter):
         return y_smooth
 
 
-class DetrendFilter(Filter):  # DetrendFilter
-
+class DetrendFilter(Filter): #Not included in GUI
+    """Linearly detrends F-z data."""
     def calculate(self, c):
         trendline = self.get_trendline(c)
         y_clean = c._f - trendline
