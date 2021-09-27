@@ -1,3 +1,5 @@
+"""Main module to run GUI."""
+
 import sys
 import os
 
@@ -252,8 +254,7 @@ class NanoWindow(QtWidgets.QMainWindow):
             slots.append(click.clicked)
             handlers.append(self.toggle)
 
-        # important: when adding something new to the gui, need to append slots + append handlers
-
+        # Important: when adding something new to the gui, need to append slots + append handlers
         slots.append(self.ui.save_dataHertz.clicked)
         handlers.append(self.save_dataHertz)
 
@@ -671,12 +672,13 @@ class NanoWindow(QtWidgets.QMainWindow):
             QtGui.QCursor(QtCore.Qt.WaitCursor))
         with open(fname[0], 'w') as f:
             f.write(
-                '# Hertzian Fit Data exported from Nanoindentation Analysis Software\n')
-            f.write('# Repository GitHub Project nanoindentation Branch HertzOnly\n')
+                '#Hertzian Fit Data exported from Nanoindentation Analysis Software\n')
+            f.write('# Repository GitHub Project nanoindentation Branch Master\n')
             f.write('# \n')
             f.write('# Working folder {}\n'.format(self.workingdir))
             f.write('# Tip radius {} nm\n'.format(self.collection[0].R))
             f.write('# Elastic constant {} N/m\n'.format(self.collection[0].k))
+            f.write('# Number valid curves {}\n'.format(self.Na))
             f.write('# Max indentation (Hertz Fit) {} nm\n'.format(
                 float(self.ui.fit_indentation.value())))
             f.write('# \n')
@@ -685,7 +687,6 @@ class NanoWindow(QtWidgets.QMainWindow):
             f.write(
                 '# Young\'s Modulus Hertz, STD {} Pa\n'.format(self.Yav_std))
             f.write('# \n')
-            # f.write('# Young\'s Modulus [Pa]\t X Position [um]\n')
             f.write('# Young\'s Modulus [Pa]\n')
             for x in E_array:
                 f.write("{0}\n".format(x))
@@ -725,7 +726,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         with open(fname[0], 'w') as f:
             f.write(
                 '# Elasticity Spectra Data exported from Nanoindentation Analysis Software\n')
-            f.write('# Repository GitHub Project nanoindentation Branch HertzOnly\n')
+            f.write('# Repository GitHub Project nanoindentation Branch Master\n')
             f.write('# \n')
             f.write('# Working folder {}\n'.format(self.workingdir))
             f.write('# Tip radius {} nm\n'.format(self.collection[0].R))
@@ -869,7 +870,6 @@ class NanoWindow(QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
-    #Change colour of graph boxes in GUI
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName('Nano2021')
     app.setStyle('Fusion')

@@ -1,3 +1,5 @@
+"""Functionality corresponding to GUI widgets."""
+
 import numpy as np
 import pyqtgraph as pg
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -18,15 +20,13 @@ def sames(ar1, ar2):
         return False
     ar1 = np.array(ar1)
     ar2 = np.array(ar2)
-    if np.sum(ar1-ar2) == 0:  # returns true if each element of ar1 is the same as that in ar2
+    if np.sum(ar1-ar2) == 0:  
         return True
     return False
 
 
 def hertz(x, E, R, poisson=0.5):
     return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
-
-# Gauss function
 
 
 def Gauss(x, x0, w, A):
@@ -38,9 +38,6 @@ def calc_hertz(E, R, k, maxvalue):
     y = hertz(x, E/1e9, R)
     z = x + y/k
     return x, y, z
-
-# Calculating gaussian fit
-# returns peak centre (x0), width (w), amp (A), nx (range), Gaussian fit computed with optimal parameters (Gauss(nx, *popt))
 
 
 def gauss_fit(x, y):
@@ -91,7 +88,6 @@ class Nanoment():
             # self.xposition = curve.xpos
 
     # Methods
-
     def connect(self, nanowin, node=False):
         self._ui = nanowin.ui
         # Plot F(z)
@@ -484,9 +480,7 @@ class Nanoment():
             [float(self._ui.fit_indentation.value()), np.max(self.ind)])
         x = np.linspace(0, upto, int(upto))
         y = hertz(x, self.E/1e9, self.R)
-
         x = x + y/self.k
-
         return x, y
 
     def fitHertz(self):
