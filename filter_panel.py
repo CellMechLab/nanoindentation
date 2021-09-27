@@ -157,7 +157,7 @@ class Filter:
 
 class SavGolFilter(Filter):
     """
-    Filters with the Savitzky-Golay filter from the Scipy Library.
+    Filters data with the Savitzky-Golay filter from the Scipy Library.
     doi: https://doi.org/10.1038/s41592-019-0686-2
     """  
     def create(self):
@@ -181,10 +181,10 @@ class SavGolFilter(Filter):
 
 
 class MedianFilter(Filter):
-     """
-     Filters data with a median filter from the SciPy library.
-     doi: https://doi.org/10.1038/s41592-019-0686-2
-     """  
+    """
+    Filters data with the median filter from the Scipy Library.
+    doi: https://doi.org/10.1038/s41592-019-0686-2
+    """  
     def create(self):
         self.win = FilterInt('Window Length [nm]')
         self.win.setValue(25)
