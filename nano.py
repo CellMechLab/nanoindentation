@@ -133,12 +133,12 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_indentation.plotItem.setLabel(
             'bottom', lab_style('Indentation [nm]'))
         self.ui.g_es.plotItem.setLabel(
-            'bottom', lab_style('Equivalent indentation [nm]'))
+            'bottom', lab_style('Indentation [nm]'))
         self.ui.g_scatter.plotItem.setLabel('bottom', lab_style('Curve #'))
         # self.ui.g_histo.plotItem.setLabel(
         #     'bottom', lab_style('Young\'s modulus [Pa]'))
         self.ui.g_decay.plotItem.setLabel(
-            'bottom', lab_style('Contact radius [nm]'))
+            'bottom', lab_style('Indetation [nm]'))
         self.ui.avg_hertz.plotItem.setTitle(title_style('Average F-Ind'))
         self.ui.avg_hertz.plotItem.setLabel(
             'bottom', lab_style('Average indentation [nm]'))
@@ -557,7 +557,7 @@ class NanoWindow(QtWidgets.QMainWindow):
                 if c.active is True and c.E is not None:
                     # Elasticity Spectra
                     Radius.append(c.R)
-                    E_data_x.append(c.Ex)
+                    E_data_x.append(c.Ex) #contact radius 
                     E_data_y.append(c.Ey)
             try:
                 x, y, er = motor.getMedCurve(E_data_x, E_data_y, error=True)
@@ -571,22 +571,22 @@ class NanoWindow(QtWidgets.QMainWindow):
             E_no_depth_ES = [np.mean(E_data_y[i]) for i in range(len(E_data_y))]
             self.E_no_depth_ES = np.array(E_no_depth_ES)*1e9
 
-            self.es_average.setData(x, y*1e9)
+            x = x**2/np.average(Radius) #ind
+            self.es_average.setData(x, y*1e9) # E vs ind
             self.ES_array_x = x
             self.ES_array_y = y*1e9
-            self.es_average.setData(x**2/np.average(Radius), y*1e9)
             indmax = float(self.ui.fit_indentation.value())
-            rmax = np.sqrt(indmax * np.average(Radius))
-            jmax = np.argmin((x - rmax)**2)
+            #rmax = np.sqrt(indmax * np.average(Radius))
+            jmax = np.argmin((x - indmax)**2)
 
             # Setting average elasticity spectra data
             self.es_top.setData(x[:jmax], (y[:jmax]+er[:jmax]/2)*1e9)
             self.es_bottom.setData(x[:jmax], (y[:jmax]-er[:jmax]/2)*1e9)
             self.es_averageZoom.setData(x[:jmax], y[:jmax]*1e9)
-            all = motor.fitExpSimple(x[:jmax], y[:jmax], er[:jmax])
+            all = motor.fitExpSimple(np.sqrt(x[:jmax]*np.average(Radius)), y[:jmax], er[:jmax])
             if all is not None:
                 self.es_averageFit.setData(
-                    x[:jmax], motor.TheExp(x[:jmax], *all[0])*1e9)
+                    x[:jmax], motor.TheExp(np.sqrt(x[:jmax]*np.average(Radius)), *all[0])*1e9)
                 val = str(int((all[0][0]*1e9) / 10) / 100.0)
                 try:
                     err = str(int((all[1][0]*1e9) / 10) / 100.0)

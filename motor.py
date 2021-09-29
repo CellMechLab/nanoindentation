@@ -786,7 +786,7 @@ def getMedCurve(xar, yar, loose=True, threshold=3, error=False):
 LAMBD = 1.74
 
 
-def TheExp(a, E0, Eb, d0):
+def TheExp(a, E0, Eb, d0): #a is the contact radius
     weight = np.exp(-LAMBD * a / d0)
     return Eb + (E0 - Eb) * weight
 
