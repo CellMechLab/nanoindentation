@@ -41,7 +41,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.ui.g_single.plotItem.addItem(self.curve_single)
         self.curve_fit = pg.PlotCurveItem(clickable=False)
         self.curve_fit.setPen(pg.mkPen(pg.QtGui.QColor(
-            0, 0, 255, 255), width=5, style=QtCore.Qt.DashLine))
+            255, 0, 0, 150), width=5, style=QtCore.Qt.DashLine))
         self.ui.g_single.plotItem.addItem(self.curve_fit)
 
         # self.histo_data = pg.PlotCurveItem([0, 0], [
@@ -61,6 +61,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         #     255, 0, 0, 150), width=5))  # ,style=QtCore.Qt.DashLine))
         # self.ui.g_histo.plotItem.addItem(self.histo_esfit)
 
+        #Elasticity spectra
         self.es_top = pg.PlotCurveItem(clickable=False)
         self.es_top.setPen(pg.mkPen(pg.QtGui.QColor(
             255, 0, 0, 150), width=1, style=QtCore.Qt.SolidLine))
@@ -334,15 +335,16 @@ class NanoWindow(QtWidgets.QMainWindow):
 
         self.fdistance_fit = pg.PlotCurveItem(clickable=False)
         self.fdistance_fit.setPen(pg.mkPen(pg.QtGui.QColor(
-            0, 0, 255, 255), width=5, style=QtCore.Qt.DashLine))
+            255, 0, 0, 150), width=5, style=QtCore.Qt.DashLine))
         self.ui.g_fdistance.plotItem.addItem(self.fdistance_fit)
         self.indentation_fit = pg.PlotCurveItem(clickable=False)
         self.indentation_fit.setPen(pg.mkPen(pg.QtGui.QColor(
-            0, 0, 255, 255), width=5, style=QtCore.Qt.DashLine))
-        self.ui.g_indentation.plotItem.addItem(self.indentation_fit)
+            255, 0, 0, 150), width=5, style=QtCore.Qt.DashLine))
+        # self.ui.g_indentation.plotItem.addItem(self.indentation_fit) 
+        self.ui.avg_hertz.plotItem.addItem(self.indentation_fit)
         self.es_average = pg.PlotCurveItem(clickable=False)
         self.es_average.setPen(pg.mkPen(pg.QtGui.QColor(
-            255, 0, 0, 150), width=2, style=QtCore.Qt.SolidLine))
+            255, 0, 0, 255), width=2, style=QtCore.Qt.SolidLine))
         self.ui.g_es.plotItem.addItem(self.es_average)
 
         # self.ui.curve_segment.setMaximum(len(self.experiment.haystack[0])-1)
