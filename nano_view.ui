@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1435</width>
-    <height>893</height>
+    <height>865</height>
    </rect>
   </property>
   <property name="font">
@@ -91,7 +91,7 @@
             <string notr="true">color: blue;</string>
            </property>
            <property name="text">
-            <string>Included</string>
+            <string>Failed</string>
            </property>
           </widget>
          </item>
@@ -139,7 +139,7 @@
             <string notr="true">color: blue;</string>
            </property>
            <property name="text">
-            <string>Included</string>
+            <string>Failed</string>
            </property>
           </widget>
          </item>
@@ -795,7 +795,7 @@
            <item row="3" column="0">
             <widget class="QLabel" name="label_10">
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;N&lt;span style=&quot; vertical-align:sub;&quot;&gt;included&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;N&lt;span style=&quot; vertical-align:sub;&quot;&gt;failed&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
