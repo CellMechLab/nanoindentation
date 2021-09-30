@@ -750,8 +750,8 @@ class NanoWindow(QtWidgets.QMainWindow):
             f.write('# d0 STD {} Pa\n'.format(self.d0_std))
             f.write('# \n')
             f.write(
-                '# Mean ES: Equivalent Contact Radius [nm] \t Equivalent Ind [nm] \t Young\'s Modulus [Pa] \t Young\'s Moudlus err [Pa] \t Young\'s Modulus no depth [Pa]\n')
-            for x in zip_longest(*[self.ES_array_x, self.ES_array_x**2 / self.collection[0].R, self.ES_array_y, self.es_average_error, self.E_no_depth_ES]):
+                '# Mean ES: Indentation [nm] \t Contact Radius [nm] \t Young\'s Modulus [Pa] \t Young\'s Moudlus err [Pa] \t Young\'s Modulus no depth [Pa]\n')
+            for x in zip_longest(*[self.ES_array_x, np.sqrt(self.ES_array_x * self.collection[0].R), self.ES_array_y, self.es_average_error, self.E_no_depth_ES]):
                 f.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(*x))
         f.close()
         QtWidgets.QApplication.restoreOverrideCursor()
