@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1435</width>
-    <height>865</height>
+    <height>837</height>
    </rect>
   </property>
   <property name="font">
@@ -146,7 +146,7 @@
          <item>
           <widget class="QRadioButton" name="view_active">
            <property name="text">
-            <string>Active</string>
+            <string>Activated</string>
            </property>
           </widget>
          </item>
@@ -175,14 +175,105 @@
          <item>
           <widget class="QRadioButton" name="reset_activate">
            <property name="text">
-            <string>Activate</string>
+            <string>Activated</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QRadioButton" name="reset_exclude">
+           <property name="palette">
+            <palette>
+             <active>
+              <colorrole role="WindowText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>252</red>
+                 <green>1</green>
+                 <blue>7</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="Text">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>252</red>
+                 <green>1</green>
+                 <blue>7</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="ButtonText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>252</red>
+                 <green>1</green>
+                 <blue>7</blue>
+                </color>
+               </brush>
+              </colorrole>
+             </active>
+             <inactive>
+              <colorrole role="WindowText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>252</red>
+                 <green>1</green>
+                 <blue>7</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="Text">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>252</red>
+                 <green>1</green>
+                 <blue>7</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="ButtonText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>252</red>
+                 <green>1</green>
+                 <blue>7</blue>
+                </color>
+               </brush>
+              </colorrole>
+             </inactive>
+             <disabled>
+              <colorrole role="WindowText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>127</red>
+                 <green>127</green>
+                 <blue>127</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="Text">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>127</red>
+                 <green>127</green>
+                 <blue>127</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="ButtonText">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>148</red>
+                 <green>148</green>
+                 <blue>148</blue>
+                </color>
+               </brush>
+              </colorrole>
+             </disabled>
+            </palette>
+           </property>
            <property name="text">
-            <string>Exclude</string>
+            <string>Excluded</string>
            </property>
            <property name="checked">
             <bool>true</bool>
