@@ -198,5 +198,33 @@ class MedianFilter(Filter):
         y_smooth = medfilt(y, win)
         return y_smooth
 
+class NewFilter(Filter):
+    def create(self):
+        """Add parameters for the filter. This method is required."""
+        self.param = FilterFloat('parameter') #Float 
+        self.param.setValue(1.0) #Default value
+        self.addParameter(self.param) #Adding to GUI
+        self.param1 = FilterInt('parameter1') #Int 
+        self.param1.setValue(1)
+        self.addParameter(self.param1)
+        self.param2 = FilterCombo('parameter2') #Combo
+        self.param2.setValue(1)
+        self.addParameter(self.param2)
+    
+    def newmethod(self, *args, **kwargs):
+        "A new method can be added and used if required."
+        pass
+
+    def calculate(self,c):
+        """Returns the filtered signal. This method is required."""
+        x=c._z #get distance data
+        y=c._f #get force data
+        param = self.param.getValue() # get the value of the parameters as set by the user
+        if param > 10:
+            return False # If an error occurs, return False
+        yfiltered = y
+        return yfiltered #filtered force signal
+
 ALL_FILTERS.append({'label': 'Savitzky Golay', 'method': SavGolFilter})
 ALL_FILTERS.append({'label': 'Median Filter', 'method': MedianFilter})
+#ALL_FILTERS.append({'label': 'New Filter', 'method': NewFilter})

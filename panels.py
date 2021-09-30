@@ -368,10 +368,45 @@ class Threshold(ContactPoint):
                 break
         return [x[jcp], y[jcp]]
 
+class NewCPAlgorithm(ContactPoint):
+    def create(self):
+        """Add parameters for the algorithm. This method is required."""
+        self.param = CPPFloat('parameter') #Float 
+        self.param.setValue(1.0) #Default value
+        self.addParameter(self.param) #Adding to GUI
+        self.param1 = CPPInt('parameter1') #Int 
+        self.param1.setValue(1)
+        self.addParameter(self.param1)
+        self.param2 = CPPCombo('parameter2') #Combo
+        self.param2.setValue(1)
+        self.addParameter(self.param2)
+
+    def getRange(self,c):
+        """Select region where to look for the CP. Optional.
+        See implemented algorithms and supplementary note 1 for examples."""
+        pass
+
+    def getWeight(self,c):
+        """Compute weight in selected region. Optional. 
+        See implemented algorithms and supplementary note 1 for examples."""
+        pass
+
+    def calculate(self,c):
+        """Returns a list containing the coordinates of the CP. This method is required."""
+        x=c._z #get distance data
+        y=c._f #get force data
+        param = self.param.getValue() # get the value of the parameters as set by the user
+        if param > 10:
+            return False # If an error occurs, return False
+        xcp = x[0]
+        ycp = y[0]
+        return [xcp, ycp] #the CP is returned as a list containing its x and y coordinates
+
 
 ALL.append({'label': 'Threshold', 'method': Threshold})
 ALL.append({'label': 'Ratio of Variances', 'method': ThRov})
 ALL.append({'label': 'Second derivative', 'method': DDer})
 ALL.append({'label': 'Gooodness of Fit', 'method': GoodnessOfFit})
+#ALL.append({'label': 'New Algorithm', 'method': NewCPAlgorithm}) #Showing the new algorithm on the GUI
 
 
