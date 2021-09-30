@@ -874,7 +874,7 @@ class NanoWindow(QtWidgets.QMainWindow):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName('Nano2021')
-    # app.setStyle('Fusion')
+    app.setStyle('Fusion')
     # qtmodern.styles.light(app)
     Chiaro = NanoWindow()
     # mw = qtmodern.windows.ModernWindow(chiaro)
