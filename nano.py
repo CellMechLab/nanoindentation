@@ -18,7 +18,7 @@ from itertools import zip_longest
 # import qtmodern.windows
 
 
-pg.setConfigOption('background', (240,240,240))
+pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
 
