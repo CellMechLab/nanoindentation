@@ -14,8 +14,8 @@ import popup
 import json
 import engine
 from itertools import zip_longest
-import qtmodern.styles
-import qtmodern.windows
+# import qtmodern.styles
+# import qtmodern.windows
 
 
 pg.setConfigOption('background', (240,240,240))
@@ -874,9 +874,9 @@ class NanoWindow(QtWidgets.QMainWindow):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName('Nano2021')
-    app.setStyle('Fusion')
-    qtmodern.styles.light(app)
-    chiaro = NanoWindow()
-    mw = qtmodern.windows.ModernWindow(chiaro)
-    mw.show()
+    # app.setStyle('Fusion')
+    # qtmodern.styles.light(app)
+    Chiaro = NanoWindow()
+    # mw = qtmodern.windows.ModernWindow(chiaro)
+    Chiaro.show()
     sys.exit(app.exec_())
