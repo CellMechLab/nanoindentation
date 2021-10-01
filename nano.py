@@ -99,6 +99,11 @@ class NanoWindow(QtWidgets.QMainWindow):
             self.hertz_average_bottom, self.hertz_average_top)
         self.hertz_band.setBrush(pg.mkBrush(pg.QtGui.QColor(0, 0, 255, 50)))
         self.ui.avg_hertz.plotItem.addItem(self.hertz_band)
+        #avg hertz fit on average F-ind
+        self.indentation_fit_avg = pg.PlotCurveItem(clickable=False)
+        self.indentation_fit_avg.setPen(pg.mkPen(pg.QtGui.QColor(
+            255, 0, 0, 150), width=3, style=QtCore.Qt.DashLine))
+        self.ui.avg_hertz.plotItem.addItem(self.indentation_fit_avg)
 
         def title_style(lab):
             return '<span style="font-family: Arial; font-weight:bold; font-size: 10pt;">{}</span>'.format(lab)
@@ -340,8 +345,7 @@ class NanoWindow(QtWidgets.QMainWindow):
         self.indentation_fit = pg.PlotCurveItem(clickable=False)
         self.indentation_fit.setPen(pg.mkPen(pg.QtGui.QColor(
             255, 0, 0, 150), width=5, style=QtCore.Qt.DashLine))
-        # self.ui.g_indentation.plotItem.addItem(self.indentation_fit) 
-        self.ui.avg_hertz.plotItem.addItem(self.indentation_fit)
+        self.ui.g_indentation.plotItem.addItem(self.indentation_fit) 
         self.es_average = pg.PlotCurveItem(clickable=False)
         self.es_average.setPen(pg.mkPen(pg.QtGui.QColor(
             255, 0, 0, 255), width=2, style=QtCore.Qt.SolidLine))
@@ -484,6 +488,7 @@ class NanoWindow(QtWidgets.QMainWindow):
             # self.histo_esfit.setData(None)
             self.es_average.setData(None)
             self.indentation_fit.setData(None)
+            self.indentation_fit_avg.setData(None)
             self.es_averageZoom.setData(None)
             self.es_averageFit.setData(None)
             self.fdistance_fit.setData(None)
@@ -521,10 +526,12 @@ class NanoWindow(QtWidgets.QMainWindow):
                 x, y, z = motor.calc_hertz(x0, self.collection[0].R, self.collection[0].k, float(
                     self.ui.fit_indentation.value()))
                 self.indentation_fit.setData(x, y)
+                self.indentation_fit_avg.setData(x,y)
                 self.fdistance_fit.setData(z, y)
             except:
                 self.indentation_fit.setData(None)
                 self.fdistance_fit.setData(None)
+                self.indentation_fit_avg.setData(None)
                 # self.histo_fit.setData(None)
             try:
                 x_hertz, y_hertz, er_hertz = motor.getMedCurve(
