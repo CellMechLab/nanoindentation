@@ -577,8 +577,8 @@ class NanoWindow(QtWidgets.QMainWindow):
                 return
 
             # average E from ES of each curve not accounting ind depth
-            E_no_depth_ES = [np.mean(E_data_y[i]) for i in range(len(E_data_y))]
-            self.E_no_depth_ES = np.array(E_no_depth_ES)*1e9
+            # E_no_depth_ES = [np.mean(E_data_y[i]) for i in range(len(E_data_y))]
+            # self.E_no_depth_ES = np.array(E_no_depth_ES)*1e9
 
             x = x**2/np.average(Radius) #ind
             self.es_average.setData(x, y*1e9) # E vs ind
@@ -719,7 +719,7 @@ class NanoWindow(QtWidgets.QMainWindow):
             f.write(
                 'Elastic constant [N/m] #{}\n'.format(self.collection[0].k))
             f.write(
-                'Avg Indentation [nm] \t Avg Force [nN] \t Error Force [Pa] \n')
+                'Avg Indentation [nm] \t Avg Force [nN] \t Error Force [nN] \n')
             for x in zip(*[self.x_hertz_average, self.y_hertz_average, self.hertz_average_error]):
                 f.write("{0}\t{1}\t{2}\n".format(*x))
         f.close()
@@ -757,9 +757,9 @@ class NanoWindow(QtWidgets.QMainWindow):
             f.write('# d0 STD {} Pa\n'.format(self.d0_std))
             f.write('# \n')
             f.write(
-                '# Mean ES: Indentation [nm] \t Contact Radius [nm] \t Young\'s Modulus [Pa] \t Young\'s Moudlus err [Pa] \t Young\'s Modulus no depth [Pa]\n')
-            for x in zip_longest(*[self.ES_array_x, np.sqrt(self.ES_array_x * self.collection[0].R), self.ES_array_y, self.es_average_error, self.E_no_depth_ES]):
-                f.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(*x))
+                '# Mean ES: Indentation [nm] \t Contact Radius [nm] \t Young\'s Modulus [Pa] \t Young\'s Moudlus err [Pa]\n')
+            for x in zip_longest(*[self.ES_array_x, np.sqrt(self.ES_array_x * self.collection[0].R), self.ES_array_y, self.es_average_error]):
+                f.write("{0}\t{1}\t{2}\t{3}\n".format(*x))
         f.close()
         QtWidgets.QApplication.restoreOverrideCursor()
 
