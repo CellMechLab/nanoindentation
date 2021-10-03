@@ -1,22 +1,25 @@
-# Nanoindentation
-Nanoindentation data  curve reader and analyser
+# Nanoindentation (NanoAnalysis) 
 
-## Introduction
-This program offers a user friendly GUI and is intended to bulk analyse nanoindentation force-distance curves of soft materials and cells in 
-order to get mechanical properties (Elastic or Young's Modulus) based on: 1. The simple Hertz model; 2. The Oliver-Pharr model, to obtain a pointwise calculation of the Young's Modulus, namely the elasticity spectra. For more information, please refer to this paper: 
-https://doi.org/10.1186/s12951-020-00706-2. Right now, the software only supports analysis of data obtained through a spherical indenter
+Nanoindentation experiments data analysis. 
 
-## Supported filetypes
-At the moment the software is able to open Nanosurf exported files (TXT) and Optics11 Chiaro and Piuma TXT files (both old and nw versions are supported). Moreover, an 'Easy tsv' file format is also supported; this is an internal format to read synthetic data
+## Introduction 
+This user friendly graphical user interface (GUI) allows to bulk analyze nanoindentation force-distance curves of soft materials (for example hydrogels and cells) in order to get mechanical properties (Young\'s modulus) based on: 
+1. The Hertz model;
+2. The Oliver-Pharr model, to obtain a point-wise calculation of the Young\'s modulus, namely the elasticity spectra (ES). By fitting the ES with a bilayer model, cell's mechanical properties (cortex's modulus and thickness, cell's 'bulk' modulus) can be estimated. This method is described in our recent paper: https://doi.org/10.1186/s12951-020-00706-2.
 
-## Installation
-This program is an early version, so no installer is provided. It requires a Python 3 environment with the 
-following packages:
-* PyQt5, numpy, scipy
-* pyqtgraph
+Right now, the software only supports analysis of data obtained through a spherical indenter. 
 
-## DOC
-Run the nano file to access the UI
+## Important changes from previous release 
+Data is now uploaded in a standard internal format (.json) after being screened in a newly designed  GUI (NanoPrepare: https://github.com/CellMechLab/NanoPrepare). The new GUI allows for cleaning of the dataset and exporting the cleaned dataset in .json, which is then uploaded in this GUI for analysis. Therefore, in order to use this GUI, NanoPrepare should be first downloaded. 
+
+## Supported filetypes 
+Internal format (.json). Conversion from manufacturers' format to .json is done in NanoPrepare. Right now, the following manufacturers' formats are supported: Optics 11 .txt files (both old and new versions are supported) and NanoSurf .txt files.
+
+## Installation 
+No installer is currently provided. In order use the GUI, a Python 3 environment with the following packages is required: PyQt5, NumPy, SciPy, PyQtGraph.
+
+## Running the GUI
+In order to access the GUI, run the nano file from the command line: 
 ```bash
-python nano.py
+python nano.py 
 ```
