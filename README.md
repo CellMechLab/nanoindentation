@@ -7,7 +7,8 @@ This user friendly graphical user interface (GUI) allows to bulk analyze nanoind
 1. The Hertz model;
 2. The Oliver-Pharr model, to obtain a point-wise calculation of the Young\'s modulus, namely the elasticity spectra (ES). By fitting the ES with a bilayer model, cell's mechanical properties (cortex's modulus and thickness, cell's 'bulk' modulus) can be estimated. This method is described in our recent paper: https://doi.org/10.1186/s12951-020-00706-2.
 
-Right now, the software only supports analysis of data obtained through a spherical indenter. 
+Right now, the software only supports analysis of data obtained through a spherical indenter.
+For more advanced analyses, we developed a new moduluar GUI that can be found here: https://github.com/CellMechLab/softmech. However the project is still lacking documentation. For more questions, feel free to email massimo.vassalli@glasgow.ac.uk or g.ciccone.1@research.gla.ac.uk.
 
 ## Documentation 
 A step-by-step guide and video tutorials on how to use the software is avilable in our recent paper:
