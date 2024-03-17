@@ -333,7 +333,7 @@ class Threshold(ContactPoint):
         self.Athreshold = CPPFloat('Align Threshold [nN]')
         self.Athreshold.setValue(10.0)
         self.deltaX = CPPFloat('Align left step [nm]')
-        self.deltaX.setValue(2000.0)
+        self.deltaX.setValue(1000.0)
         self.Fthreshold = CPPFloat('AVG area [nm]')
         self.Fthreshold.setValue(100.0)
         self.addParameter(self.Athreshold)
